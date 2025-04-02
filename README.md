@@ -11,6 +11,6 @@ The Reliability of Electronic Evidence Diagram (REED) approach records and helps
 
 This article takes an NHS criminal trial as a case study, and justifies numerous learning outcomes highlighted by the REED approach that will be of value to the NHS and other computer users. The NHS’s on-going lack of awareness of serious computer management failure and evidential problems emphasizes the importance of resourcing non-technical dialogue-based approaches like REEDs to support more reliable computer management and the use of more reliable computer evidence.
 
-See [htt](https://www.harold.thimbleby.net/reeds/) for papers and other resources.
+See [web home page](https://www.harold.thimbleby.net/reeds/) for papers and other resources.
 
 This Git repository has the C code of the very prototype Unix/Darwin tool, reed
