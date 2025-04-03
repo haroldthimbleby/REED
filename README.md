@@ -5,12 +5,10 @@ Almost all evidence now originates in digital systems or is processed through di
 
 Computer evidence used in courts is often problematic, because computers are not reliable and because computers may be managed and operated poorly. Digital forensic standards may not be upheld. The Common Law presumption that computer evidence is reliable is obsolete and encourages miscarriages of justice.
 
-This paper proposes a simple, versatile, visually-based approach to help better understand, communicate, and improve the quality of computer evidence.
+This project, REED, proposes a simple, versatile, visually-based approach to help better understand, communicate, and improve the quality of computer evidence. The approach records and helps highlight and analyze the need for specific evidence, helping critique and improve the quality of what is already thought to be known — especially useful for expert witnesses in pre-action discussions. The approach can also help manage IT systems prior to and regardless of possible legal action, and hence help improve the reliability of computer evidence used in any investigations.
 
-The Reliability of Electronic Evidence Diagram (REED) approach records and helps highlight and analyze the need for specific evidence, helping critique and improve the quality of what is already thought to be known — especially useful for expert witnesses in pre-action discussions. The approach can also help manage IT systems prior to and regardless of possible legal action, and hence help improve the reliability of computer evidence used in any investigations.
+This Git repository has the C code of the prototype Unix/Darwin command line tool, reed. This prototype tool was designed to play with the REED idea, and it is very much a flexible prototype so we can reimplement it properly.
 
-This article takes an NHS criminal trial as a case study, and justifies numerous learning outcomes highlighted by the REED approach that will be of value to the NHS and other computer users. The NHS’s on-going lack of awareness of serious computer management failure and evidential problems emphasizes the importance of resourcing non-technical dialogue-based approaches like REEDs to support more reliable computer management and the use of more reliable computer evidence.
+See [web home page](https://www.harold.thimbleby.net/reeds/) for papers and other resources, including a substantial paper using a large NHS criminal trial as a case study for using REEDs.
 
-See [web home page](https://www.harold.thimbleby.net/reeds/) for papers and other resources.
 
-This Git repository has the C code of the very prototype Unix/Darwin tool, reed
