@@ -1,0 +1,27 @@
+override version "v3"
+
+highlight blue is "Critical new evidence introduced for version 3."
+
+highlight engineer cascade is blue
+
+override numbering
+	(
+		(1 2 13 16)
+		(4 17)
+		(manual 5 14 18 engineer)
+		(7 6 15)
+		(11 backups 10 8)
+		(12 9)
+		(hospital)
+		(3)
+	)
+	
+engineer -> 7;
+
+note engineer is "Unsupervised\nAbbott\nengineer" <<< ENDNOTE
+	\warn{An Abbott engineer, Mr.\ Reece, had been asked to help when the Princess of Wales PrecisionWeb database faced problems in 2013. Mr.\ Reece then worked unsupervised on the PrecisionWeb database.}
+	
+	\warn{Reece gave evidence that he had failed to take notes on exactly what he did when editing, deleting, and modifying data in the PrecisionWeb database. He admitted he had deleted critical data, which would have created the impression that nurses had been negligent not performing blood glucose tests.}
+	
+	\warn{This deletion of computer evidence explains the discrepancy in patient records that the prosecution claims had been wholly and entirely caused by the nurses' criminal negligence.}
+ENDNOTE

@@ -1,0 +1,60 @@
+digraph {
+  compound=true;
+  color=red;
+  labelloc=t;
+  fontname="Helvetica-Bold";
+  fontsize=24;
+  label="Princess of Wales Hospital blood glucometer case REED
+v2, 26 January 2025
+ ";
+
+
+subgraph "clusterhospital" {
+   "9"; "8"; "7"; "6"; "5"; "4"; fontname="Helvetica-Bold"; fontcolor=black; labelloc=b; label="v2-7.1\nHospital IT Systems";
+};
+
+  "manual" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-3.1\nPrecisionWeb\noperators\nmanual";];
+  "backups" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-5.2\nNo known backups\nthat could have\n provided evidence";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "9" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-6.2\nMain hospital\ndatabases";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "8" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-5.4\nLots of unknown\ncomplex middleware";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "7" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-4.1\nAbbott\nPrecisionWeb\ndatabase";];
+  "6" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-4.2\nWard PCs";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "5" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-3.2\nXceedPro\ndock\non ward";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "4" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-2.1\nXceedPros\non Ward 2";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "3" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-8.1\nNurse-written\npaper records\n(never disclosed)";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "2" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-1.2\nPatients";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "18" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-3.4\nPolice summary\nof wrong XceedPros";fillcolor=red;style=filled;penwidth=2;shape=note;fontcolor=white;];
+  "17" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-2.2\nAbbott\nlabs";];
+  "16" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-1.4\nWrong XceedPros\nseized by police";fillcolor=red;style=filled;penwidth=2;shape=note;fontcolor=white;];
+  "15" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-4.3\nNo evidence of\nerror logs\nor audits";fillcolor=red;style=filled;penwidth=2;shape=note;fontcolor=white;];
+  "14" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-3.3\nNo evidence\nof any testing\never performed";fillcolor=red;style=filled;penwidth=2;shape=note;fontcolor=white;];
+  "13" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-1.3\nHospital\ncomputer\noperators";color=black;fillcolor=white;style=filled;penwidth=2;shape=note;];
+  "12" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-6.1\nMain police evidence";];
+  "11" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-5.1\nPolice forensic\ndatabase system";];
+  "10" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-5.3\nFrequent crashes\ndocumented";];
+  "1" [fillcolor="gray90";style=filled;shape=ellipse;label="v2-1.1\nDefendant\nnurses\non Ward 2";];
+
+  "manual"->"7";
+  "backups"->"9" [dir=both;];
+  "7"->"backups" [dir=both;];
+  "9"->"3" [headlabel="                                 Discrepancies\r                                 between hospital\r                                  database and paper records\r"; arrowhead=none; arrowtail=none; penwidth=4; color=blue; style=dotted; fontcolor=blue; fontsize=12; fontname="Helvetica-Bold"; dir=both;];
+  "8"->"9" [label="?",fontname="Helvetica-Bold",fontcolor=blue,fontsize=18; penwidth=2; style=dashed; dir=both;];
+  "7"->"8" [label="?",fontname="Helvetica-Bold",fontcolor=blue,fontsize=18; penwidth=2; style=dashed; dir=both;];
+  "5"->"7" [fontname="Helvetica-Bold";fontcolor=blue;fontsize=18;penwidth=4; label=" D";];
+  "4"->"5" [fontname="Helvetica-Bold";fontcolor=blue;fontsize=18;penwidth=4; label=" C";];
+  "17"->"18" [color=black; penwidth=1; arrowhead=dot; ];
+  "16"->"17";
+  "16"->"18" [color=black; penwidth=1; arrowhead=dot; ];
+  "14"->"15" [label="?",fontname="Helvetica-Bold",fontcolor=red,fontsize=18; color=red; penwidth=2; style=dashed; ];
+  "4"->"14" [label="?",fontname="Helvetica-Bold",fontcolor=red,fontsize=18; color=red; penwidth=2; style=dashed; ltail="clusterhospital"];
+  "13"->"4" [lhead="clusterhospital"label="?",fontname="Helvetica-Bold",fontcolor=red,fontsize=18; color=red; penwidth=2; style=dashed; arrowhead=dot; ];
+  "13"->"14" [label="?",fontname="Helvetica-Bold",fontcolor=red,fontsize=18; color=red; penwidth=2; style=dashed; arrowhead=dot; ];
+  "11"->"12" [fontname="Helvetica-Bold";fontcolor=blue;fontsize=18;penwidth=4; label="  F";];
+  "7"->"11" [fontname="Helvetica-Bold";fontcolor=blue;fontsize=18;penwidth=4; label=" E";];
+  "7"->"10";
+  "6"->"8" [label="?",fontname="Helvetica-Bold",fontcolor=red,fontsize=18; color=red; penwidth=2; style=dashed; dir=both;];
+  "1"->"6" [color=black; penwidth=1; arrowhead=dot; ];
+  "2"->"4" [label="  A",fontname="Helvetica-Bold",fontcolor=blue;fontsize=18;penwidth=4; label=" B";];
+  "1"->"4" [arrowhead=dot,fontname="Helvetica-Bold",fontcolor=blue;fontsize=18;penwidth=4; label=" A";];
+  "1"->"3" [color=black; penwidth=1; arrowhead=dot; ];
+}

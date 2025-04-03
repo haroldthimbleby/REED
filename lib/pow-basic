@@ -1,0 +1,13 @@
+
+Nurses -> nurserecords -> computerrecords
+
+nurserecords is "Nurse-written\npaper\nrecords"
+
+computerrecords is "Computerized\npatient\nrecords"
+
+style Nurses -> nurserecords is "penwidth=5;minlen=3"
+
+style nurserecords <-> computerrecords is "dir=both;style=dotted;color=red;penwidth=5;minlen=3;fontname=\"Helvetica-Bold\";fontcolor=red;fontsize=16;label=\"Discrepancies\n \";minlen=5"
+
+style Nurses is "shape=circle;fillcolor=gray90;style=filled"
+rows ((Nurses nurserecords computerrecords))

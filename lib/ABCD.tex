@@ -1,0 +1,31 @@
+\title{}\author{}
+\date{}
+\begin{document} \maketitle
+\def\colorflag#1{\fboxrule=0.3pt
+\fboxsep=0pt
+\hbox{\vrule height 2.2ex width 1pt
+\raise 1ex\hbox{\fbox{\color{#1}\hbox{\vrule width .5ex height 1ex depth 0ex}}}%
+\hskip -.6pt\raise .9ex\hbox{\fbox{\color{#1}\hbox{\vrule width .5ex height 1ex depth 0ex}}}%
+\hskip -.6pt\raise 1ex\hbox{\fbox{\color{#1}\hbox{\vrule width .7ex height 1ex depth 0ex}}}}%
+}\section*{Quick overview}
+{\large\sf\noindent \begin{tabular}{@{}|rlcrl|}\hline 
+\multicolumn{5}{@{}|l|}{Single version}\\
+ 4 & nodes & --- & 0 & highlighted\\&&& 0 & with notes\\
+
+    4 & arrows & --- & 0 & with notes\\\hline
+\end{tabular}
+\vskip 4mm
+\noindent
+\begin{tabular}{|ll|}\hline 
+REED files&Digital signatures\\ \hline 
+lib/ABCD & 6dce412672c091705dcefd5e912be3dc \\
+lib/LR & 718d16a572299b7760dbdde980838cd3 \\
+\hline
+\end{tabular}
+
+\vskip 2mm\noindent
+\emph{\raggedright\small If a REED file has been changed since this report was made, then its digital signature will now be different. You can run the REED tool with flag `--s' on any file to confirm its signature}.
+
+}
+\section*{No notes provided}
+\textbf{Node  D}\\\textbf{Node  C}\\\textbf{Node  B}\\\textbf{Node  A}\\

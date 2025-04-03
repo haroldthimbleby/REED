@@ -1,0 +1,244 @@
+title "Princess of Wales Hospital blood glucometer case REED"
+author "Harold Thimbleby"
+version "v3"
+date "26 January 2025"
+
+abstract <<< ****  
+\noindent Example automatically-generated evidence narrative file revisiting the 2014 Princess of Wales Hospital blood glucometer case. For an overview of the background to the case, with a full description of the meaning of the diagram and further details of its associated narrative, go to the web site home page at: \\ \\ \hbox to \textwidth{\hfill\textcolor{blue}{\url{https://harold.thimbleby.net/reeds}}\hfill} \\ \\
+
+Node numbers in this narrative evidence document refer to the REED diagram shown on page \pageref{thefigure} of this document.
+
+\setbox0=\hbox{\textcolor{blue}{\url{https://harold.thimbleby.net/reeds/REED.pdf}}}
+
+\begin{figure}\includegraphics[width=\textwidth]{../REED-paper/figures/reedv3.pdf}\\
+\sf For convenience, this is a copy of figure \ref{fig:v3} from page \pageref{fig:v3} of the REED paper itself,\\ \copy0
+\label{thefigure}
+\end{figure}\newpage
+**** 
+
+highlight white is "No available information. May or may not be a problem."
+highlight red is "Recognized problems not yet resolved. Concerns need to be addressed in cross-examination."
+highlight blue is "Critical new evidence introduced for version 3."
+
+highlight engineer cascade is blue
+
+numbering
+	(
+		(1 2 13 16)
+		(4 17)
+		(manual 5 14 18 engineer)
+		(7 6 15)
+		(11 backups 10 8)
+		(12 9)
+		(hospital)
+		(3)
+	)
+	
+3 <- 1 -> 4 <- 2
+
+1 -> 6 <-> 8
+
+10 <- 7 -> 11 -> 12
+
+14 <- 13 -> hospital -> 14 -> 15
+
+18 <- 16 -> 17 -> 18
+
+4 -> 5 -> 7 <-> 8 <-> 9 <-> 3
+
+style 9<->3 is "headlabel=\"                                 Discrepancies\\r                                 between hospital\\r                                  database and paper records\\r\"; arrowhead=none; arrowtail=none; penwidth=4; color=blue; style=dotted; fontcolor=blue; fontsize=12; fontname=\"Helvetica-Bold\""
+
+new style thickHuman is "color=black; penwidth=2; arrowhead=dot"
+new style thickHumanDashedRed is "label=\"?\",fontname=\"Helvetica-Bold\",fontcolor=red,fontsize=18; color=red; penwidth=2; style=dashed; arrowhead=dot"
+new style thickDashedRed is "label=\"?\",fontname=\"Helvetica-Bold\",fontcolor=red,fontsize=18; color=red; penwidth=2; style=dashed"
+new style thickDashedBlue is "label=\"?\",fontname=\"Helvetica-Bold\",fontcolor=blue,fontsize=18; penwidth=2; style=dashed"
+new style thinHuman is "color=black; penwidth=1; arrowhead=dot"
+new style wideBlackArrow is "color=black; penwidth=4"
+
+style 2->4 is "label=\"  A\",fontname=\"Helvetica-Bold\",fontcolor=blue;fontsize=18;penwidth=4"
+
+note 2->4 is " B" "A blood sample from a patient enters an XceedPro."
+note 1->4 is " A" "A nurse uses an XceedPro to take a sample from a specific patient, and the XceedPro records the nurse’s and patient's IDs."
+note 4->5 is " C" "The XceedPros provide date, time, XceedPro ID, nurse ID, patient ID, blood glucose level, etc."
+note 5->7 is " D" "Should be identical to the XceedPro data C plus a timestamp of upload."
+7 <-> backups;
+highlight backups is white
+
+backups <-> 9
+note backups is "No known backups\nthat could have\n provided evidence" <<< ENDNOTE
+	If backups had been taken (we do not know) then it would have been
+	natural to check the alleged missing nurse data had never been stored
+	on the main PrecisionWeb database.
+
+	Backups would have shown whether failures happened in PrecisionWeb, or earlier
+	for instance over arrows D, C, B, or A (as the prosecution argued).
+ENDNOTE
+
+engineer->7
+
+note engineer is "Unsupervised\nAbbott\nengineer" <<< ENDNOTE
+	\warn{An Abbott engineer, Mr.\ Reece, had been asked to help when the Princess of Wales PrecisionWeb database faced problems in 2013. Mr.\ Reece then worked unsupervised on the PrecisionWeb database.}
+	
+	\warn{Reece gave evidence that he had failed to take notes on exactly what he did when editing, deleting, and modifying data in the PrecisionWeb database. He admitted he had deleted critical data, which would have created the impression that nurses had been negligent not performing blood glucose tests.}
+	
+	\warn{This deletion of computer evidence explains the discrepancy in patient records that the prosecution claims had been wholly and entirely caused by the nurses' criminal negligence.}
+ENDNOTE
+
+note 7->11 is " E" "The police exported a CSV file from the PrecisionWeb database of every record derived from all XceedPros in the hospital (see arrow D) over the relevant period of time. \\warn{CSV is a  non-forensic and very unreliable data format.}"
+
+note 11->12 is "  F" "Should be a collection of the C data (it wasn’t; see figure 6 for the reasons) but crucially the police evidence was incomplete since it provided no way to check consistency with C data."
+
+style 1->4 is "arrowhead=dot,fontname=\"Helvetica-Bold\",fontcolor=blue;fontsize=18;penwidth=4"
+style 4->5 is "fontname=\"Helvetica-Bold\";fontcolor=blue;fontsize=18;penwidth=4"
+style 5->7 is "fontname=\"Helvetica-Bold\";fontcolor=blue;fontsize=18;penwidth=4"
+style 7->11 is "fontname=\"Helvetica-Bold\";fontcolor=blue;fontsize=18;penwidth=4"
+style 11->12 is "fontname=\"Helvetica-Bold\";fontcolor=blue;fontsize=18;penwidth=4"
+
+style (1->3 1->6 16->18 17->18) is thinHuman
+style (14->15 6<->8 hospital->14) is thickDashedRed
+style (13->14 13->hospital) is thickHumanDashedRed
+style (7<->8 8<->9) is thickDashedBlue
+
+group (4 5 6 7 8 9) is hospital
+
+note 1 is "Defendant\nnurses\non Ward 2" <<< ENDNOTE
+	The defendants were named, and provided witness statements.
+ENDNOTE
+
+highlight 2 is white
+note 2 is Patients <<< ENDNOTE
+	The patients on Ward 2 had limited capacity.
+ENDNOTE
+
+highlight 3 is white
+note 3 is "Nurse-written\npaper records\n(never disclosed)" <<< ENDNOTE
+	Contemporaneously with treating patients, nurses should review the XceedPro they have used and copy its data to paper notes. The police never provided the nurse-written records. 
+
+	\warn{The XceedPro can record up to 2,500 patient records and then it will start overwriting records. As I never had access to the relevant XceedPros, I do not know whether this bug was relevant: had an XceedPro recorded about 2,500 records it \emph{could\/} have given the impression the nurse had not performed tests the nurse had documented on paper notes.}
+ENDNOTE
+
+highlight 4 is white
+note 4 is "XceedPros\non Ward 2" <<< ENDNOTE
+	The nurse takes an XceedPro to a patient, and they must then tap the XceedPro with their ID card, then scan the patient's ID card. Then the patient is pricked to obtain a small blood sample, which is inserted into the XceedPro. The XceedPro records the IDs, the date and time, and the blood glucose level. Nurses may share ID cards, or they may ``double tap'' and use their ID card twice instead of using the patient's ID card. 
+	
+	See node <<17>>: \warn{Manufacturer evidence says XceedPros have numerous bugs; however none of the documented bugs lose patient data.}
+ENDNOTE
+
+highlight 5 is white
+note 5 is "XceedPro\ndock\non ward" <<< ENDNOTE
+	\warn{No evidence of the reliability of the XceedPro dock (for example, hospital test results, or manufacturer claims of reliability, or even daily checks of integrity) has been offered. Its reliable use depends on hospital network reliability, and no evidence of the reliability of the hospital network has been offered. The network may have had outages during the relevant period.}
+ENDNOTE
+
+highlight 6 is white
+note 6 is "Ward PCs" <<< ENDNOTE
+	The ward has PCs where nurses can review patient information. 
+	
+	\warn{It is not clear whether nurses can edit data, for instance in case two patients were mixed up with the XceedPros (e.g., by putting the wrong test strip in or using one with a second patient) --- and if so, whether edits must be done by the nurse (or person with the same ID) who originally took the readings.}
+	
+	\warn{We do not know who had access to the Ward PCs (whether nurses or hospital operators).}
+ENDNOTE
+
+#highlight 7 is blue
+note 7 is "Abbott\nPrecisionWeb\ndatabase" <<< ENDNOTE
+	PrecisionWeb is a proprietary database designed to monitor XceedPros, such as their battery health. 
+	
+	PrecisionWeb manual warns that it is not designed for clinical use, but the Princess of Wales hospital used it clinically --- the blood glucose readings (amongst other data) are copied, via middleware (node <<8>>) to the main hospital database. \warn{It is therefore not clear that PrecisionWeb is reliable enough to present patient data as evidence.}
+ENDNOTE
+
+manual->7
+note manual is "PrecisionWeb\noperators\nmanual" <<< ENDNOTE
+	\warn{The operators manual for PrecisionWeb says it should not be used for clinical purposes. All the evidence for this case assumed the clinical records in PrecisionWeb were reliable.}
+ENDNOTE
+
+highlight 8 is white
+note 8 is "Lots of unknown\ncomplex middleware" <<< ENDNOTE
+	PrecisionWeb (node <<7>>) is not interoperable with other hospital systems, so middleware Conworx is used to interface PrecisionWeb to the main patient databases.
+	
+	\warn{No evidence of the reliability of Conworx and other middleware (for example, hospital test results, or manufacturer claims of reliability) has been mentioned in evidence.}
+	
+	\warn{The hospital refused access to technicians, which meant we have no idea of or the extent of the middleware or how it is supposed to work.}
+	
+	\warn{Such complex multi-manufacturer systems will have bugs, so it is very surprising not to have error logs (etc) presented in routine statements.}
+ENDNOTE
+
+highlight 9 is white
+note 9 is "Main hospital\ndatabases" <<< ENDNOTE
+	The hospital databases are managed by hospital technicians. None provided evidence statements, and none were called to give evidence.
+
+	\warn{Such complex systems will have bugs, so it is very surprising not to have error logs (etc) presented in routine statements.}
+
+	\warn{It is curious that the discrepancies were originally discovered from the main hospital databases, not from PrecisionWeb. The police never took evidence from the main hospital databases.}
+ENDNOTE
+
+note 10 is "Frequent crashes\ndocumented" <<< ENDNOTE
+	\warn{Evidence revealed in court was that the PrecisionWeb database (or the server it ran on) frequently crashed. The evidence said nothing about the impact of crashes on the integrity of the database; presumably at least the transactions pending when crashes happened would be lost.}
+ENDNOTE
+
+#highlight 11 is blue
+note 11 is "Police forensic\ndatabase system" <<< ENDNOTE
+	\warn{The police used PrecisionWeb unsupervised,\footnote{Hospital policy has since been revised.} exported data to CSV format.}
+
+	The police certainly examined the PrecisionWeb data in Excel, as their written evidence says their first attempts crashed Excel (presumably because of the size of the Excel spreadsheet). I do not understand why the police did not use SQL (or any other decent database), as they could simply have copied the SQL PrecisionWeb database rather than relying on PrecisionWeb to convert it to CSV\@.
+
+	\warn{CSV is a very unsuitable data format to choose for evidence, as there is no way to detect edited, deleted, or inserted data.}
+
+	Whatever CSV data they selected, they copied to a USB stick. This stick was then taken by car to a police forensic environment, and copied to an encrypted secure disk drive. Subsequently, unencrypted CDs were burned from the files on the secure disc.
+
+	The police evidence claimed their process was forensic --- but it was only forensic \emph{after\/} copying CSV data to the secure disk drive, and provided that no police staff with password access modified the data.
+ENDNOTE
+
+#highlight 12 is blue
+note 12 is "Main police evidence" <<< ENDNOTE
+	\warn{A joint prosecution/defence expert witness report (``Experts' Joint Statement on Matters Agreed and/or Disagreed in regard to Part 35 12 (3) CPR'') lists many problems, including that the CDs CH/15 the police provided to the prosecution and defence experts were different, raising serious questions of police forensic process \cite{POW-resources}.}
+
+Refer to node <<11>>. 
+%END -- used to help Awk stop copying this note!
+ENDNOTE
+
+highlight 13 is white
+note 13 is "Hospital\ncomputer\noperators" <<< ENDNOTE
+	\warn{We have no idea what hospital operators did, how they were managed, or what their security protocols (if any) were.}
+
+	Note how (using Statechart\footnote{Statecharts, invented by David Harel, are well-known diagrams widely used in computer science.} conventions for diagrams) a \emph{single\/} arrow from node <<13>>) to the group <<hospital>> is sufficient to show that computer operators affect \emph{all\/} nodes inside the box.
+ENDNOTE
+
+highlight 14 is red
+note 14 is "No evidence\nof any testing\never performed" <<< ENDNOTE
+	\warn{The hospital presented no evidence that it knew that any of its systems were reliable. However, the hospital did present evidence that PrecisionWeb regularly crashes (node <<10>>).}
+ENDNOTE
+
+highlight 15 is red
+note 15 is "No evidence of\nerror logs\nor audits" <<< ENDNOTE
+	\warn{It is astonishing there is no evidence that the hospital ever checked whether their computer systems were functioning normally.}
+
+	\warn{It is also astonishing the police recorded data from hospital systems without confirming the reliability of the data, and did so without hospital supervision.}
+ENDNOTE
+
+highlight 16
+note 16 is "Wrong XceedPros\nseized by police" <<< ENDNOTE
+	The PrecisionWeb data records XceedPro serial numbers, and shows that XceedPros routinely move around the hospital. 
+	
+	\warn{The PrecisionWeb data confirms that the police seized all three XceedPros that happened to be on Ward 2 on the date when they visited it. However, these were not any XceedPros that had been used by the defendants.} 
+	
+	\warn{Seizing the wrong XceedPros will give the false impression that the XceedPro data  confirms the Prosecution's contention that the nurses's fabricated meter readings. The seized XceedPros were checked as reliable by Abbott (node <<17>>) --- that is, Abbott unsurprisingly confirms their XceedPros work as they expect, not that they checked the \emph{right\/} XceedPros.}
+
+
+	Reference \cite{POW} explains how the police came to seize the wrong XceedPros.
+ENDNOTE
+
+note 17 is "Abbott\nlabs" <<< ENDNOTE
+	The US company Abbott manufactured the XceedPros and the PrecisionWeb database, both critical components of this case.
+
+	The police sent the wrong 3 XceedPros to Abbott to determine if they worked correctly. The Abbott labs found no relevant problems with the XceedPros, but they did confirm that all XceedPros had bugs.
+
+	However, none of the bugs Abbott described would affect or cause loss of data, unless the XceedPros had been used to try to record over 2,500 tests, which is considerably higher than any XceedPro at the Princess of Wales had ever recorded (at least as established by the police's PrecisionWeb evidence).
+ENDNOTE
+
+highlight 18
+note 18 is "Police summary\nof wrong XceedPros" <<< ENDNOTE
+	\warn{Because of the problems noted under node <<16>>, this evidence was excluded.}
+ENDNOTE
+
+note hospital is "Hospital IT Systems" <<< ENDNOTE
+	\warn{We know nothing about the management of the hospital systems and any impact on the evidence.} \warn{In a hospital (or any other critical environment) one would expect at least daily checks of reliable performance or error logs. The REED diagram shows there were no such checks.}
+ENDNOTE

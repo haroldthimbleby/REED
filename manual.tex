@@ -1,0 +1,54 @@
+%Not mentioned
+%numbering ((....)) including *
+%numbering flat ((....)) including *
+%numbering (.....)  including *
+%group (1 2 3) is whatever
+%style (1 2 3) is "color=red"
+%flag 2
+%new style emphasise is "color=red; fillcolor=green; penwidth=3;"
+% [new] style flag is "fillcolor=red; style=filled; color=black; penwidth=3;"
+%
+% rows command, including row labels
+%    rows TOC 
+%	 (  ("line 1" (....) ) ...
+%	)
+%
+% direction TB, LR, etc  command
+
+%To add generalisations of style:
+% style <groupname> is "color=red"
+% style a->b is "color=red; dashed;" ---- this one is urgent
+%
+% appending/overriding styles
+%
+%various flags for the command-line tool
+% finding connected components
+
+
+% how to do notes (or nodes?) that are done by different authors disagreeing???
+
+% need to output tex using macros
+
+% \notearrow{label}{u}{v} note
+\def\notearrow#1#2#3#4{ % #1 is flag?
+\subsection*{Arrow  #2 #1\\
+\setbox0=\hbox{$\rightarrow$~}\hbox to \wd0{}#3\\\copy0{}#4}}
+
+% \notenode{u} note
+\def\notenode#1#2{\subsection*{ #1\ Node #2}}
+
+
+Language for checklisting
+
+permit terms and term is "longer description"
+@checklist(required terms ...) @checklist(term priority 1)
+@forbid(terms ...)
+@do(terms ...) @do(thing signed fred)
+@dont(terms ...)
+@end(terms ...)
+@tick(terms ...)
+
+@begin(
+@end)
+
+and \section = @checklist, \subsection = @done ?

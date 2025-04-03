@@ -1,0 +1,11 @@
+# styles for a Theory of Change diagram
+
+direction "BT"
+
+new style input is "shape=box;style=filled;fontname=Helvetica;color=darkolivegreen3" # 
+new style activity is "shape=box;style=filled;fontname=Helvetica;color=orange" # 
+new style barrier is "shape=box;style=filled;fontname=\"Helvetica-bold\";fontcolor=white;color=red" # 
+new style tangible is "shape=box;style=filled;fontname=Helvetica;color=lime" # 
+new style objective is "shape=box;style=filled;fontname=Helvetica;color=aquamarine" # 
+new style intermediate is "shape=box;style=filled;fontname=Helvetica;color=cyan" # 
+new style outcome is "shape=box;style=filled;fontsize=24;fontname=\"Helvetica-bold\";penwidth=4;fillcolor=lightcyan" # 

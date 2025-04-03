@@ -1,0 +1,18 @@
+digraph {
+  compound=true;
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  label="";
+  rankdir="";
+{rank=same; "Nurses";"nurserecords";"computerrecords";}
+
+  "nurserecords" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="Nurse-written\npaper\nrecords";];
+  "computerrecords" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="Computerized\npatient\nrecords";];
+  "Nurses" [label="Nurses";shape=circle;fillcolor=gray90;style=filled;];
+
+  "nurserecords"->"computerrecords" [dir=both;style=dotted;color=red;penwidth=5;minlen=3;fontname="Helvetica-Bold";fontcolor=red;fontsize=16;label="Discrepancies
+ ";minlen=5; ];
+  "Nurses"->"nurserecords" [penwidth=5;minlen=3; ];
+}

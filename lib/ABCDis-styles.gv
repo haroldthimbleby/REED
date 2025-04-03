@@ -1,0 +1,30 @@
+digraph {
+  compound=true;
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  label="";
+  rankdir="TB";
+{rank=same; "Sources of data        ";"A";}
+{rank=same; "Undetected cyberattack ";"B";}
+{rank=same; "Internal interference? ";"C";}
+{rank=same; "Signed off by IT       ";"D";}
+
+  "Undetected cyberattack " [shape=box; fontname=Helvetica; label="Undetected cyberattack ";shape=cds;fontname="Monaco";];
+  "Sources of data        " [shape=box; fontname=Helvetica; label="Sources of data        ";shape=cds;fontname="Monaco";];
+  "Signed off by IT       " [shape=box; fontname=Helvetica; label="Signed off by IT       ";shape=cds;fontname="Monaco";];
+  "Internal interference? " [shape=box; fontname=Helvetica; label="Internal interference? ";shape=cds;fontname="Monaco";];
+  "D" [fillcolor="/rdylgn5/4";color="/rdylgn5/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="4\nThe IT department";];
+  "C" [fillcolor="/rdylgn5/3";color="/rdylgn5/3";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="3\nC";];
+  "B" [fillcolor="/rdylgn5/2";color="/rdylgn5/2";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="2\nB";];
+  "A" [fillcolor="/rdylgn5/1";color="/rdylgn5/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; label="1\nA";];
+
+  "Internal interference? "->"Signed off by IT       " [style=invis; ];
+  "Undetected cyberattack "->"Internal interference? " [style=invis; ];
+  "Sources of data        "->"Undetected cyberattack " [style=invis; ];
+  "A"->"B";
+  "A"->"D";
+  "C"->"D";
+  "B"->"C";
+}

@@ -1,0 +1,19 @@
+digraph {
+  compound=true;
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  label="";
+  rankdir="LR";
+
+  "D" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="D";];
+  "C" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="C";];
+  "B" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="B";];
+  "A" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="A";];
+
+  "A"->"B";
+  "A"->"D";
+  "C"->"D";
+  "B"->"C";
+}

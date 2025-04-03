@@ -1,0 +1,177 @@
+
+title "Princess of Wales case"
+author "Harold Thimbleby"
+version "Original"
+date "6 January 2025"
+
+abstract "Test file corresponding to the 2014 Princess of Wales case."
+
+rows
+	(
+		(13 2 1 16)
+		(4 17)
+		(14 5 18)
+		(15 6 7)
+		(8 11 10)
+		(9 12)
+		(hospital)
+		(3)
+	)
+
+
+#note 1->4 is "style for 1-4" "note for 1-4"
+
+#note 1->5 "note for 1-5"
+
+3 <- 1 -> 4 <- 2
+
+1 -> 6 <-> 8
+
+10 <- 7 -> 11 -> 12
+
+14 <- 13 -> hospital -> 14 -> 15
+
+18 <- 16 -> 17 -> 18
+
+4 -> 5 -> 7 <-> 8 <-> 9 <-> 3
+
+style 9<->3 is "label=\"Discrepancies\"; arrowhead=none; arrowtail=none; penwidth=2; color=red; style=dotted; fontcolor=red; fontsize=20; fontname=\"Helvetica-Bold\""
+
+style flag is "fillcolor=lightgray; style=filled; color=red; penwidth=3"
+new style amber is "color=orange; fillcolor=lightgray; style=filled; penwidth=3"
+new style green is "color=green; fillcolor=lightgray; style=filled; penwidth=3"
+
+new style thickHuman is "color=black; penwidth=2; arrowhead=dot"
+new style thickHumanDashedRed is "color=red; penwidth=2; style=dashed; arrowhead=dot"
+new style thickDashedRed is "color=red; penwidth=2; style=dashed"
+new style thinHuman is "color=black; penwidth=1; arrowhead=dot"
+new style wideBlackArrow is "color=black; penwidth=4"
+
+style (4->5->7->11->12 2->4) is wideBlackArrow
+style (1->3 7->10 1->6 16->18 17->18) is thinHuman
+style 1->4 is thickHuman
+style (14->15 6<->8 8<->9 7<->8 hospital->14) is thickDashedRed
+style (13->14 13->hospital) is thickHumanDashedRed
+
+new style evidence is "shape=box"
+new style OKevidence is "shape=box; color=green; fillcolor=lightgray; style=filled; penwidth=3"
+new style missingEvidence is "shape=box; fillcolor=lightgray; style=filled; penwidth=3"
+
+group (4 5 6 7 8 9) is hospital
+
+style (1 2 16 17) is green
+style (3 4 5 10 11) is amber
+
+note 1 is "Defendant\nnurses\non Ward 2"
+	"The defendants were named, and provided witness statements."
+
+note 2 is Patients
+	"The patients on Ward 2 had limited capacity."
+
+flag 3
+style 3 is evidence
+note 3 is "Nurse-written\npaper records\n(never provided)"
+	"Contemporaneously with treating patients, nurses should review the XceedPro they have used and copy its data to paper notes. The police never provided the nurse-written records. 
+
+	\\warn{The XceedPro can record up to 2,500 patient records and then it will start overwriting records. As I never had access to the relevant XceedPros, I do not know whether this bug was relevant: had an XceedPro recorded about 2,500 records it \\emph{could\\/} have given the impression the nurse had not performed tests the nurse had documented on paper notes.}"
+
+note 4 is "XceedPros\non Ward 2"
+	"The nurse takes an XceedPro to a patient, and they must then tap the XceedPro with their ID card, then scan the patient's ID card. Then the patient is pricked to obtain a small blood sample, which is inserted into the XceedPro. The XceedPro records the IDs, the date and time, and the blood glucose level. Nurses may share ID cards, or they may ``double tap'' and use their ID card twice instead of using the patient's ID card. 
+	
+	See node <<17>>: \\warn{Manufacturer evidence says XceedPros have numerous bugs; however none of the documented bugs lose patient data.}"
+
+note 5 is "XceedPro\ndock\non ward"
+	"\\warn{No evidence of the reliability of the XceedPro dock (for example, hospital test results, or manufacturer claims of reliability, or even daily checks of integrity) has been offered. Its reliable use depends on hospital network reliability, and no evidence of the reliability of the hospital network has been offered. The network may have had outages during the relevant period.}"
+
+flag 6
+note 6 is "Ward PCs"
+	"The ward has PCs where nurses can review patient information. 
+	
+	\warn{It is not clear whether nurses can edit data, for instance in case two patients were mixed up with the XceedPros (e.g., by putting the wrong test strip in or using one with a second patient) --- and if so, whether edits must be done by the nurse (or person with the same ID) who originally took the readings.}
+	
+	\\warn{We do not know who had access to the Ward PCs (whether nurses or hospital operators).}"
+
+flag 7
+note 7 is "Abbott\nPrecision Web\ndatabase"
+	"PrecisionWeb is a proprietary database designed to monitor XceedPros, such as their battery health. 
+	
+	PrecisionWeb manual warns that it is not designed for clinical use, but the Princess of Wales hospital used it clinically --- the blood glucose readings (amongst other data) are copied, via middleware (node <<8>>) to the main hospital database. \\warn{It is therefore not clear that PrecisionWeb is reliable enough to present patient data as evidence.}"
+
+flag 8
+note 8 is "Lots of unknown\ncomplex middleware"
+	"PrecisionWeb (node <<7>>) is not interoperable with other hospital systems, so middleware Conworx is used to interface PrecisionWeb to the main patient databases.
+	
+	\\warn{No evidence of the reliability of Conworx and other middleware (for example, hospital test results, or manufacturer claims of reliability) has been mentioned in evidence.}
+	
+	\\warn{The hospital refused access to technicians, which meant we have no idea of or the extent of the middleware or how it is supposed to work.}
+	
+	\\warn{Such complex multi-manufacturer systems will have bugs, so it is very surprising not to have error logs (etc) presented in routine statements.}"
+
+flag 9
+note 9 is "Main hospital\ndatabases"
+	"The hospital databases are managed by hospital technicians. None provided evidence statements, and none were called to give evidence.
+
+	\\warn{Such complex systems will have bugs, so it is very surprising not to have error logs (etc) presented in routine statements.}
+
+	\\warn{It is curious that the discrepancies were originally discovered from the main hospital databases, not from PrecisionWeb. The police never took evidence from the main hospital databases.}"
+
+flag 10
+style 10 is evidence
+note 10 is "Frequent crashes\ndocumented"
+	"\\warn{Evidence revealed in court was that the PrecisionWeb database (or the server it ran on) frequently crashed. The evidence said nothing about the impact of crashes on the integrity of the database; presumably at least the transactions pending when crashes happened would be lost.}"
+
+note 11 is "Police forensic\ndatabase system"
+	"\\warn{The police used PrecisionWeb unsupervised, exported data to either an Excel format or CSV format.}\\footnote{Hospital policy has since been revised.}
+
+	The police certainly examined the PrecisionWeb data in Excel, as their written evidence says their first attempts crashed Excel (presumably because of the size of the Excel spreadsheet). I do not understand why the police did not use SQL (or any other decent database), as they could simply have copied the SQL PrecisionWeb database rather than relying on PrecisionWeb to convert it to CSV\\@.
+
+	\\warn{CSV is a very unsuitable data format to choose for evidence, as there is no way to detect edited, deleted, or inserted data.}
+
+	Whatever CSV data they selected, they copied to a USB stick. This stick was then taken by car to a police forensic environment, and copied to an encrypted secure disk drive. Subsequently, unencrypted CDs were burned from the files on the secure disc.
+
+	The police evidence claimed their process was forensic --- but it was only forensic \\emph{after\\/} copying CSV data to the secure disk drive, and provided that no police staff with password access modified the data."
+
+flag 12
+style 12 is evidence
+note 12 is "Main police evidence"
+	"Refer to node <<11>>."
+
+style 13 is amber
+note 13 is "Hospital\ncomputer\noperators"
+	"\\warn{We have no idea what hospital operators did, how they were managed, or what their security protocols (if any) were.}
+
+	Note how (using statechart\\footnote{Statecharts, invented by David Harel, are well-known diagrams widely used in computer science.} conventions for diagrams) a \\emph{single\\/} arrow from `Hospital computer operators' to the `Main hospital systems' box is sufficient to say computer operators affect \\emph{all\\/} nodes inside the box."
+
+flag 14
+style 14 is missingEvidence
+note 14 is "No evidence\ntesting\never performed"
+	"\\warn{The hospital presented no evidence that it knew that any of its systems were reliable. However, the hospital did present evidence that PrecisionWeb regularly crashes (node <<10>>).}"
+
+flag 15
+style 15 is missingEvidence
+note 15 is "No error logs\nor audits"
+	"\\warn{It is astonishing there is no evidence that the hospital ever checked whether their computer systems were functioning normally.}
+
+	\\warn{It is also astonishing the police recorded data from hospital systems without confirming the reliability of the data, and did so without hospital supervision.}"
+
+flag 16
+note 16 is "Wrong XceedPros\nseized by police"
+	"\\warn{The police seized 3 XceedPros that happened to be on Ward 2 when they visited. The police seem unaware that XceedPros move around the hospital, and they seized three XceedPros that had \\emph{not\\/} been used by the defendants}
+
+	Reference \\cite{POW} explains how the police seized the wrong XceedPros."
+
+note 17 is "Abbott\nlabs"
+	"The US company Abbott manufactured the XceedPros and the PrecisionWeb database, both critical components of this case.
+
+	The police sent the wrong 3 XceedPros to Abbott to determine if they worked correctly. The Abbott labs found no relevant problems with the XceedPros, but they did confirm that all XceedPros had bugs.
+
+	However, none of the bugs Abbott described would affect or cause loss of data, unless the XceedPros had been used to try to record over 2,500 tests, which is considerably higher than any XceedPro at the Princess of Wales had ever recorded (at least as established by the police's PrecisionWeb evidence)."
+
+style 18 is OKevidence
+note 18 is "Police summary\nof wrong XceedPros"
+	"\\warn{Because of the problems noted under node <<16>>, this evidence was excluded.}"
+
+note hospital is "Hospital IT Systems"
+	"\\warn{We know nothing about the management of the hospital systems and any impact on the evidence.} \\warn{In a hospital (or any other critical environment) one would expect at least daily checks of reliable performance or error logs. Figure \\ref{fig:v2} shows there were no such checks.}"
+
+
