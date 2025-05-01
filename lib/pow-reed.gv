@@ -10,11 +10,11 @@ v3, 26 January 2025
   rankdir="";
 
 subgraph "clusterxceedpro" {
-   "18"; "17"; "16"; fontname="Helvetica-Bold"; fontcolor=black; labelloc=b; label="v2-4.1\nXceedPro evidence";
+   "18"; "17"; "16"; fontname="Helvetica-Bold"; fontcolor=black; labelloc=b;  style="rounded"; label="v2-4.1\nXceedPro evidence";
 };
 
 subgraph "clusterhospital" {
-   "9"; "8"; "7"; "6"; "5"; "4"; fontname="Helvetica-Bold"; fontcolor=black; labelloc=b; label="v2-7.1\nHospital IT Systems";
+   "9"; "8"; "7"; "6"; "5"; "4"; fontname="Helvetica-Bold"; fontcolor=black; labelloc=b;  style="rounded"; label="v2-7.1\nHospital IT Systems";
 };
 
   "manual" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="v2-3.2\nPrecisionWeb\noperators\nmanual";];
@@ -45,7 +45,7 @@ subgraph "clusterhospital" {
   "manual"->"7";
   "backups"->"9" [dir=both;color=blue;penwidth=4;];
   "7"->"backups" [dir=both;color=blue;penwidth=4;];
-  "9"->"3" [headlabel="                                 Discrepancies\r                                 between hospital\r                                  database and paper records\r"; arrowhead=none; arrowtail=none; penwidth=4; color=blue; style=dotted; fontcolor=blue; fontsize=12; fontname="Helvetica-Bold"; dir=both;color=blue;penwidth=4;];
+  "9"->"3" [headlabel="                      Discrepancies\r                      between hospital\r                       database and paper records\r"; arrowhead=none; arrowtail=none; penwidth=4; color=blue; style=dotted; fontcolor=blue; fontsize=12; fontname="Helvetica-Bold"; dir=both;color=blue;penwidth=4;];
   "8"->"9" [label="?",fontname="Helvetica-Bold",fontcolor=blue,fontsize=18; penwidth=2; style=dashed; dir=both;color=blue;penwidth=4;];
   "7"->"8" [label="?",fontname="Helvetica-Bold",fontcolor=blue,fontsize=18; penwidth=2; style=dashed; dir=both;label="?";color=blue;penwidth=4;];
   "5"->"7" [fontname="Helvetica-Bold";fontcolor=blue;fontsize=18;penwidth=4; label=" D";];

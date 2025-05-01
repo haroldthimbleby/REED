@@ -268,9 +268,10 @@ ref Abbott_engineer is "3.0"
 Abbott_engineer -> 7;
 
 note Abbott_engineer is "Unsupervised\nAbbott\nengineer" <<< ENDNOTE
-	\warn{An Abbott engineer, Mr.\ Reece, had been asked to help when the Princess of Wales PrecisionWeb database faced problems in 2013. Mr.\ Reece then worked unsupervised on the PrecisionWeb database.}
-	
-	\warn{Reece gave evidence that he had failed to take notes on exactly what he did when editing, deleting, and modifying data in the PrecisionWeb database. He admitted he had deleted critical data, which would have created the impression that nurses had been negligent not performing blood glucose tests.}
+	\warn{Nick Reece, a PrecisionWeb support Specialist employed by Abbott Diabetes Care, had been asked by the hospital to help when the Princess of Wales PrecisionWeb database faced problems in 2013. Mr.\ Reece then worked unsupervised on the PrecisionWeb database, apparently taking no notes and certainly not following any forensic process.}
+
+
+	Reece gave evidence that he had failed to take notes on exactly what he did when editing, deleting, and modifying data in the PrecisionWeb database. He admitted he had deleted critical data, which would have created the impression that nurses had been negligent not performing blood glucose tests.
 	
 	\warn{This deletion of computer evidence explains the discrepancy in patient records that the prosecution claims had been wholly and entirely caused by the nurses' criminal negligence.}
 ENDNOTE
