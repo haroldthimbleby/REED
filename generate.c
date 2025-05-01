@@ -471,6 +471,11 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 	myfprintf(opfd, "}]\", \"Code\"]\n	}, Open]]}\n]\n");
 }
 
+void generated(char *filename)
+{
+    fprintf(stderr, "Generated %s\n", filename);
+}
+
 void generateFiles(char *filename)
 {	str *base = basename(filename); 
 	// printf("Styles are:\n");
@@ -538,6 +543,7 @@ void generateFiles(char *filename)
 	{	// try: $ dot -Tps graph1.gv -o graph1.ps
 		dot(fd, title, version, date, direction);
 		fclose(fd);
+        generated(filename);
 		if( graphvizOption )
 		{	str *cmd = newstr("open ");
 			appendstr(cmd, base);
@@ -560,8 +566,26 @@ void generateFiles(char *filename)
 				if( !*date ) fprintf(stderr, "         - No date provided\n");
 			}
 			notes(fd, title, version, authors, date, abstract);
-			fclose(fd); 
+			fclose(fd);
+            generated(filename);
 		}
+        fd = fopen(filename = newappendcstr(base, "-color-legend.tex")->s, "w");
+        if( fd == NULL ) error("Can't open %s (tex/latex highlighting legend file) for writing", filename);
+        else
+        {
+            colorkey(fd, "", "");
+            fclose(fd);
+            generated(filename);
+        }
+
+        fd = fopen(filename = newappendcstr(base, "-xrefs.aux")->s, "w");
+        if( fd == NULL ) error("Can't open %s (tex/latex cross reference file) for writing", filename);
+        else
+        {
+            latexxrefs(fd);
+            fclose(fd);
+            generated(filename);
+        }
 	}
 	
 	if( htmlOption )
@@ -577,24 +601,9 @@ void generateFiles(char *filename)
 				if( !*date ) fprintf(stderr, "         - No date provided\n");
 			}
 			htmlnotes(fd, title, version, authors, date, abstract);
-			fclose(fd); 
+			fclose(fd);
+            generated(filename);
 		}
-	}
-	
-	fd = fopen(filename = newappendcstr(base, "-color-legend.tex")->s, "w");
-	if( fd == NULL ) error("Can't open %s (tex/latex highlighting legend file) for writing", filename);
-	else
-	{	
-		colorkey(fd, "", "");
-		fclose(fd); 
-	}
-
-	fd = fopen(filename = newappendcstr(base, "-xrefs.aux")->s, "w");
-	if( fd == NULL ) error("Can't open %s (tex/latex cross reference file) for writing", filename);
-	else
-	{	
-		latexxrefs(fd);
-		fclose(fd); 
 	}
 
 	if( jsonOption )
@@ -603,6 +612,7 @@ void generateFiles(char *filename)
 		else
 		{	json(fd, title, version, authors, date, abstract);
 			fclose(fd);
+            generated(filename);
 		}
 	}
 
@@ -612,6 +622,7 @@ void generateFiles(char *filename)
 		else
 		{	xml(fd);
 			fclose(fd);
+            generated(filename);
 		}
 	}
 
@@ -621,6 +632,7 @@ void generateFiles(char *filename)
 		else
 		{	mathematica(fd, title, version, authors, date, abstract);
 			fclose(fd);
+            generated(filename);
 		}
 	}
 

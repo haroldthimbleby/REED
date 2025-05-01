@@ -1,4 +1,5 @@
 #include "header.h"
+#include <regex.h>
 
 extern void href(FILE *opfd, char *id, char *close);
 
@@ -55,9 +56,25 @@ char *top(struct stack *stack)
 
 enum mode { latex, html, both } mode = both;
 
+char *fixParagraphs(char *s)
+// replace all \s*\n\s*\n with <p/>
+{   str *parafixed = newstr("");
+    int newlineCount = 0, blankCount = 0;
+    for( ; *s; s++ )
+    {   if( *s == '\n' ) newlineCount++;
+        if( *s == ' ' || *s == '\t' || *s == '\n' ) { blankCount++; continue; }
+        if( newlineCount > 1 ) appendcstr(parafixed, "\n\n");
+        if( blankCount ) appendch(parafixed, ' ');
+        newlineCount = blankCount = 0;
+        appendch(parafixed, *s);
+    }
+    return parafixed->s;
+}
+
 void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, and include <<id>> notation
 {	mode = both;
-	for( char *s = note; *s; s++ )
+    // first do simple re case (in for loop initialisation)
+    for( char *s = fixParagraphs(note); *s; s++ )
 	{	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
 		else if( !strncmp(s, "<latex>", 7) ) { mode = latex; s = s+6; continue; }
 		else if( !strncmp(s, "<html>", 6) ) { mode = html; s = s+5; continue; }
@@ -68,7 +85,8 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
 				continue;
 			}
 			for( int i = 0; i < sizeof(HTMLmappings)/sizeof(HTMLmappings[0]); i++ )
-			{	if( !strncmp(s, HTMLmappings[i].latex, strlen(HTMLmappings[i].latex)) )
+            {
+                if( !strncmp(s, HTMLmappings[i].latex, strlen(HTMLmappings[i].latex)) )
 				{	fprintf(opfd, "%s", HTMLmappings[i].html);
 					s += strlen(HTMLmappings[i].latex);
 					if( HTMLmappings[i].close ) 
@@ -99,10 +117,9 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
 		else
 			fprintf(opfd, "%c", *s);
 	}
-	myfprintf(opfd, "\n");
 }
 
-void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // convert <<id>> notation
+void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // translate Latex and HTML to Latex and convert <<id>> notation
 {	mode = both;
 	for( char *s = note; *s; s++ )
 	{	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }

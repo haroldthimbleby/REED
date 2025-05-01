@@ -11,8 +11,8 @@ extern void HTMLprintfiledata(FILE *opfd);
 extern void HTMLtranslate(FILE *opfd, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
 
 char *css = ".showCells { border:1px solid; border-collapse:collapse; }\n\
-.showCells td  { border:1px solid; padding: 8px;  border-collapse:collapse;}\n\
-table {padding: 8px; }\n";
+.showCells td  { border:1px solid; padding: 8px;  border-collapse:collapse; margin:0; }\n\
+table {padding: 0; margin:0; }\n";
 
 void href(FILE *opfd, char *id, char *close)
 {	//fprintf(stderr, "Got '%s' at offset %d\n", &s[2], id);
