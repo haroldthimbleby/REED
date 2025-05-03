@@ -228,6 +228,10 @@ lexval readlex(str **lexstr)
 			case '-': 
 				if( nextch() != '>' ) error("- not followed by > to make -> arrow");
 				else getch();
+                if( nextch() == '*' )
+                {   getch();
+                    return TRANSRARROW;
+                }
 				return RARROW;
 			case '#': // comment
 				while( nextch() != '\n' && nextch() != EndOfFile )
@@ -685,10 +689,14 @@ int parse(char *skip, char *filename, char *bp)
 				}
 				if( lex1->l == VERSION ) 
 				{	//fprintf(stderr, "A skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);
-					if( dontOverride() && *version ) { error("Multiple versions need 'override' to be allowed"); break; }
+                    if( dontOverride() && *version ) { error("Multiple versions need 'override' to be allowed"); break; }
 					if( verboseOption ) fprintf(stderr, "|    File %s defines version '%s'\n", filename, lex2->s);
-					if( skip != NULL ) // trace version setting
-					{	if( skipnexttime ) 
+                    if( showVersionsOption || verboseOption )
+                    {   if( verboseOption ) fprintf(stderr, "| ** ");
+                        fprintf(stderr, "Defines version '%s'\n", lex2->s);
+                    }
+                    if( skip != NULL ) // trace version setting
+					{	if( skipnexttime )
 						{	if( verboseOption ) fprintf(stderr, "   Skipping version '%s' and after\n", lex2->s);
 							return 0;
 						}
@@ -929,8 +937,13 @@ int parse(char *skip, char *filename, char *bp)
 					case LARROW: case RARROW: case DOUBLEARROW:
 						whilearrow(&arrowList, 1);
 						break;
+                    case TRANSRARROW:
+                        saveCheckRtrans(lex1, lex3);
+                        getlex();
+                        getlex();
+                        break;
 					default: // an isolated node
-						fprintf(stderr, "Warning: isolated node with no arrow: %s\n", lex1->s);
+						fprintf(stderr, "Warning: isolated node with no arrow or 'is': %s\n", lex1->s);
 						newnode(&lex1);
 						break;
 				}

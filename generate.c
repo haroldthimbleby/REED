@@ -472,7 +472,7 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 }
 
 void generated(char *filename)
-{
+{   if( verboseOption ) fprintf(stderr, "| ** ");
     fprintf(stderr, "Generated %s\n", filename);
 }
 
@@ -530,6 +530,7 @@ void generateFiles(char *filename)
 			}
 			
 	cascade();
+    checkAllRtrans();
 	summarizeMissingFlagDefinitions();
 
 	if( 0 )

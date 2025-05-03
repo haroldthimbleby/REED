@@ -19,8 +19,8 @@ typedef enum { None, String, Node, Arrow, Annotation } type;
 enum flagcolor { noflag, black, blue, green, red, white, yellow };  // in alpha order
 
 typedef enum {
-			DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, 
-			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, 
+            DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSRARROW,
+			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
 			ID // assumes the string s is initialised
 		 } lexval;
@@ -57,7 +57,7 @@ extern str *newappendcstr(str *d, char *e); // appends to a new string (not chan
 extern void strpad(str **s, int d); // pad to length d with spaces
 extern str *appendstr(str *d, str *e); // append a string to a string
 
-extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption,
+extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, showVersionsOption,
 	mathematicaOption, jsonOption, showSignatures, latexOption, htmlOption;
 
 extern void generateFiles(char *filename);
@@ -91,3 +91,6 @@ extern void cascade();
 extern int flagcascade[];
 
 extern char *version;
+
+extern void saveCheckRtrans(str *u, str *v);
+extern void checkAllRtrans();

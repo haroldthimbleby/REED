@@ -96,7 +96,8 @@ int flagOption = 0,
     jsonOption = 0,
     xmlOption = 0,
     latexOption = 0,
-    htmlOption = 0;
+    htmlOption = 0,
+    showVersionsOption = 0;
 
 struct structOption
 {	char *option, *usage;
@@ -105,7 +106,7 @@ struct structOption
 	options[] =
 {	{"-F", "highlight flags in drawing (unfortunately due to a Graphviz bug, this breaks up any groups)", &flagOption},
 	{"-f", "show textual descriptions of flag colours in drawing", &flagTextOption},
-	{"-g", "open generated REED file using GraphViz (on MacOS)", &graphvizOption},
+	{"-g", "open generated REED graphics file using GraphViz (on MacOS)", &graphvizOption},
 	{"-h", "generate an HTML file", &htmlOption},
 	{"-j", "generate a JSON file", &jsonOption},
 	{"-l", "generate a Latex file", &latexOption},
@@ -114,6 +115,7 @@ struct structOption
 	{"-s", "show REED file signatures", &showSignatures},
 	{"-t", "transpose numbering (swap row and column node numbering)", &transposeOption},
 	{"-v", "verbose mode", &verboseOption},
+    {"-w", "what versions are used in these files? (Needed for using with v= flag.)", &showVersionsOption},
 	{"-x", "generate an XML file", &xmlOption},
 	{"--", "treat all further parameters as filenames", &optionsOption},
 };
@@ -133,6 +135,7 @@ void usage(char *process)
 	fprintf(stderr, "files...\n       v=value use all versions to <value> and skip later versions in file\n");
 	for( int o = 0; o < sizeof options/sizeof(struct structOption); o++ )
 		fprintf(stderr, "       %s %s\n", options[o].option, options[o].usage);
+    fprintf(stderr, "Note:  %s will always generate a .gv (Graphviz) file if possible\n", process);
 	exit(0);
 }
 
