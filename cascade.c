@@ -56,3 +56,47 @@ void cascade()
 			auxcascade(t->s->flag, t->s, 0);
 	}
 }
+
+struct transpair {
+    str *u, *v;
+    struct transpair *next;
+} *transPairsList = NULL;
+
+void saveCheckRtrans(str *u, str *v)
+{   struct transpair *np = transPairsList;
+    transPairsList = (struct transpair *) malloc(sizeof(struct transpair));
+    transPairsList->next = np;
+    transPairsList->u = u;
+    transPairsList->v = v;
+}
+
+int checkOneRtrans(str *u, str *v)
+{   for( arrow *a = arrowList; a != NULL; a = a->next )
+    {   if( a->u == u )
+        {   if( a->v == v )
+            {   //fprintf(stderr, "yes! ->");
+                return 1;
+            }
+            if( checkOneRtrans(a->v, v) )
+                return 1;
+        }
+        if( a->doublearrow && a->v == u &&  a->v == u )
+        {   //fprintf(stderr, "yes! <->");
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+void checkAllRtrans()
+{   for( struct transpair *p = transPairsList; p != NULL; p = p->next )
+    {
+        if( checkOneRtrans(p->u, p->v) )
+        {   if( verboseOption )
+            fprintf(stderr, "|    Checked OK: %s ->* %s\n", p->u->s, p->v->s);
+        }
+        else
+            fprintf(stderr, "** Failed: %s ->* %s\n", p->u->s, p->v->s);
+    }
+}
