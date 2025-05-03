@@ -1,4 +1,4 @@
-\title{Princess of Wales Hospital blood glucometer case REED\\Version v3}\author{Harold Thimbleby}
+\title{Princess of Wales Hospital blood glucometer case REED\\Version v2}\author{Harold Thimbleby}
 \date{26 January 2025}
 \begin{document} \maketitle
 \def\colorflag#1{\fboxrule=0.3pt
@@ -24,10 +24,10 @@ Node numbers in this narrative evidence document refer to the REED diagram shown
 \end{abstract}
 \section*{Quick overview}
 {\large\sf\noindent \begin{tabular}{@{}|rlcrl|}\hline 
-\multicolumn{5}{@{}|l|}{Combined versions: v2; v3}\\\hline
- 24 & nodes & --- & 19 & highlighted\\&&& 24 & with notes\\
+\multicolumn{5}{@{}|l|}{Version: v2}\\\hline
+ 23 & nodes & --- & 17 & highlighted\\&&& 23 & with notes\\
 
-    25 & arrows & --- & 7 & with notes\\\hline
+    24 & arrows & --- & 7 & with notes\\\hline
 \end{tabular}
 \vskip 4mm
 \noindent
@@ -42,50 +42,39 @@ lib/pow-reed & c6021a96dad7bdfb08b579f960a07150 \\
 
 }
 
-\section*{19 highlighted nodes}
+\section*{17 highlighted nodes}
 \setbox0=\hbox{\colorflag{white}}%
 \dimen0 = \ht0 \advance \dimen0 by 1ex \ht0 = \dimen0
 \begin{tabular}{@{}|clp{3.75in}|}
 \hline
 \multicolumn{3}{@{}|l|}{\bf Highlighting key} \\ \hline
-\vphantom{\copy0}\colorflag{blue}&blue used 10 times&Version 3 uses blue to highlight the impact of critical new evidence introduced by the Abbott engineer. Only one node was explicitly highlighted blue, but the REED tool is used to automatically cascade the blue highlight to all affected evidence.\\&&\scriptsize (blue used explicitly once before cascading)\\ 
-\colorflag{red}&red used 2 times&Specific, relevant computer problems as already admitted in evidence. Use of non-forensic tools like Excel (which, for instance, allows rows of data to be deleted \emph{without leaving any record of changing the data\/}) used to process the evidence. In short, any evidence highlighted in red is unreliable.\\&&\scriptsize (red used explicitly 5 times before cascading)\\ 
-\colorflag{white}&white used 4 times&No information available (yet). This may or may not be considered a problem after relevant evidence is provided.\\&&\scriptsize (white used explicitly 7 times before cascading)\\ 
-\colorflag{yellow}&yellow used 3 times&Problems that have not yet been resolved. Concerns need to be addressed in cross-examination.\\&&\scriptsize (yellow used explicitly 5 times before cascading)\\ 
+\vphantom{\copy0}\colorflag{red}&red used 5 times&Specific, relevant computer problems as already admitted in evidence. Use of non-forensic tools like Excel (which, for instance, allows rows of data to be deleted \emph{without leaving any record of changing the data\/}) used to process the evidence. In short, any evidence highlighted in red is unreliable.\\ 
+\colorflag{white}&white used 7 times&No information available (yet). This may or may not be considered a problem after relevant evidence is provided.\\ 
+\colorflag{yellow}&yellow used 5 times&Problems that have not yet been resolved. Concerns need to be addressed in cross-examination.\\ 
 \hline \end{tabular}
 \vskip 4ex
 \noindent\begin{tabular}{@{}llll}
-\colorflag{blue}&Cascaded node&v3-3.0&Unsupervised Abbott engineer\\
-\colorflag{blue}&&v2-4.2&Abbott PrecisionWeb database\\
-\colorflag{blue}&\scriptsize (white before cascade)&v2-4.3&Ward PCs\\
-\colorflag{blue}&\scriptsize (red before cascade)&v2-5.1&Police forensic database system\\
-\colorflag{blue}&\scriptsize (white before cascade)&v2-5.2&No known backups that could have  provided evidence\\
-\colorflag{blue}&\scriptsize (red before cascade)&v2-5.3&Frequent crashes documented\\
-\colorflag{blue}&\scriptsize (yellow before cascade)&v2-5.4&Lots of unknown complex middleware\\
-\colorflag{blue}&\scriptsize (red before cascade)&v2-6.1&Main Police evidence\\
-\colorflag{blue}&\scriptsize (yellow before cascade)&v2-6.2&Main hospital databases\\
-\colorflag{blue}&\scriptsize (white before cascade)&v2-8.1&Nurse-written paper records (never disclosed)\\
 \colorflag{red}&&v2-1.1&Wrong XceedPros seized by Police\\
 \colorflag{red}&&v2-3.1&Police summary of wrong XceedPro evidence\\
+\colorflag{red}&&v2-5.1&Police forensic database system\\
+\colorflag{red}&&v2-5.3&Frequent crashes documented\\
+\colorflag{red}&&v2-6.1&Main Police evidence\\
 \colorflag{white}&&v2-1.3&Patients\\
 \colorflag{white}&&v2-1.4&Hospital computer operators\\
 \colorflag{white}&&v2-2.2&XceedPros on Ward 2\\
 \colorflag{white}&&v2-3.3&XceedPro dock on ward\\
+\colorflag{white}&&v2-4.3&Ward PCs\\
+\colorflag{white}&&v2-5.2&No known backups that could have  provided evidence\\
+\colorflag{white}&&v2-8.1&Nurse-written paper records (never disclosed)\\
 \colorflag{yellow}&&v2-3.4&No evidence of any testing ever performed\\
 \colorflag{yellow}&&v2-4.4&No evidence of error logs or audits\\
 \colorflag{yellow}&&v2-4.5&No evidence to support reliability of forensic methods\\
+\colorflag{yellow}&&v2-5.4&Lots of unknown complex middleware\\
+\colorflag{yellow}&&v2-6.2&Main hospital databases\\
 
 \end{tabular}
 
 \section*{Node narrative evidence}
-\subsection*{ \colorflag{blue} Node v3-3.0 Unsupervised Abbott engineer}
-	\warn{Nick Reece, a PrecisionWeb support Specialist employed by Abbott Diabetes Care, had been asked by the hospital to help when the Princess of Wales PrecisionWeb database faced problems in 2013. Mr.\ Reece then worked unsupervised on the PrecisionWeb database, apparently taking no notes and certainly not following any forensic process.}
-
-
-	Reece gave evidence that he had failed to take notes on exactly what he did when editing, deleting, and modifying data in the PrecisionWeb database. He admitted he had deleted critical data, which would have created the impression that nurses had been negligent not performing blood glucose tests.
-	
-	\warn{This deletion of computer evidence explains the discrepancy in patient records that the prosecution claims had been wholly and entirely caused by the nurses' criminal negligence.}
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-4.2 Abbott PrecisionWeb database}
 \subsection*{ \colorflag{red} Node v2-1.1 Wrong XceedPros seized by Police\\\hskip 2em --- (Group: XceedPro evidence) }
 	The PrecisionWeb data records XceedPro serial numbers, and shows that XceedPros routinely move around the hospital. 
 	
@@ -98,7 +87,7 @@ lib/pow-reed & c6021a96dad7bdfb08b579f960a07150 \\
 \vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \hphantom{\colorflag{white}}~v2-2.1 Abbott labs\hskip 2em\\$\rightarrow$ \colorflag{red}~v2-3.1 Police summary of wrong XceedPro evidence}
 \subsection*{Node v2-1.2 Defendant nurses on Ward 2}
 	The defendants were named, and provided witness statements.
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-4.3 Ward PCs\hskip 2em\\$\rightarrow$ \colorflag{white}~v2-2.2 XceedPros on Ward 2\hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-8.1 Nurse-written paper records (never disclosed)}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{white}~v2-4.3 Ward PCs\hskip 2em\\$\rightarrow$ \colorflag{white}~v2-2.2 XceedPros on Ward 2\hskip 2em\\$\rightarrow$ \colorflag{white}~v2-8.1 Nurse-written paper records (never disclosed)}
 \subsection*{ \colorflag{white} Node v2-1.3 Patients}
 	The patients on Ward 2 had limited capacity.
 \vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{white}~v2-2.2 XceedPros on Ward 2}
@@ -124,28 +113,28 @@ lib/pow-reed & c6021a96dad7bdfb08b579f960a07150 \\
 
 \subsection*{Node v2-3.2 PrecisionWeb operators manual}
 	\warn{The operators manual for PrecisionWeb says it should not be used for clinical purposes. All the evidence for this case assumed the clinical records in PrecisionWeb were reliable.}
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-4.2 Abbott PrecisionWeb database}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \hphantom{\colorflag{white}}~v2-4.2 Abbott PrecisionWeb database}
 \subsection*{ \colorflag{white} Node v2-3.3 XceedPro dock on ward\\\hskip 2em --- (Group: Hospital IT Systems) }
 	\warn{No evidence of the reliability of the XceedPro dock (for example, hospital test results, or manufacturer claims of reliability, or even daily checks of integrity) has been offered. Its reliable use depends on hospital network reliability, and no evidence of the reliability of the hospital network has been offered. The network may have had outages during the relevant period.}
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-4.2 Abbott PrecisionWeb database}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \hphantom{\colorflag{white}}~v2-4.2 Abbott PrecisionWeb database}
 \subsection*{ \colorflag{yellow} Node v2-3.4 No evidence of any testing ever performed}
 	\warn{The hospital presented no evidence that it knew that any of its systems were reliable. However, the hospital did present evidence that PrecisionWeb regularly crashes (node {v2--5.3}, ``Frequent crashes documented'').}
 \vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{yellow}~v2-4.4 No evidence of error logs or audits}
 \subsection*{Node v2-4.1 XceedPro evidence}
 The Police examined the wrong XceedPros. The evidence presented on XceedPros is not relevant to the case.
 
-\subsection*{ \colorflag{blue} Node v2-4.2 Abbott PrecisionWeb database\\\hskip 2em --- (Group: Hospital IT Systems) }
+\subsection*{Node v2-4.2 Abbott PrecisionWeb database\\\hskip 2em --- (Group: Hospital IT Systems) }
 	PrecisionWeb is a proprietary database designed to monitor XceedPros, such as their battery health. 
 	
 	PrecisionWeb manual warns that it is not designed for clinical use, but the Princess of Wales hospital used it clinically --- the blood glucose readings (amongst other data) are copied, via middleware (node {v2--5.4}, ``Lots of unknown complex middleware'') to the main hospital database. \warn{It is therefore not clear that PrecisionWeb is reliable enough to present patient data as evidence.}
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-5.2 No known backups that could have  provided evidence\hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-5.4 Lots of unknown complex middleware\hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-5.1 Police forensic database system\hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-5.3 Frequent crashes documented}
-\subsection*{ \colorflag{blue} Node v2-4.3 Ward PCs\\\hskip 2em --- (Group: Hospital IT Systems) }
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{white}~v2-5.2 No known backups that could have  provided evidence\hskip 2em\\$\rightarrow$ \colorflag{yellow}~v2-5.4 Lots of unknown complex middleware\hskip 2em\\$\rightarrow$ \colorflag{red}~v2-5.1 Police forensic database system\hskip 2em\\$\rightarrow$ \colorflag{red}~v2-5.3 Frequent crashes documented}
+\subsection*{ \colorflag{white} Node v2-4.3 Ward PCs\\\hskip 2em --- (Group: Hospital IT Systems) }
 	The ward has PCs where nurses can review patient information. 
 	
 	\warn{It is not clear whether nurses can edit data, for instance in case two patients were mixed up with the XceedPros (e.g., by putting the wrong test strip in or using one with a second patient) --- and if so, whether edits must be done by the nurse (or person with the same ID) who originally took the readings.}
 	
 	\warn{We do not know who had access to the Ward PCs (whether nurses or hospital operators).}
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-5.4 Lots of unknown complex middleware}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{yellow}~v2-5.4 Lots of unknown complex middleware}
 \subsection*{ \colorflag{yellow} Node v2-4.4 No evidence of error logs or audits}
 	\warn{It is astonishing there is no evidence that the hospital ever checked whether their computer systems were functioning normally.}
 
@@ -159,8 +148,8 @@ The Police examined the wrong XceedPros. The evidence presented on XceedPros is 
 	Although the Police used Excel to manage the evidence (which can delete data, columns and rows, etc, without leaving any record of changes) there is no record to show that they checked their final evidence against the original data. 
 
 	\warn{The final evidence was presented to the court on both encrypted CDs and USB sticks \emph{and was explicitly claimed to be forensic quality evidence}.}
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-5.1 Police forensic database system}
-\subsection*{ \colorflag{blue} Node v2-5.1 Police forensic database system}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{red}~v2-5.1 Police forensic database system}
+\subsection*{ \colorflag{red} Node v2-5.1 Police forensic database system}
 	\warn{The Police used PrecisionWeb unsupervised, exported data to CSV format.}\footnote{Hospital policy has since been revised.}
 
 	The Police certainly examined the PrecisionWeb data in Excel, as their written evidence says their first attempts crashed Excel (presumably because of the size of the Excel spreadsheet). I do not understand why the Police did not use SQL (or any other decent database), as they could simply have copied the SQL PrecisionWeb database rather than relying on PrecisionWeb to convert it to CSV\@.
@@ -170,19 +159,19 @@ The Police examined the wrong XceedPros. The evidence presented on XceedPros is 
 	Whatever CSV data they selected, they copied to a USB stick. This stick was then taken by car to a Police forensic environment, and copied to an encrypted secure disk drive. Subsequently, unencrypted CDs were burned from the files on the secure disc.
 
 	The Police evidence claimed their process was forensic --- but it was only forensic \emph{after\/} copying CSV data to the secure disk drive, and provided that no Police staff with password access modified the data.
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-6.1 Main Police evidence}
-\subsection*{ \colorflag{blue} Node v2-5.2 No known backups that could have  provided evidence}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{red}~v2-6.1 Main Police evidence}
+\subsection*{ \colorflag{white} Node v2-5.2 No known backups that could have  provided evidence}
 	If backups had been taken (we do not know) then it would have been
 	natural to check the alleged missing nurse data had never been stored
 	on the main PrecisionWeb database.
 
 	Backups would have shown whether failures happened in PrecisionWeb, or earlier
 	for instance over arrows D, C, B, or A (as the prosecution argued).
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-6.2 Main hospital databases}
-\subsection*{ \colorflag{blue} Node v2-5.3 Frequent crashes documented}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{yellow}~v2-6.2 Main hospital databases}
+\subsection*{ \colorflag{red} Node v2-5.3 Frequent crashes documented}
 	\warn{Evidence revealed in court was that the PrecisionWeb database (or the server it ran on) frequently crashed. The evidence said nothing about the impact of crashes on the integrity of the database; presumably at least the transactions pending when crashes happened would be lost.}
 
-\subsection*{ \colorflag{blue} Node v2-5.4 Lots of unknown complex middleware\\\hskip 2em --- (Group: Hospital IT Systems) }
+\subsection*{ \colorflag{yellow} Node v2-5.4 Lots of unknown complex middleware\\\hskip 2em --- (Group: Hospital IT Systems) }
 	PrecisionWeb (node {v2--4.2}, ``Abbott PrecisionWeb database'') is not interoperable with other hospital systems, so middleware Conworx is used to interface PrecisionWeb to the main patient databases.
 	
 	\warn{No evidence of the reliability of Conworx and other middleware (for example, hospital test results, or manufacturer claims of reliability) has been mentioned in evidence.}
@@ -190,23 +179,23 @@ The Police examined the wrong XceedPros. The evidence presented on XceedPros is 
 	\warn{The hospital refused access to technicians, which meant we have no idea of or the extent of the middleware or how it is supposed to work.}
 	
 	\warn{Such complex multi-manufacturer systems will have bugs, so it is very surprising not to have error logs (etc) presented in routine statements.}
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-6.2 Main hospital databases}
-\subsection*{ \colorflag{blue} Node v2-6.1 Main Police evidence}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{yellow}~v2-6.2 Main hospital databases}
+\subsection*{ \colorflag{red} Node v2-6.1 Main Police evidence}
 	\warn{A joint prosecution/defence expert witness report (``Experts' Joint Statement on Matters Agreed and/or Disagreed in regard to Part 35 12 (3) CPR'') lists many problems, including that the CDs CH/15 the Police provided to the prosecution and defence experts were different, raising serious questions of Police forensic process \cite{POW-resources}.}
 
 Refer to node {v2--5.1}, ``Police forensic database system''. 
 
-\subsection*{ \colorflag{blue} Node v2-6.2 Main hospital databases\\\hskip 2em --- (Group: Hospital IT Systems) }
+\subsection*{ \colorflag{yellow} Node v2-6.2 Main hospital databases\\\hskip 2em --- (Group: Hospital IT Systems) }
 	The hospital databases are managed by hospital technicians. None provided evidence statements, and none were called to give evidence.
 
 	\warn{Such complex systems will have bugs, so it is very surprising not to have error logs (etc) presented in routine statements.}
 
 	\warn{It is curious that the discrepancies were originally discovered from the main hospital databases, not from PrecisionWeb. The Police never took evidence from the main hospital databases.}
-\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{blue}~v2-8.1 Nurse-written paper records (never disclosed)}
+\vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{white}~v2-8.1 Nurse-written paper records (never disclosed)}
 \subsection*{Node v2-7.1 Hospital IT Systems}
 	\warn{We know nothing about the management of the hospital systems and any impact on the evidence.} \warn{In a hospital (or any other critical environment) one would expect at least daily checks of reliable performance or error logs. The REED diagram shows there were no such checks.}
 \vskip .5ex\vbox{\small \hskip 2em\\$\rightarrow$ \colorflag{yellow}~v2-3.4 No evidence of any testing ever performed}
-\subsection*{ \colorflag{blue} Node v2-8.1 Nurse-written paper records (never disclosed)}
+\subsection*{ \colorflag{white} Node v2-8.1 Nurse-written paper records (never disclosed)}
 	Contemporaneously with treating patients, nurses should review the XceedPro they have used and copy its data to paper notes. The Police never provided the nurse-written records. 
 
 	\warn{The XceedPro can record up to 2,500 patient records and then it will start overwriting records. As I never had access to the relevant XceedPros, I do not know whether this bug was relevant: had an XceedPro recorded about 2,500 records it \emph{could\/} have given the impression the nurse had not performed tests the nurse had documented on paper notes.}
