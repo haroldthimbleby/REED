@@ -603,8 +603,8 @@ void defineflag(char *color, char *meaning, int cascade)
 		// return; ignore warning
 	}
 	else 
-		if( verboseOption ) fprintf(stderr, "|    %s highlight defined to mean:\n|      %s\n", color, meaning);
-		
+		if( verboseOption ) myfprintf(stderr, "|    %s highlight defined to mean:\n|      %i\n", color, meaning);
+
 	// fprintf(stderr, "Define %s color #%d highlight\n", color, (int) iscolor(color));
 	flagdefinitions[(int) iscolor(color)] = meaning;
 	flagcascade[(int) iscolor(color)] |= cascade;

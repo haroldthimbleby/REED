@@ -153,8 +153,7 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
 		                       break;
-		               case 't':    // same as %s but works with tex  - \n becomes space                 
-		                       for( s = va_arg(ap, char *); *s; s++ )
+		               case 't':    // same as %s but works with tex  - \n becomes space      for( s = va_arg(ap, char *); *s; s++ )
 		                       		switch( *s )
 		                       		{
 			                       		case '\n': fprintf(opfd, " "); break;
@@ -164,7 +163,24 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
 		                       break;
-		               case 'T':    // same as %t but also converts characters like  ” “                 
+                    case 'i': // indent, same as %s but prints \n as \n      with spaces
+                    {   int charsonline = 0;
+                        const char *newlinestr = "\n>>    ";
+                        for( s = va_arg(ap, char *); *s; s++ )
+                            switch( *s )
+                            {
+                                case '\n': fprintf(opfd, "%s", newlinestr); break;
+                                case '\t': fprintf(opfd, " "); break;
+                                default:   if( charsonline++ > 80 && (*s == ' ' || *s == '\t') )
+                                {   fprintf(opfd, "%s", newlinestr);
+                                    charsonline = 0;
+                                }
+                                    fprintf(opfd, "%c", *s);
+                            }
+                    }
+                        break;
+
+                    case 'T':    // same as %t but also converts characters like  ” “
 		                       for( s = va_arg(ap, char *); *s; s++ )
 		                       		switch( *s )
 		                       		{	case '\n': fprintf(opfd, " "); break;
