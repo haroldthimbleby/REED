@@ -4,6 +4,8 @@
 extern void href(FILE *opfd, char *id, char *close);
 
 struct { char *latex, *html; char *close; } 
+
+// rules to convert Latex to HTML
 HTMLmappings[] = { // anything that is a prefix of another MUST come later (eg, ' and '', or -- and ---)
 	{ "``", "&ldquo;", 0 },
 	{ "''", "&rdquo;", 0 },
@@ -23,6 +25,8 @@ HTMLmappings[] = { // anything that is a prefix of another MUST come later (eg, 
 	{ "\\textbf{", "<b>", "</b>" },
 	{ "\\footnote{", "<blockquote>&mdash; ", "</blockquote>" }
 },
+
+// rules to convert HTML to Latex
 LaTeXmappings[] = { // anything that is a prefix of another MUST come later (eg, ' and '', or -- and ---)
 	{ "``", "&ldquo;", 0 },
 	{ "''", "&rdquo;", 0 },
@@ -34,10 +38,27 @@ LaTeXmappings[] = { // anything that is a prefix of another MUST come later (eg,
 	{ "\n\n", "<p/>\n", 0 },
 	{ "\\ ", "&nbsp;", 0 },
 	{ "\\emph{", "<em>", "</em>" },
-	{ "\\/}", "</em>", "</em>" },
-	{ "\\textbf{", "<b>", "</b>" },
-	{ "\\/}", "</b>", "</b>" }
+	{ "\\textbf{", "<b>", "</b>" }
+//	{ "\\/", "", 0 }
 };
+
+void explainTranslationRules()
+{	fprintf(stdout, "In the following * means a space (so you can see it)\n\n");
+	fprintf(stdout, "Rules for converting LaTeX to HTML\n\n");
+	for( int i = 0; i < sizeof(HTMLmappings)/sizeof(HTMLmappings[0]); i++ )
+		if( HTMLmappings[i].close )
+			myfprintf(stdout, "  %l...}\n      -> %l...%l\n", HTMLmappings[i].latex, HTMLmappings[i].html, HTMLmappings[i].close);		
+		else
+			myfprintf(stdout, "  %l\n      -> %l\n", HTMLmappings[i].latex, HTMLmappings[i].html);
+
+	fprintf(stdout, "\nRules for converting HTML to LaTeX\n\n");
+	for( int i = 0; i < sizeof(LaTeXmappings)/sizeof(LaTeXmappings[0]); i++ )
+		if( LaTeXmappings[i].close )
+			myfprintf(stdout, "  %l...</%s\n      -> %l...}\n", LaTeXmappings[i].html, &LaTeXmappings[i].html[1], LaTeXmappings[i].latex);		
+		else
+			myfprintf(stdout, "  %l\n      -> %l\n", LaTeXmappings[i].html, LaTeXmappings[i].latex);
+	fprintf(stdout, "\n");
+}
 
 struct stack { int length; char **contents; } closestack = { 0, (char**) 0 };
 
@@ -71,7 +92,7 @@ char *fixParagraphs(char *s)
     return parafixed->s;
 }
 
-void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, and include <<id>> notation
+void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, and include [[[id]]] notation
 {	mode = both;
     // first do simple re case (in for loop initialisation)
     for( char *s = fixParagraphs(note); *s; s++ )
@@ -119,7 +140,7 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
 	}
 }
 
-void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // translate Latex and HTML to Latex and convert <<id>> notation
+void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // translate Latex and HTML to Latex and convert [[[id]]] notation
 {	mode = both;
 	for( char *s = note; *s; s++ )
 	{	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }

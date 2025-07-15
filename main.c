@@ -97,7 +97,8 @@ int flagOption = 0,
     xmlOption = 0,
     latexOption = 0,
     htmlOption = 0,
-    showVersionsOption = 0;
+    showVersionsOption = 0,
+    showRulesOption = 0;
 
 struct structOption
 {	char *option, *usage;
@@ -112,6 +113,7 @@ struct structOption
 	{"-l", "generate a Latex file", &latexOption},
 	{"-m", "generate a Mathematica file", &mathematicaOption},
 	{"-n", "show node IDs in drawing", &showIDsOption},
+	{"-r", "show all HTML-Latex rules", &showRulesOption},
 	{"-s", "show REED file signatures", &showSignatures},
 	{"-t", "transpose numbering (swap row and column node numbering)", &transposeOption},
 	{"-v", "verbose mode", &verboseOption},
@@ -186,6 +188,7 @@ int main(int argc, char *argv[])
 			fclose(fp);
 		}
 		else fprintf(stderr, "** cannot open file \"%s\"\n", openedfile);
+	if( showRulesOption ) explainTranslationRules();
 	if( !opened ) usage(argv[0]);
 	if( skip && !successfulskip )
 		nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
