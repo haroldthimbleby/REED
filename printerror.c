@@ -143,6 +143,24 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
 		                       break;
+		               case 'l':	// same as %s but makes newlines visible - used in explainTranslationRules()
+		               		for( s = va_arg(ap, char *); *s; s++ )
+		                       		switch( *s )
+		                       		{
+			                       		case '\n': fprintf(opfd, "\\n"); break;
+										case ' ': fprintf(opfd, "*"); break;
+			                       		case '\t': fprintf(opfd, "\\t"); break;
+			                       		case '\\': 
+			                       			//fprintf(stderr, "%c%c\n", *s, s[1]);
+			                       			if( s[1] == 'l' || s[1] == 'r' )
+			                       			{
+			                       				fprintf(opfd, "\\%c", *++s);
+			                       			}
+			                       			else
+			                       				fprintf(opfd, "\\\\"); break;
+			                       		default:   fprintf(opfd, "%c", *s);
+		                       		}
+		                       break;
 		               case 'j':    // same as %s but works with JSON                
 		                       for( s = va_arg(ap, char *); *s; s++ )
 		                       		switch( *s )
@@ -154,7 +172,8 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 		                       		}
 		                       break;
 		               case 't':    // same as %s but works with tex  - \n becomes space      for( s = va_arg(ap, char *); *s; s++ )
-		                       		switch( *s )
+		                       	for( s = va_arg(ap, char *); *s; s++ )
+		                    		switch( *s )
 		                       		{
 			                       		case '\n': fprintf(opfd, " "); break;
 			                       		case '\t': fprintf(opfd, " "); break;

@@ -281,17 +281,18 @@ void newnode(str **u)
 {	if( (*u)->nodeversion == undefinedVersion ) 
 		(*u)->nodeversion = version;
 	for( node *t = nodeList; t != NULL; t = t->next )
-		if( !strcmp(t->s->s, (*u)->s))
-	{ //fprintf(stderr, "existing node %s -- ", u->s);
-	  //fprintf(stderr, "%s\n", t->s == u? "SAME": "DIFFERENT ADDRESSES!");
-	  *u = t->s;
-	  return;
-	}
+		if( !strcmp(t->s->s, (*u)->s) )
+    	{ //fprintf(stderr, "existing node %s -- ", u->s);
+    	  //fprintf(stderr, "%s\n", t->s == u? "SAME": "DIFFERENT ADDRESSES!");
+    	  *u = t->s;
+    	  return;
+    	}
 	// fprintf(stderr, "new node %s at %ld\n", (*u)->s, (long) *u);
 	node *new = malloc(sizeof(node));
 	new->next = nodeList;
 	new->s = *u;
 	(*u)->nodeversion = version;
+	(*u)->component = 0;
 	nodeList = new;
 }
 

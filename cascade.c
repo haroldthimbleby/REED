@@ -33,6 +33,69 @@ void auxcascade(enum flagcolor fly, str *t, int depth) // recursive cascading
 	}
 }
 
+void markComponent(str *t, int component)
+{	if( t->component == component ) // been here before
+		return;
+		
+	t->component = component;
+		
+	if( t->group )
+	{	// myfprintf(stderr, "** %t is in group %t\n", t->is->s, t->group->is->s);
+		markComponent(t->group, component);
+	}
+
+	if( t->isgroup )
+	{	// myfprintf(stderr, "Group %t is %t\n", t->s, t->is->s);
+		for( node *u = nodeList; u != NULL; u = u->next )
+			if( u->s->group == t )
+			{	// myfprintf(stderr, "  %t is %t\n", u->s->s, u->s->is->s);
+				markComponent(u->s, component);
+			}
+	}
+	
+	for( arrow *a = arrowList; a != NULL; a = a->next )
+	{	if( a->u == t )
+			markComponent(a->v, component);
+		if( a->v == t )
+			markComponent(a->u, component);
+	}
+}
+
+void findComponents()
+{	// initially all nodes have  component=0
+	int c = 1;
+	int repeat = 0;
+	
+	// find a node in component 0
+	do
+    {	repeat = 0;
+    	for( node *n = nodeList; n != NULL; n = n->next )
+    		if( n->s->component == 0 )
+    		{	repeat = 1;
+    			// anything n points (or anything that points to n) to is in c, and so on recursively
+    			markComponent(n->s, c);
+				c++;
+    		}
+	} while( repeat );
+	if( c-1 > 1 )
+	{	nolineerror("There are %d components, so there may be missing arrows that should be linking the components", c-1); 
+		componentsOption = 1;
+	}
+	
+	if( componentsOption )
+	{
+    	fprintf(stderr, "\n%d component%s\n\n", c-1, (c-1) > 1? "s": "");
+    	for( int ac = 1; ac < c; ac++ )
+    	{	fprintf(stderr, "Component %d:\n", ac);
+    		for( node *n =  nodeList; n != NULL; n = n->next ) 
+    			if( n->s->component == ac )
+    				myfprintf(stderr, "   %s %s is %t\n", n->s->isgroup? "Group":"     ", n->s->s, n->s->is->s);
+    		fprintf(stderr, "\n");
+    	}
+	}
+	
+}
+
 void cascade()
 {	// there are two things that may be cascaded
 	// flag colors if flagcascade[] is set
@@ -41,17 +104,17 @@ void cascade()
 	for( int i = 1; i < 7; i++ )
 		if( flagcascade[i] )
 		{	fprintf(stderr, "Cascade all flags coloured %s\n", flagcolor(i));
-            for( node *t = nodeList; t != NULL; t = t->next )
+            for( node *t =  nodeList; t != NULL; t = t->next )
                 if( t->s->flag == i )
                     auxcascade(t->s->flag, t->s, 0);
 		}
 	
 	for( int flag = 0; flag < 7; flag++ )
 		flagsused[flag] = 0;	
-	for( node *t = nodeList; t != NULL; t = t->next )
+	for( node *t =  nodeList; t != NULL; t = t->next )
 			flagsused[t->s->flag]++;
 	
-	for( node *t = nodeList; t != NULL; t = t->next )
+	for( node *t =  nodeList; t != NULL; t = t->next )
 	{	if( t->s->cascade )
 			auxcascade(t->s->flag, t->s, 0);
 	}

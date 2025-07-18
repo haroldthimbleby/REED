@@ -36,6 +36,7 @@ str *newstr(char *s)
 	new->styleName = NULL;
 	new->nodeversion = undefinedVersion;
 	new->noderef = "";
+	new->component = 0;
 	strcpy(new->s, s);
 	return new;
 } 
@@ -98,14 +99,16 @@ int flagOption = 0,
     latexOption = 0,
     htmlOption = 0,
     showVersionsOption = 0,
-    showRulesOption = 0;
+    showRulesOption = 0,
+    componentsOption = 0;
 
 struct structOption
 {	char *option, *usage;
 	int *optionFlag;
 } 
 	options[] =
-{	{"-F", "highlight flags in drawing (unfortunately due to a Graphviz bug, this breaks up any groups)", &flagOption},
+{	{"-c", "show connected components", &componentsOption},
+	{"-F", "highlight flags in drawing (unfortunately due to a Graphviz bug, this breaks up any groups)", &flagOption},
 	{"-f", "show textual descriptions of flag colours in drawing", &flagTextOption},
 	{"-g", "open generated REED graphics file using GraphViz (on MacOS)", &graphvizOption},
 	{"-h", "generate an HTML file", &htmlOption},
@@ -194,5 +197,6 @@ int main(int argc, char *argv[])
 		nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
 	if( *processedFileName ) // make dot, latex, etc files after last processed file name
 		generateFiles(processedFileName); // processFileName is the last name
+	findComponents();
 	return 0;
 }

@@ -33,6 +33,7 @@ typedef struct tmpstr {
 	int isgroup, isstyle, plain;
 	int color;
 	int lineno;
+	int component;
 	enum flagcolor flag, originalflag;
 	char *nodeversion, *noderef;
 } str;
@@ -57,7 +58,8 @@ extern str *newappendcstr(str *d, char *e); // appends to a new string (not chan
 extern void strpad(str **s, int d); // pad to length d with spaces
 extern str *appendstr(str *d, str *e); // append a string to a string
 
-extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, showVersionsOption,
+extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption,
+	showVersionsOption, componentsOption,
 	mathematicaOption, jsonOption, showSignatures, latexOption, htmlOption;
 
 extern void generateFiles(char *filename);
@@ -94,3 +96,5 @@ extern char *version;
 
 extern void saveCheckRtrans(str *u, str *v);
 extern void checkAllRtrans();
+extern void findComponents();
+extern void explainTranslationRules();
