@@ -88,8 +88,7 @@ void findComponents()
 	}
 	
 	if( componentsOption )
-	{
-    	fprintf(stderr, "\n%d component%s\n\n", numberOfComponents, numberOfComponents > 1? "s": "");
+	{   fprintf(stderr, "\n%d component%s\n\n", numberOfComponents, numberOfComponents > 1? "s": "");
     	for( int ac = 1; ac < c; ac++ )
     	{	fprintf(stderr, "Component %d:\n", ac);
     		for( node *n =  nodeList; n != NULL; n = n->next ) 
@@ -154,7 +153,6 @@ int checkOneRtrans(str *u, str *v)
     }
     return 0;
 }
-
 
 void checkAllRtrans()
 {   for( struct transpair *p = transPairsList; p != NULL; p = p->next )
