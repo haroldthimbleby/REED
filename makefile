@@ -17,7 +17,7 @@ $(TARGET) : $(OBJECTS)
 paper: inputs website
 
 inputs: reed
-	reed v=v2 lib/pow-reed
+	reed v=v2 -l lib/pow-reed
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv2.pdf
 	mv lib/pow-reed-color-legend.tex ../REED-paper/figures
 	grab lib/pow-reed.tex "/Node v2-1.1 Wrong XceedPros/" "/summary/" > ../REED-paper/figures/node-examplev2.tex
