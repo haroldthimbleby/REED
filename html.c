@@ -220,7 +220,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		for( node *t = nodeList; t != NULL; t = t->next )
 			if( t->s->note != NULL && t->s->component == component ) 
 			{	if( !anynotes )
-				{	myfprintf(opfd, "<h1><a name=\"component%d-narrative\">Node narrative evidence", component);
+				{	myfprintf(opfd, "<h1 style='text-decoration: underline'><a name=\"component%d-narrative\">Node narrative evidence", component);
 					if( numberOfComponents > 1 )
 						myfprintf(opfd, " for component %d", component);
 					myfprintf(opfd, "</a></h1>");
@@ -308,7 +308,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 
 	for( arrow *t = noteArrowList; t != NULL; t = t->next )
 	{ 	if( !arrownotes )
-			myfprintf(opfd, "<h1>Arrow narrative evidence</h1>\n");
+			myfprintf(opfd, "<h1 style='text-decoration: underline'>Arrow narrative evidence</h1>\n");
 		arrownotes = 1;
 		myfprintf(opfd,"<h2>Arrow ");
 		if( t->arrowis != NULL )
