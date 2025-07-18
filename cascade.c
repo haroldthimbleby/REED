@@ -61,12 +61,14 @@ void markComponent(str *t, int component)
 	}
 }
 
+int numberOfComponents = 0;
+
 void findComponents()
-{	// initially all nodes have  component=0
-	int c = 1;
-	int repeat = 0;
+{	// initially all nodes have component set to 0; once we've finished components are numbered from 1
+	int c = 1; 
+	int repeat = 0; // if true (redundantly:-) keep on looking for more components
 	
-	// find a node in component 0
+	// find every node in (notional) component 0
 	do
     {	repeat = 0;
     	for( node *n = nodeList; n != NULL; n = n->next )
@@ -77,14 +79,17 @@ void findComponents()
 				c++;
     		}
 	} while( repeat );
-	if( c-1 > 1 )
-	{	nolineerror("There are %d components, so there may be missing arrows that should be linking the components", c-1); 
-		componentsOption = 1;
+	
+	if( (numberOfComponents = c-1) > 1 )
+	{	myfprintf(stderr, "Warning: There are %d components, so there may be missing arrows that should have linked %s components", numberOfComponents, numberOfComponents == 2? "the": "some"); 
+		if( !componentsOption ) 
+			myfprintf(stderr, " (use option -c to show component details)");
+		myfprintf(stderr, "\n");
 	}
 	
 	if( componentsOption )
 	{
-    	fprintf(stderr, "\n%d component%s\n\n", c-1, (c-1) > 1? "s": "");
+    	fprintf(stderr, "\n%d component%s\n\n", numberOfComponents, numberOfComponents > 1? "s": "");
     	for( int ac = 1; ac < c; ac++ )
     	{	fprintf(stderr, "Component %d:\n", ac);
     		for( node *n =  nodeList; n != NULL; n = n->next ) 
@@ -93,7 +98,6 @@ void findComponents()
     		fprintf(stderr, "\n");
     	}
 	}
-	
 }
 
 void cascade()

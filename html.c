@@ -168,6 +168,14 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	fprintf(opfd, "<tr><td style=\"text-align:right\">%d</td><td>arrow%s</td><td>&mdash;</td><td style=\"text-align:right\">%d</td><td>with notes</td></tr>\n", 
 		 anyarrows, anyarrows==1? "": "s", anyarrownotes);
 	fprintf(opfd, "</table>\n");
+	
+	if( numberOfComponents > 1 )
+	{	myfprintf(opfd, "<p>There are %d components (i.e., there are %d independent REED diagrams not connected to each other with any arrows).<p/>\n", numberOfComponents, numberOfComponents);
+		myfprintf(opfd, "<ul style=\"list-style-type:none;\">");
+		for( int c = 1; c <= numberOfComponents; c++ )
+			myfprintf(opfd, "<li>&rarr; <a href=\"#component%d-narrative\">Narrative evidence for component %d</a></li>\n", c, c);
+		myfprintf(opfd, "</ul>\n");
+	}
 		
 	if( anyflags )
 	{
@@ -190,10 +198,11 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 						fprintf(opfd, "&mdash; Cascaded %s", flagcascade[i]? "color": "node");
 					else 
 					if( t->s->originalflag != noflag && t->s->originalflag != t->s->flag )
-					{	fprintf(opfd, "&mdash; ");
+					{	fprintf(opfd, "&mdash; was ");
 						htmlflagcolor(opfd, t->s->originalflag);
 						fprintf(opfd, " before cascade");
 					}
+					
 					fprintf(opfd, "</td></tr>");
 				}
 		}
@@ -202,10 +211,25 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	
 	if( 1 ) 
 	{	int anynotes = 0;
+		int component;
+	
+		// if there are lots of components, list nodes in order of component number
+	
+		for( component = 1; component <= numberOfComponents; component++ )
+		{	anynotes = 0; // per component...
 		for( node *t = nodeList; t != NULL; t = t->next )
-			if( t->s->note != NULL ) 
+			if( t->s->note != NULL && t->s->component == component ) 
 			{	if( !anynotes )
-					myfprintf(opfd, "<h1>Node narrative evidence</h1>");
+				{	myfprintf(opfd, "<h1><a name=\"component%d-narrative\">Node narrative evidence", component);
+					if( numberOfComponents > 1 )
+						myfprintf(opfd, " for component %d", component);
+					myfprintf(opfd, "</a></h1>");
+					myfprintf(opfd, "<ul style=\"list-style-type:none;\">");
+					for( int c = 1; c <= numberOfComponents; c++ )
+						if( c != component )
+							myfprintf(opfd, "<li>&rarr; <a href=\"#component%d-narrative\">All narrative for component %d</a></li>\n", c, c);
+					myfprintf(opfd, "</ul>\n");
+				}
 				anynotes = 1;
 				fprintf(opfd, "\n<a name=\"%s\"><h2>", t->s->s);
 				if( t->s->flag != noflag ) htmlflagcolor(opfd, t->s->flag);
@@ -253,6 +277,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 				if( anyarrows ) fprintf(opfd, "</table></td>\n");
 				fprintf(opfd, "</tr>\n</table>\n");
 			}
+		}
 	}
 
 	int arrownotes = 0;

@@ -195,8 +195,8 @@ int main(int argc, char *argv[])
 	if( !opened ) usage(argv[0]);
 	if( skip && !successfulskip )
 		nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
+	findComponents(); // find components before generating HTML, Latex, etc
 	if( *processedFileName ) // make dot, latex, etc files after last processed file name
 		generateFiles(processedFileName); // processFileName is the last name
-	findComponents();
 	return 0;
 }

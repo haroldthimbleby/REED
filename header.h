@@ -98,3 +98,5 @@ extern void saveCheckRtrans(str *u, str *v);
 extern void checkAllRtrans();
 extern void findComponents();
 extern void explainTranslationRules();
+
+extern int numberOfComponents;
