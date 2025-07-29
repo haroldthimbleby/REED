@@ -435,45 +435,82 @@ void json(FILE *opfd, char *title, char *version, authorList *authors, char *dat
 }
 
 void mathematica(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract)
-{	// note use of %j in myfprintf instead of %s in fprintf - this makes %s JSON-safe
+{	// note use of %m in myfprintf instead of %s in fprintf - this makes %s mathematica-safe
 
-	myfprintf(opfd, "Notebook[{Cell[CellGroupData[{\n        Cell[\"%j\", \"Title\"],\n        Cell[\"", title);
+	myfprintf(opfd, "Notebook[{\n");
+	
+	myfprintf(opfd, "Cell[BoxData[\"title=\\\"%m\\\";\"],\"Input\"],\n", title);
+	
+	myfprintf(opfd, "Cell[BoxData[\"authors=\\\"");
 	while( authors != NULL )
-	{	myfprintf(opfd, "%j", authors->author);
+	{	myfprintf(opfd, "%m", authors->author);
 		if( authors->next != NULL ) 
 			fprintf(opfd, ", ");
 		authors = authors->next;
 	}
-	myfprintf(opfd, "\", \"Author\"],\n");
+	myfprintf(opfd, "\\\";\"],\"Input\"],\n");
 
-	myfprintf(opfd, "        Cell[\"%j\", \"Abstract\"],\n", abstract);
-	myfprintf(opfd,"  Cell[\"Graph[{");
+	myfprintf(opfd, "Cell[BoxData[\"edges={");
 
-	char *commarise = "";
+	char *commarise = "", *ccommarise = "";
 	for( arrow *t = arrowList; t != NULL; t = t->next )
-	{	myfprintf(opfd, "%sDirectedEdge[\\\"%j\\\",\\\"%j\\\"]", commarise, t->u->s, t->v->s);
-		if( t->doublearrow ) myfprintf(opfd, ",DirectedEdge[\\\"%j\\\",\\\"%j\\\"]", t->v->s, t->u->s);
+	{	/* if( t->u->isgroup && t->v->isgroup)
+			fprintf(stderr, "! ? ? ! ?\n");
+		else if( t->u->isgroup )
+		{	str *thegroup = t->u->group;
+			for( node *u = nodeList; u != NULL; u = u->next )
+			if( u->s != t->v && u->s->group == thegroup )
+			{	myfprintf(stderr, "%s\n\"%m\" -> \"%m\" (* %t -> %t *)", commarise, u->s->s, t->v->s, u->s->is->s, t->v->is->s);
+			}
+		}
+		else if( t->v->isgroup )
+		{	str *thegroup = t->v->group;
+			for( node *u = nodeList; u != NULL; u = u->next )
+			if( u->s != t->u && u->s->group == thegroup )
+			{	myfprintf(stderr, "%s\n\"%m\" -> \"%m\"", commarise, t->u->s, u->s->s);
+			}
+		}
+		else 
+		*/
+		myfprintf(opfd, "%s\n   \\\"%m\\\" -> \\\"%m\\\"", commarise, t->u->s, t->v->s);
+		if( t->doublearrow ) myfprintf(opfd, ", \\\"%m\\\" -> \\\"%m\\\"", t->v->s, t->u->s);
 		commarise = ",";
 	}	
-
-	myfprintf(opfd, "},VertexLabels->{");
+	myfprintf(opfd, "\n};\"],\"Input\"],\nCell[BoxData[\"vertexNames={\n");
 
 	commarise = "";
 	for( node *t = nodeList; t != NULL; t = t->next )
 		if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID ) 
-		{	myfprintf(opfd, "%s\\\"%m\\\"->\\\"", commarise, t->s->s);
-			if( showIDsOption ) myfprintf(opfd, "[%j] ", t->s->s);
+		{	myfprintf(opfd, "%s   \\\"%m\\\"->\\\"", commarise, t->s->s);
+			if( showIDsOption ) myfprintf(opfd, "[%m] ", t->s->s);
 			printrank(opfd, t->s, version);
-			myfprintf(opfd, "% %m\\\"", t->s->is != NULL? t->s->is->s: t->s->s);
-			commarise = ",";
+			myfprintf(opfd, " %m\\\"", t->s->is != NULL? t->s->is->s: t->s->s); // was % ....
+			commarise = ",\n";
 		}
 
-	myfprintf(opfd, "}]\", \"Code\"]\n	}, Open]]}\n]\n");
+	myfprintf(opfd, "};\"],\"Input\"],\n");
+	
+	myfprintf(opfd, "Cell[BoxData[\"communities={");
+	if(1 )
+	{ccommarise = "";
+	for( int c = 1; c <= numberOfComponents; c++ )
+	{	fprintf(opfd, "%s{", ccommarise);
+		ccommarise = ",\n  ";
+		commarise = "";
+		for( node *t = nodeList; t != NULL; t = t->next )
+			if( t->s->component == c )
+			{	myfprintf(opfd, "%s\\\"%m\\\"", commarise, t->s->s);
+				commarise = ",";
+			}
+		fprintf(opfd, "}\n");
+	}
+	}
+	myfprintf(opfd, "};\"],\"Input\"]}\n]\n");
 }
 
-void generated(char *filename)
+void generated(char *filename, char *reason)
 {   if( verboseOption ) fprintf(stderr, "| ** ");
-    fprintf(stderr, "Generated %s\n", filename);
+    fprintf(stderr, "Generated %s   --   %s\n", filename, reason);
 }
 
 void generateFiles(char *filename)
@@ -544,7 +581,7 @@ void generateFiles(char *filename)
 	{	// try: $ dot -Tps graph1.gv -o graph1.ps
 		dot(fd, title, version, date, direction);
 		fclose(fd);
-        generated(filename);
+        generated(filename, "dot file of the REED graph (use GraphViz or dot to convert it to PDF)");
 		if( graphvizOption )
 		{	str *cmd = newstr("open ");
 			appendstr(cmd, base);
@@ -568,7 +605,7 @@ void generateFiles(char *filename)
 			}
 			notes(fd, title, version, authors, date, abstract);
 			fclose(fd);
-            generated(filename);
+            generated(filename, "Latex REED file");
 		}
         fd = fopen(filename = newappendcstr(base, "-color-legend.tex")->s, "w");
         if( fd == NULL ) error("Can't open %s (tex/latex highlighting legend file) for writing", filename);
@@ -576,7 +613,7 @@ void generateFiles(char *filename)
         {
             colorkey(fd, "", "");
             fclose(fd);
-            generated(filename);
+            generated(filename, "Latex file explaining colour highlighting");
         }
 
         fd = fopen(filename = newappendcstr(base, "-xrefs.aux")->s, "w");
@@ -585,7 +622,7 @@ void generateFiles(char *filename)
         {
             latexxrefs(fd);
             fclose(fd);
-            generated(filename);
+            generated(filename, "Latex .aux file defining cross-references: short node name to node reference, and short name-is to full node name");
         }
 	}
 	
@@ -603,7 +640,7 @@ void generateFiles(char *filename)
 			}
 			htmlnotes(fd, title, version, authors, date, abstract);
 			fclose(fd);
-            generated(filename);
+            generated(filename, "HTML REED file");
 		}
 	}
 
@@ -613,7 +650,7 @@ void generateFiles(char *filename)
 		else
 		{	json(fd, title, version, authors, date, abstract);
 			fclose(fd);
-            generated(filename);
+            generated(filename, "Experimental JSON definition of the REED");
 		}
 	}
 
@@ -623,7 +660,7 @@ void generateFiles(char *filename)
 		else
 		{	xml(fd);
 			fclose(fd);
-            generated(filename);
+            generated(filename, "Full XML definition of the REED");
 		}
 	}
 
@@ -633,7 +670,7 @@ void generateFiles(char *filename)
 		else
 		{	mathematica(fd, title, version, authors, date, abstract);
 			fclose(fd);
-            generated(filename);
+            generated(filename, "Experimental Mathematica definition of the REED graph");
 		}
 	}
 

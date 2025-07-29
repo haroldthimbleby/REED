@@ -107,22 +107,22 @@ struct structOption
 	int *optionFlag;
 } 
 	options[] =
-{	{"-c", "show connected components", &componentsOption},
-	{"-F", "highlight flags in drawing (unfortunately due to a Graphviz bug, this breaks up any groups)", &flagOption},
-	{"-f", "show textual descriptions of flag colours in drawing", &flagTextOption},
-	{"-g", "open generated REED graphics file using GraphViz (on MacOS)", &graphvizOption},
-	{"-h", "generate an HTML file", &htmlOption},
-	{"-j", "generate a JSON file", &jsonOption},
-	{"-l", "generate a Latex file", &latexOption},
-	{"-m", "generate a Mathematica file", &mathematicaOption},
-	{"-n", "show node IDs in drawing", &showIDsOption},
-	{"-r", "show all HTML-Latex rules", &showRulesOption},
+{	{"-c", "show weakly connected components", &componentsOption},
+	{"-F", "highlight flags in drawing*(unfortunately due to a Graphviz bug, this breaks up any groups)", &flagOption},
+	{"-f", "show textual descriptions of flag colours in REED drawing", &flagTextOption},
+	{"-g", "open generated REED graphics GraphViz file automatically *(using dot on MacOS)", &graphvizOption},
+	{"-h", "generate an interactive HTML REED document", &htmlOption},
+	{"-j", "generate a JSON file*(experimental feature; better to use -x)", &jsonOption},
+	{"-l", "generate a Latex REED document*(and some useful definition files)", &latexOption},
+	{"-m", "generate a Mathematica file*(representing the REED graph)", &mathematicaOption},
+	{"-n", "show node IDs in graph drawing", &showIDsOption},
+	{"-r", "show all HTML <-> Latex rules", &showRulesOption},
 	{"-s", "show REED file signatures", &showSignatures},
-	{"-t", "transpose numbering (swap row and column node numbering)", &transposeOption},
+	{"-t", "transpose node numbering*(swap row and column node numbering)", &transposeOption},
 	{"-v", "verbose mode", &verboseOption},
-    {"-w", "what versions are used in these files? (Needed for using with v= flag.)", &showVersionsOption},
-	{"-x", "generate an XML file", &xmlOption},
-	{"--", "treat all further parameters as filenames", &optionsOption},
+    {"-w", "what versions are used in these files?*(helpful to know if using the v= flag)", &showVersionsOption},
+	{"-x", "generate an XML file*(representing all REED data for import into other applications)", &xmlOption},
+	{"--", "treat all further parameters as filenames*(if you want filenames to start with a dash)", &optionsOption},
 };
 
 int setOption(char *argvi)
@@ -137,10 +137,18 @@ void usage(char *process)
 	fprintf(stderr, "[v=value] ");
 	for( int o = 0; o < sizeof options/sizeof(struct structOption); o++ )
 		fprintf(stderr, "[%s] ", options[o].option);
-	fprintf(stderr, "files...\n       v=value use all versions to <value> and skip later versions in file\n");
+	fprintf(stderr, "files...\n");
 	for( int o = 0; o < sizeof options/sizeof(struct structOption); o++ )
-		fprintf(stderr, "       %s %s\n", options[o].option, options[o].usage);
-    fprintf(stderr, "Note:  %s will always generate a .gv (Graphviz) file if possible\n", process);
+	{	fprintf(stderr, "       %s ", options[o].option);
+		for( char *s = options[o].usage; *s; s++ )
+			if( *s == '*' )
+				fprintf(stderr, "\n             ");
+			else
+				fputc(*s, stderr);
+		fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "       v=value include all versions up to <value> and skip later versions in file\n");
+    fprintf(stderr, "Note:  %s will always generate a .gv (dot) file if possible\n             (see https://graphviz.org)\n", process);
 	exit(0);
 }
 

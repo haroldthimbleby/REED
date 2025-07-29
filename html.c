@@ -170,7 +170,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	fprintf(opfd, "</table>\n");
 	
 	if( numberOfComponents > 1 )
-	{	myfprintf(opfd, "<p>There are %d components (i.e., there are %d independent REED diagrams not connected to each other with any arrows).<p/>\n", numberOfComponents, numberOfComponents);
+	{	myfprintf(opfd, "<p>There are %d weakly connected components (i.e., there are %d independent REED diagrams not connected to each other with any arrows, regardless of the directions of the arrows).<p/>\n", numberOfComponents, numberOfComponents);
 		myfprintf(opfd, "<ul style=\"list-style-type:none;\">");
 		for( int c = 1; c <= numberOfComponents; c++ )
 			myfprintf(opfd, "<li>&rarr; <a href=\"#component%d-narrative\">Narrative evidence for component %d</a></li>\n", c, c);

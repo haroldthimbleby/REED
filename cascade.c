@@ -63,7 +63,7 @@ void markComponent(str *t, int component)
 
 int numberOfComponents = 0;
 
-void findComponents()
+void findComponents() // weakly connected components
 {	// initially all nodes have component set to 0; once we've finished components are numbered from 1
 	int c = 1; 
 	int repeat = 0; // if true (redundantly:-) keep on looking for more components
@@ -82,6 +82,7 @@ void findComponents()
 	
 	if( (numberOfComponents = c-1) > 1 )
 	{	myfprintf(stderr, "Warning: There are %d components, so there may be missing arrows that should have linked %s components", numberOfComponents, numberOfComponents == 2? "the": "some"); 
+                myfprintf(stderr, "\n         (components are weakly connected components - groups of nodes connected by arrows regardless of which way they point)\n");
 		if( !componentsOption ) 
 			myfprintf(stderr, " (use option -c to show component details)");
 		myfprintf(stderr, "\n");

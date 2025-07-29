@@ -38,7 +38,7 @@ void nolineerror(char *fmt, ...)
 		                       fprintf(stderr, "%c", c);
 		                       break;
 		                default:
-		                		fprintf(stderr, " !!! unknown format %%%c !!!", *fmt);
+		                		fprintf(stderr, " !!!(1) unknown format %%%c !!!\n", *fmt);
 		                		break;
 		       	}
 		       	fmt++;
@@ -85,7 +85,7 @@ void error(char *fmt, ...)
 		                       fprintf(stderr, "%c", c);
 		                       break;
 		                default:
-		                		fprintf(stderr, " !!! unknown format %%%c !!!", *fmt);
+		                		fprintf(stderr, " !!!(2) unknown format %%%c !!!\n", *fmt);
 		                		break;
 		       	}
 		       	fmt++;
@@ -148,7 +148,7 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 		                       		switch( *s )
 		                       		{
 			                       		case '\n': fprintf(opfd, "\\n"); break;
-										case ' ': fprintf(opfd, "*"); break;
+										case ' ':  fprintf(opfd, "*"); break;
 			                       		case '\t': fprintf(opfd, "\\t"); break;
 			                       		case '\\': 
 			                       			//fprintf(stderr, "%c%c\n", *s, s[1]);
@@ -229,7 +229,7 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 		                       fprintf(opfd, "%c", c);
 		                       break;
 		                default:
-		                		fprintf(opfd, " !!! unknown format %%%c !!!", *fmt);
+		                		fprintf(stderr, " !!!(3) unknown format %%%c !!!\n", *fmt);
 		                		break;
 		       	}
 		       	fmt++;
