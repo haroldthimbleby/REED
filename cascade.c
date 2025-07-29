@@ -82,7 +82,7 @@ void findComponents() // weakly connected components
 	
 	if( (numberOfComponents = c-1) > 1 )
 	{	myfprintf(stderr, "Warning: There are %d components, so there may be missing arrows that should have linked %s components", numberOfComponents, numberOfComponents == 2? "the": "some"); 
-                myfprintf(stderr, "\n         (components are weakly connected components - groups of nodes connected by arrows regardless of which way they point)\n");
+                myfprintf(stderr, "\n         ('components' here means weakly connected components - groups of nodes connected by arrows, regardless of which way they point)\n");
 		if( !componentsOption ) 
 			myfprintf(stderr, " (use option -c to show component details)");
 		myfprintf(stderr, "\n");

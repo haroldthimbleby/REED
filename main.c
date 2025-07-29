@@ -1,4 +1,5 @@
 #include "header.h"
+#include "notes.h"
 
 void *safealloc(size_t n)
 {	char *p = (char *) malloc(n);
