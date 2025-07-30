@@ -101,7 +101,8 @@ int flagOption = 0,
     htmlOption = 0,
     showVersionsOption = 0,
     showRulesOption = 0,
-    componentsOption = 0;
+    componentsOption = 0,
+    generatePDFOption = 0;
 
 struct structOption
 {	char *option, *usage;
@@ -115,8 +116,9 @@ struct structOption
 	{"-h", "generate an interactive HTML REED document", &htmlOption},
 	{"-j", "generate a JSON file*(experimental feature; better to use -x)", &jsonOption},
 	{"-l", "generate a Latex REED document*(and some useful definition files)", &latexOption},
-	{"-m", "generate a Mathematica file*(representing the REED graph)", &mathematicaOption},
-	{"-n", "show node IDs in graph drawing", &showIDsOption},
+    {"-m", "generate a Mathematica notebook*(representing the REED graph as a series of expressions)", &mathematicaOption},
+    {"-p", "generate a PDF file*(representing the REED graph)", &generatePDFOption},
+    {"-n", "show node IDs in graph drawing", &showIDsOption},
 	{"-r", "show all HTML <-> Latex rules", &showRulesOption},
 	{"-s", "show REED file signatures", &showSignatures},
 	{"-t", "transpose node numbering*(swap row and column node numbering)", &transposeOption},

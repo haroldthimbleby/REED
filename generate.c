@@ -581,14 +581,27 @@ void generateFiles(char *filename)
 	{	// try: $ dot -Tps graph1.gv -o graph1.ps
 		dot(fd, title, version, date, direction);
 		fclose(fd);
-        generated(filename, "dot file of the REED graph (use GraphViz or dot to convert it to PDF)");
+        generated(filename, "dot file of the REED graph (use -p flag or dot -Tpdf to convert it to PDF)");
 		if( graphvizOption )
 		{	str *cmd = newstr("open ");
 			appendstr(cmd, base);
 			appendcstr(cmd, ".gv");
-			fprintf(stderr, "%% %s\n", cmd->s);
+			fprintf(stderr, "System:  %s\n", cmd->s);
 			system(cmd->s);
 		}
+        if( generatePDFOption )
+        {   str *cmd = newstr("dot -Tpdf ");
+            appendstr(cmd, base);
+            appendcstr(cmd, ".gv > ");
+            appendstr(cmd, base);
+            appendcstr(cmd, ".pdf");
+            fprintf(stderr, "System:  %s\n", cmd->s);
+            system(cmd->s);
+            cmd = newstr(base->s);
+            appendcstr(cmd, ".pdf");
+            generated(cmd->s, "PDF file of the REED graph");
+
+        }
 	}
 
 	if( latexOption )

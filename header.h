@@ -58,8 +58,7 @@ extern str *newappendcstr(str *d, char *e); // appends to a new string (not chan
 extern void strpad(str **s, int d); // pad to length d with spaces
 extern str *appendstr(str *d, str *e); // append a string to a string
 
-extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption,
-	showVersionsOption, componentsOption,
+extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption,generatePDFOption, showVersionsOption, componentsOption,
 	mathematicaOption, jsonOption, showSignatures, latexOption, htmlOption;
 
 extern void generateFiles(char *filename);
