@@ -62,25 +62,25 @@ new style wideBlackArrow is "color=black; penwidth=4"
 style 2->4 is "label=\"  A\",fontname=\"Helvetica-Bold\",fontcolor=blue;fontsize=18;penwidth=4"
 
 note 2->4 is " B" "A blood sample from a patient enters an XceedPro."
-note 1->4 is " A" "A nurse uses an XceedPro to take a sample from a specific patient, and the XceedPro records the nurse’s and patient's IDs."
+note 1->4 is " A" "A nurse uses an XceedPro to take a sample from a specific patient, and the XceedPro records the nurse’s and the patient's IDs."
 note 4->5 is " C" "The XceedPros provide date, time, XceedPro ID, nurse ID, patient ID, blood glucose level, etc."
-note 5->7 is " D" "Should be identical to the XceedPro data C plus a timestamp of upload."
+note 5->7 is " D" "Should be identical to the XceedPro data from [[[4]]] via arrow C plus a timestamp of upload."
 7 <-> backups;
 
 backups <-> 9
 highlight backups is white
 note backups is "No known backups\nthat could have\n provided evidence" <<< ENDNOTE
 	If backups had been taken (we do not know) then it would have been
-	natural to check the alleged missing nurse data had never been stored
+	natural to check if the alleged missing nurse data had ever been stored
 	on the main PrecisionWeb database.
 
 	Backups would have shown whether failures happened in PrecisionWeb, or earlier
-	for instance over arrows D, C, B, or A (as the prosecution argued).
+	for instance over arrows A (as the prosecution argued), B, C or D.
 ENDNOTE
 
 note 7->11 is " E" "The Police exported a CSV file from the PrecisionWeb database of every record derived from all XceedPros in the hospital (see arrow D) over the relevant period of time. \\warn{CSV is a  non-forensic and very unreliable data format.}"
 
-note 11->12 is "  F" "Should be a collection of the C data (it wasn't; see figure 7 in the REED paper for the reasons) but crucially the Police evidence was incomplete since it provided no way to check consistency with C data."
+note 11->12 is "  F" "Should be a collection of all data starting at [[[4]]] (it wasn't; see figure 7 in the REED paper for the reasons) but crucially the Police evidence was incomplete since it provided no way to check consistency with the data from [[[4]]]."
 
 style 1->4 is "arrowhead=dot,fontname=\"Helvetica-Bold\",fontcolor=blue;fontsize=18;penwidth=4"
 style 4->5 is "fontname=\"Helvetica-Bold\";fontcolor=blue;fontsize=18;penwidth=4"
@@ -94,7 +94,7 @@ style (13->14 13->hospital forensicProblems -> 11) is thickHumanDashedRed
 style (7<->8 8<->9) is thickDashedBlue
 
 note 7<->8 is "?" <<< ENDNOTE
-Arrows marked ``\textbf{?}'' indicate evidence flows that we \emph{should\/} know about, but no relevant information has been made available, despite requests. We think it probably does not exist because (we surmise that) the IT operators probably did not do the appropriate work.
+Arrows marked ``\textbf{?}'' indicate evidence flows that we \emph{should\/} know about, but no relevant information has been made available, despite requests. We think the evidence probably does not exist because (we surmise that) the IT operators probably did not do the appropriate work, such as testing (see [[[14]]]).
 ENDNOTE
 
 group (4 5 6 7 8 9) is hospital
