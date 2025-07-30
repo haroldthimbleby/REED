@@ -167,7 +167,8 @@ void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // trans
 				for( node *t = nodeList; t != NULL; t = t->next )
 					if( !strcmp(t->s->s, &s[3]) )
 					{	version = t->s->nodeversion;
-						myfprintf(opfd, "{%s%s%d.%d}, ``%t''", 
+						myfprintf(opfd, "\\hyperlink{%s}{{%s%s%d.%d}, ``%t''}",
+                            t->s->s,
 							*version? version: "", *version? "--": "",
 							t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s);
 						if( showIDsOption ) myfprintf(opfd, " \\fbox{%t}\\,", t->s->s);

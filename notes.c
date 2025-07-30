@@ -230,7 +230,15 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 		
 	printfiledata(opfd);
 	fprintf(opfd, "}\n");
-	
+
+    if( numberOfComponents > 1 )
+    {    myfprintf(opfd, "\n\n\\noindent\nThere are %d weakly connected components (i.e., there are %d independent REED diagrams not connected to each other with any arrows, regardless of the directions of the arrows).\n\n", numberOfComponents, numberOfComponents);
+        myfprintf(opfd, "\\begin{description}\n");
+        for( int c = 1; c <= numberOfComponents; c++ )
+            myfprintf(opfd, "\\item[$\\rightarrow$] \\hyperlink{component%d-narrative}{Narrative evidence for component %d}\n", c, c);
+        myfprintf(opfd, "\\end{description}\n");
+    }
+
 	if( anyflags )
 	{
 		myfprintf(opfd, "\n\\section*{%d highlighted node%s}\n", anyflags, anyflags == 1? "": "s");
@@ -250,7 +258,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 					else
 						myfprintf(opfd, "&");
 					printrank(opfd, t->s, version);
-					myfprintf(opfd, "&%t\\\\\n", t->s->is == NULL? t->s->s: t->s->is->s);
+					myfprintf(opfd, "&\\hyperlink{%s}{%t}\\\\\n", t->s->s, t->s->is == NULL? t->s->s: t->s->is->s);
 				}
 		}
 		myfprintf(opfd, "\n\\end{tabular}\n");
@@ -258,40 +266,55 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 	
 	if( 1 ) 
 	{	int anynotes = 0;
-		for( node *t = nodeList; t != NULL; t = t->next )
-			if( t->s->note != NULL ) 
-			{	if( !anynotes )
-					myfprintf(opfd, "\n\\section*{Node narrative evidence}");
-				anynotes = 1;
-				myfprintf(opfd, "\n\\subsection*{");
-				if( t->s->flag != noflag )
-					myfprintf(opfd, " \\colorflag{%s} ", flagcolor(t->s->flag));
-				
-				myfprintf(opfd, "Node ");
-				printrank(opfd, t->s, version);
-				myfprintf(opfd, " %T",
-					t->s->is != NULL? t->s->is->s: t->s->s);
+        int component;
+        // if there are lots of components, list nodes in order of component number
 
-				if( t->s->group != NULL )
-					myfprintf(opfd, "\\\\\\hskip 2em --- (Group: %t) ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
-				if( showIDsOption ) myfprintf(opfd, "\\fbox{%t} ", t->s->s);
-				//if( *version ) myfprintf(opfd, " (%t)", version);
-				myfprintf(opfd, "}\n");
-				LaTeXtranslate(opfd, version, t->s->note->s, t->s);
-				
-				int anyarrows = 0;
-				for( arrow *a = arrowList; a != NULL; a = a->next )
-					if( a->u == t->s )
-					{	if( !anyarrows ) myfprintf(opfd, "\\vskip .5ex\\vbox{\\small ");
-						anyarrows = 1;
-						myfprintf(opfd, "\\hskip 2em\\\\$\\rightarrow$ ");
-						if( a->v->flag != noflag ) myfprintf(opfd, "\\colorflag{%s}~", flagcolor(a->v->flag));
-						else myfprintf(opfd, "\\hphantom{\\colorflag{white}}~");
-						printrank(opfd, a->v, version);
-						myfprintf(opfd, " %t", a->v->is != NULL? a->v->is->s: a->v->s);
-					}
-				if( anyarrows ) myfprintf(opfd, "}");
-			}
+        for( component = 1; component <= numberOfComponents; component++ )
+        {   anynotes = 0; // per component
+            for( node *t = nodeList; t != NULL; t = t->next )
+                if( t->s->note != NULL && t->s->component == component )
+                {	if( !anynotes )
+                {    myfprintf(opfd, "\\hypertarget{component%d-narrative}{\\section*{Node narrative evidence", component);
+                    if( numberOfComponents > 1 )
+                        myfprintf(opfd, " for component %d", component);
+                    myfprintf(opfd, "}}\n");
+                    myfprintf(opfd, "\\begin{description}\n");
+                    for( int c = 1; c <= numberOfComponents; c++ )
+                        if( c != component )
+                            myfprintf(opfd, "\\item[$\\rightarrow$] \\hyperlink{component%d-narrative}{All narrative for component %d}\n", c, c);
+                    myfprintf(opfd, "\\end{description}\n");
+                }
+                    anynotes = 1;
+                    myfprintf(opfd, "\n\n\\hypertarget{%s}{\\subsection*{", t->s->s);
+                    if( t->s->flag != noflag )
+                        myfprintf(opfd, " \\colorflag{%s} ", flagcolor(t->s->flag));
+
+                    myfprintf(opfd, "Node ");
+                    printrank(opfd, t->s, version);
+                    myfprintf(opfd, " %T",
+                              t->s->is != NULL? t->s->is->s: t->s->s);
+
+                    if( t->s->group != NULL )
+                        myfprintf(opfd, "\\\\\\hskip 2em --- (Group: %t) ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
+                    if( showIDsOption ) myfprintf(opfd, "\\fbox{%t} ", t->s->s);
+                    //if( *version ) myfprintf(opfd, " (%t)", version);
+                    myfprintf(opfd, "}}\n");
+                    LaTeXtranslate(opfd, version, t->s->note->s, t->s);
+
+                    int anyarrows = 0;
+                    for( arrow *a = arrowList; a != NULL; a = a->next )
+                        if( a->u == t->s )
+                        {	if( !anyarrows ) myfprintf(opfd, "\\vskip .5ex\\vbox{\\small ");
+                            anyarrows = 1;
+                            myfprintf(opfd, "\\hskip 2em\\\\$\\rightarrow$ \\hyperlink{%s}{", a->v->s);
+                            if( a->v->flag != noflag ) myfprintf(opfd, "\\colorflag{%s}~", flagcolor(a->v->flag));
+                            else myfprintf(opfd, "\\hphantom{\\colorflag{white}}~");
+                            printrank(opfd, a->v, version);
+                            myfprintf(opfd, " %t}", a->v->is != NULL? a->v->is->s: a->v->s);
+                        }
+                    if( anyarrows ) myfprintf(opfd, "}");
+                }
+        }
 	}
 
 	int arrownotes = 0;
@@ -329,10 +352,10 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 			myfprintf(opfd, "%t\\\\\n", t->arrowis->s);
 		myfprintf(opfd, "\\setbox0=\\hbox{$\\rightarrow$~}\\hbox to \\wd0{}");
 		printrank(opfd, t->u, t->u->nodeversion); 
-		myfprintf(opfd, " %t\\\\", t->u->is != NULL? t->u->is->s: t->u->s);
+		myfprintf(opfd, " \\hyperlink{%s}{%t}\\\\", t->u->s, t->u->is != NULL? t->u->is->s: t->u->s);
 		myfprintf(opfd, "\\copy0{}");
 		printrank(opfd, t->v, t->v->nodeversion); 
-		myfprintf(opfd, " %t", t->v->is != NULL? t->v->is->s: t->v->s);
+		myfprintf(opfd, " \\hyperlink{%s}{%t}", t->v->s, t->v->is != NULL? t->v->is->s: t->v->s);
 		myfprintf(opfd, "}\n");
 		LaTeXtranslate(opfd, t->u->nodeversion, t->arrownote->s, t->u);
 	}
