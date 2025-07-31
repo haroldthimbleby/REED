@@ -234,7 +234,7 @@ lexval readlex(str **lexstr)
                 }
 				return RARROW;
 			case '#': // comment
-                if( commentOption ) fprintf(stderr, "#");
+                if( commentOption ) fprintf(stderr, "Line %4d #", lineno);
 				while( nextch() != '\n' && nextch() != EndOfFile )
                 {   char c = getch();
                     if( commentOption ) fprintf(stderr, "%c", c);
