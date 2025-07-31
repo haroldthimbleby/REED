@@ -1,3 +1,4 @@
+# REED specification for Princess of Wales Hospital blood glucometer case
 title "Princess of Wales Hospital blood glucometer case REED"
 author "Harold Thimbleby"
 version "v2"
@@ -137,7 +138,7 @@ note 6 is "Ward PCs" <<< ENDNOTE
 	\warn{We do not know who had access to the Ward PCs (whether nurses or hospital operators).}
 ENDNOTE
 
-#highlight 7 is blue
+# highlight 7 is blue
 note 7 is "Abbott\nPrecisionWeb\ndatabase" <<< ENDNOTE
 	PrecisionWeb is a proprietary database designed to monitor XceedPros, such as their battery health. 
 	
