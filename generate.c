@@ -29,9 +29,15 @@ void xmlconverted(FILE *opfd, char *content)
 
 void xmlattribute(FILE *opfd, char *indent, char *tag, char *content)
 {
-	myfprintf(opfd, "%s<%s>%s", indent, tag, indent);
-	xmlconverted(opfd, content);
-	myfprintf(opfd, "</%s>\n", tag);
+    myfprintf(opfd, "%s<%s>\n    %s", indent, tag, indent);
+    xmlconverted(opfd, content);
+    myfprintf(opfd, "\n%s</%s>\n", indent, tag);
+}
+
+void xmlintattribute(FILE *opfd, char *indent, char *tag, int content)
+{
+    myfprintf(opfd, "%s<%s>\n    %s%d", indent, tag, indent, content);
+     myfprintf(opfd, "\n%s</%s>\n", indent, tag);
 }
 
 void xmlCDATA(FILE *opfd, char *indent, char *content)
@@ -95,12 +101,12 @@ void xml(FILE *opfd)
 	{
 		myfprintf(opfd, "<node id=\"%s\">\n", t->s->s);
 			xmlattribute(opfd, "    ", "version", t->s->nodeversion);
-			if(  t->s->is == NULL )
+			if(  t->s->is != NULL )
 				xmlattribute(opfd, "    ", "label", t->s->is->s);
 			xmlhighlight(opfd, "    ", t->s->flag,  t->s->cascade);
 			if( t->s->note != NULL ) 
 				xmlattribute(opfd, "    ", "note", t->s->note->s);
-			
+            xmlintattribute(opfd, "    ", "component", t->s->component);
 			for( arrow *a = arrowList; a != NULL; a = a->next )
 				if( a->u == t->s )
 				{	myfprintf(opfd, "    <arrow to=\"%s\"", a->v->s);
@@ -110,8 +116,9 @@ void xml(FILE *opfd)
 					
 					for( arrow *t = noteArrowList; t != NULL; t = t->next )
 						if( t->u == a->u && t->v == a->v )
-						{	if( t->arrowis != NULL && *t->arrowis->s ) xmlattribute(opfd, "        ", "label", t->arrowis->s);
-							if( t->arrownote != NULL ) xmlattribute(opfd, "        ", "note", t->arrownote->s); 
+						{	if( t->arrowis != NULL && *t->arrowis->s )
+                                xmlattribute(opfd, "        ", "label", t->arrowis->s);
+							if( t->arrownote != NULL ) xmlattribute(opfd, "        ", "note", t->arrownote->s);
 						}
 					for( arrow *t = styledArrowList; t != NULL; t = t->next )
 						if( t->u == a->u && t->v == a->v )
@@ -390,50 +397,6 @@ void connectedComponents()
 		}
 }
 
-void json(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract)
-{	// note use of %j in myfprintf instead of %s in fprintf - this makes %s JSON-safe
-	myfprintf(opfd, "{title: \"%j\",\n version: \"%j\",\n authors: [", title, version);
-	while( authors != NULL )
-	{
-		myfprintf(opfd, "\"%j\"", authors->author);
-		if( authors->next != NULL ) 
-			fprintf(opfd, ", ");
-		authors = authors->next;
-	}
-	myfprintf(opfd, "],\n date: \"%j\",\n abstract: \"%j\",\n styles:\n [", date, abstract);
-	char *commarise = "";
-	for( node *u = stylelist; u != NULL; u = u->next )
-	{	myfprintf(opfd, "%s {\"%s\": \"%s\"}", commarise, u->s->style->s, u->s->s);
-		commarise = ",\n  ";
-	}
-	myfprintf(opfd, "\n ],\n \"flagstyle\": \"%j\",\nnodes:\n[\n", flagstyle);
-	for( node *t = nodeList; t != NULL; t = t->next )
-		if( t->s->l == ID ) // don't save flag pseudo node
-		{	myfprintf(opfd, " {id: \"%j\", rankx: %d, ranky: %d,\n", t->s->s, t->s->rankx, t->s->ranky);
-			myfprintf(opfd, "  is: \"%j\",\n", t->s->is == NULL? "": t->s->is->s);
-			myfprintf(opfd, "  notes: \"%j\",\n", t->s->note == NULL? "": t->s->note->s);
-			myfprintf(opfd, "  highlight: \"%s\",\n", flagcolor(t->s->flag));
-			myfprintf(opfd, "  group: \"%j\",\n", t->s->group == NULL? "": t->s->group->s);
-			myfprintf(opfd, "  styleName: \"%j\",\n", t->s->styleName == NULL? "": t->s->styleName);
-			myfprintf(opfd, "  style: \"%j\",\n", t->s->style == NULL? "": t->s->style->s);
-			fprintf(opfd, " }, \n");
-		}
-	fprintf(opfd, "],\n arcs: [\n");
-	commarise = "";
-	for( arrow *t = arrowList; t != NULL; t = t->next )
-	{	myfprintf(opfd, "%s  {u: \"%j\", v: \"%j\", bidirectional: %d}", commarise, t->u->s, t->v->s, t->doublearrow);
-		commarise = ",\n";
-	}
-	fprintf(opfd, "\n],\n groups: [\n");
-	commarise = "";
-	for( node *t = nodeList; t != NULL; t = t->next )
-		if( t->s->isgroup )	
-		{	myfprintf(opfd, "%s {id: \"%j\"}", commarise, t->s->s);
-			commarise = ",\n";
-		}
-	fprintf(opfd, "\n]\n}\n");
-}
-
 void mathematica(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract)
 {	// note use of %m in myfprintf instead of %s in fprintf - this makes %s mathematica-safe
 
@@ -654,16 +617,6 @@ void generateFiles(char *filename)
 			htmlnotes(fd, title, version, authors, date, abstract);
 			fclose(fd);
             generated(filename, "HTML REED file");
-		}
-	}
-
-	if( jsonOption )
-	{	fd = fopen(filename = newappendcstr(base, ".js")->s, "w");
-		if( fd == NULL ) error("Can't open %s (JSON file) for writing", filename);
-		else
-		{	json(fd, title, version, authors, date, abstract);
-			fclose(fd);
-            generated(filename, "Experimental JSON definition of the REED");
 		}
 	}
 

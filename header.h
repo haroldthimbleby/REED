@@ -59,7 +59,7 @@ extern void strpad(str **s, int d); // pad to length d with spaces
 extern str *appendstr(str *d, str *e); // append a string to a string
 
 extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption,generatePDFOption, showVersionsOption, componentsOption,
-	mathematicaOption, jsonOption, showSignatures, latexOption, htmlOption;
+	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption;
 
 extern void generateFiles(char *filename);
 

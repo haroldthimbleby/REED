@@ -234,9 +234,13 @@ lexval readlex(str **lexstr)
                 }
 				return RARROW;
 			case '#': // comment
+                if( commentOption ) fprintf(stderr, "#");
 				while( nextch() != '\n' && nextch() != EndOfFile )
-					getch();
-				continue;
+                {   char c = getch();
+                    if( commentOption ) fprintf(stderr, "%c", c);
+                }
+                if( commentOption ) fprintf(stderr, "\n");
+                continue;
 			case '"': // string
 				{	ch = getch();
 					while( ch != '"' && ch != EndOfFile )

@@ -24,7 +24,8 @@ HTMLmappings[] = { // anything that is a prefix of another MUST come later (eg, 
 	{ "\\warn{", "<span style=\"color:red\">", "</span>" },
 	{ "\\emph{", "<em>", "</em>" },
 	{ "\\textbf{", "<b>", "</b>" },
-	{ "\\footnote{", "<blockquote>&mdash; ", "</blockquote>" }
+	{ "\\footnote{", "<blockquote>&mdash; ", "</blockquote>" },
+    { "\\", "error", 0 }
 },
 
 // rules to convert HTML to Latex
@@ -97,7 +98,7 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
 {	mode = both;
     // first do simple re case (in for loop initialisation)
     for( char *s = fixParagraphs(note); *s; s++ )
-	{	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
+    {	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
 		else if( !strncmp(s, "<latex>", 7) ) { mode = latex; s = s+6; continue; }
 		else if( !strncmp(s, "<html>", 6) ) { mode = html; s = s+5; continue; }
 		if( mode == latex ) continue;
@@ -109,7 +110,16 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
 			for( int i = 0; i < sizeof(HTMLmappings)/sizeof(HTMLmappings[0]); i++ )
             {
                 if( !strncmp(s, HTMLmappings[i].latex, strlen(HTMLmappings[i].latex)) )
-				{	fprintf(opfd, "%s", HTMLmappings[i].html);
+				{   if( !strcmp(HTMLmappings[i].html, "error") )
+                    {   char *t = s+1;
+                        while( *t && isalpha(*t) ) t++;
+                        char save = *t;
+                        *t = (char) 0;
+                        fprintf(stderr, "Unrecognised Latex which has been copied directly to HTML: %s...\n", s);
+                        *t = save;
+                        break;
+                    }
+                    fprintf(opfd, "%s", HTMLmappings[i].html);
 					s += strlen(HTMLmappings[i].latex);
 					if( HTMLmappings[i].close ) 
 						push(&closestack, HTMLmappings[i].close);
