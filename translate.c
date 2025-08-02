@@ -70,7 +70,11 @@ void push(struct stack *stack, char *item)
 }
 
 char *pop(struct stack *stack)
-{	return stack->contents[--stack->length];
+{	if (stack->length <= 0) {
+        	error(stderr, "Fatal! Stack underflow - pop() in translate.c\n");
+        	return exit(1);
+    	}
+ 	return stack->contents[--stack->length];
 }
 
 char *top(struct stack *stack)
