@@ -135,7 +135,7 @@ struct structOption
     {"-v", "verbose mode", &verboseOption},
     {"-w", "what versions are used in these files?*- helpful to know if using the v= flag", &showVersionsOption},
 	{"-x", "generate an XML file*- representing all REED data for import into other applications", &xmlOption},
-	{"--", "treat all further parameters as filenames*- if you want filenames to start with a dash", &optionsOption},
+	{"--", "treat all further parameters as filenames*- if you want to have no restrictions on filenames (they otherwise cannot be flags)", &optionsOption},
 };
 
 int setOption(char *argvi)
