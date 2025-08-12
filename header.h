@@ -22,7 +22,8 @@ typedef enum {
             DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSRARROW,
 			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
-			ID // assumes the string s is initialised
+			ID,// assumes the string s is initialised
+            TAGS
 		 } lexval;
 
 typedef struct tmpstr { 
@@ -99,3 +100,11 @@ extern void findComponents();
 extern void explainTranslationRules();
 
 extern int numberOfComponents;
+
+typedef struct {
+    char *tagString;
+    int tagLength;
+} tag;
+
+extern tag startTag, endTag;
+extern tag setTag(char *string);

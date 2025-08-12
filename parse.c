@@ -50,7 +50,40 @@ char getch()
 	{	eof = 1;
 		return EndOfFile;
 	}
-	if( buffer[p] == '\n' )
+    // if startTag is recognised, warn
+    // if endTag is recognised, skip to (just after) startTag
+    // check for EOF during search
+    if( startTag.tagLength > 0 && !strncmp(startTag.tagString, &buffer[p], startTag.tagLength) )
+        fprintf(stderr, "Warning: start tag (%s) found inside REED code\n", startTag.tagString);
+    if( endTag.tagLength > 0 && !strncmp(endTag.tagString, &buffer[p], endTag.tagLength) )
+    {   // end of REED code, skip to startTag
+        printf("end tag matched\n");
+        if( !startTag.tagLength )
+           error("There is an end tag, but the start tag has zero length!\n");
+        //p += endTag.tagLength;
+        while( 1 )
+        {   putchar(buffer[p]);
+            if( !buffer[p] )
+            {   fprintf(stderr, "Missing start tag (%s)? EOF encountered after end tag (%s)\n", startTag.tagString, endTag.tagString);
+                eof = 1;
+                return EndOfFile;
+            }
+            if( buffer[p] == '\n' )
+            {   nextlineno++;
+                nextstartline = p+1;
+            }
+            p++;
+            if( !strncmp(startTag.tagString, &buffer[p], startTag.tagLength) )
+                break;
+        }
+        p += startTag.tagLength;
+        if( !buffer[p] )
+        {   eof = 1;
+            return EndOfFile;
+        }
+    }
+
+    if( buffer[p] == '\n' )
 	{	//fprintf(stderr, "\ngetch newline nextstartline:=%d\n", p);
 		nextlineno++;
 		nextstartline = p+1;
@@ -70,30 +103,31 @@ char nextch()
 
 struct { lexval l; char *symbol; } lexes[] =
 {
-	{ STAR, "*"},
-	{ LBRA, "(" },
-	{ RBRA, ")" },
-	{ SEMI, ";" },
-	{ LARROW, "<-" },
-	{ RARROW, "->" },
-	{ DOUBLEARROW, "<->" },
-	{ ID, "identifier or string" },
-	{ IS, "<is>" },
-	{ NOTE, "<note>" },
-	{ TITLE, "<title>" },
-	{ AUTHOR, "<author>" },
-	{ DATE, "<date>" },
-	{ ABSTRACT, "<abstract>" },
-	{ VERSION, "<version>" },
-	{ HIGHLIGHT, "<highlight>" },
-	{ GROUP, "<group>" },
-	{ NEW, "<new>" },
-	{ STYLE, "<style>" },
-	{ EndOfFile, "end of file" },
-	{ NUMBERING, "<numbering>"},
-	{ ROWS, "<rows>"},
-	{ DIRECTION, "<direction>"},
-	{ OVERRIDE, "<override>"}
+    { STAR, "*"},
+    { LBRA, "(" },
+    { RBRA, ")" },
+    { SEMI, ";" },
+    { LARROW, "<-" },
+    { RARROW, "->" },
+    { DOUBLEARROW, "<->" },
+    { ID, "identifier or string" },
+    { IS, "<is>" },
+    { NOTE, "<note>" },
+    { TITLE, "<title>" },
+    { AUTHOR, "<author>" },
+    { DATE, "<date>" },
+    { ABSTRACT, "<abstract>" },
+    { VERSION, "<version>" },
+    { HIGHLIGHT, "<highlight>" },
+    { GROUP, "<group>" },
+    { NEW, "<new>" },
+    { STYLE, "<style>" },
+    { EndOfFile, "end of file" },
+    { NUMBERING, "<numbering>"},
+    { ROWS, "<rows>"},
+    { DIRECTION, "<direction>"},
+    { OVERRIDE, "<override>"},
+    { TAGS, "<tags>"}
 };
 
 str *currentlexstr;
@@ -107,7 +141,6 @@ char *lexvalue(str *v)
 }
 
 // make same IDs use same string
-
 str *allIDs = NULL;
 
 str *canonicalise(str *s)
@@ -142,8 +175,10 @@ lexval readlex(str **lexstr)
 	(*lexstr)->lineno = lineno;
 	for(;;)
 	{	char ch = getch();
-		while( isblank(ch) || ch == '\n' ) // skip blanks
+
+        while( isblank(ch) || ch == '\n' ) // skip blanks
 			ch = getch();
+
 		if( isalnum(ch) )
 		{	for(;;)
 			{	appendch(*lexstr, ch);
@@ -164,8 +199,9 @@ lexval readlex(str **lexstr)
 					if( !strcmp("numbering", (*lexstr)->s) ) return NUMBERING;
 					if( !strcmp("rows", (*lexstr)->s) ) return ROWS;
 					if( !strcmp("ref", (*lexstr)->s) ) return REF;
-					if( !strcmp("direction", (*lexstr)->s) ) return DIRECTION;
-					// if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n"); 
+                    if( !strcmp("direction", (*lexstr)->s) ) return DIRECTION;
+                    if( !strcmp("tags", (*lexstr)->s) ) return TAGS;
+                    // if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n");
 					return ID;
 				}
 				ch = getch();
@@ -178,19 +214,20 @@ lexval readlex(str **lexstr)
 			case '*': return STAR;
 			case ';': return SEMI;
 			case '<':  // can start <-, <->, and <<<
-				if( nextch() == '<' ) // start of <<<?
-				{	getch();
+				if( nextch() == '<' ) // start of <<<? (herestring)
+                {	char c;
+                    getch();
 					if( nextch() == '<' )
 					{	
 						getch(); // grab the last < of <<<
 						while( isblank(nextch()) )
 							getch();
 						str *ending = newstr("\n");
-						while( nextch() != '\n' )
+						while( (c = nextch()) != '\n' && c != EndOfFile )
 							ending = appendch(ending, getch());
 						removetrailingblanks(ending);
 						// fprintf(stderr, "got '%s' after <<<\n", ending->s);
-						if( nextch() != '\n' ) error("<<<%s should be followed by newline", ending->s);
+						if( nextch() != '\n' ) fprintf(stderr, "<<<%10s... should be followed by newline\n", ending->s);
 						getch(); // consume end of line
 						if( !*ending->s )
 							error("<<< not followed by text that can be used to end the herestring");
@@ -212,8 +249,8 @@ lexval readlex(str **lexstr)
 							if( !matched ) appendch(*lexstr, nextch());
 							getch();
 						}
-						error("end of file after unmatched herestring started with <<< %s", ending->s);
-					} 
+						fprintf(stderr, "end of file after unmatched herestring started with <<<");
+					}
 					else error("<< not formed into a proper <<<");
 					return SEMI;
 				}
@@ -653,7 +690,8 @@ int parse(char *skip, char *filename, char *bp)
 	 lex2 = newstr("");
 	 lex3 = newstr("");
 
-	 for( int i = 0; i < 3; i++ ) getlex();
+	 for( int i = 0; i < 3; i++ )
+        getlex();
 
 	if( 0 ) // check lexing
 	{	while( lex1->l != EndOfFile )
@@ -678,8 +716,8 @@ int parse(char *skip, char *filename, char *bp)
 			
 			case TITLE: case AUTHOR: case DATE: case VERSION: case ABSTRACT: case DIRECTION:
 				if( lex2->l != ID )
-					fprintf(stderr, "%s should be followed by a string but is followed by reserved word %s, which will be used as a string", lex1->s, lexvalue(lex2));
-				if( lex1->l == TITLE ) 
+					fprintf(stderr, "%s should be followed by a string but is followed by reserved word %s, which will be treated as a string\n", lex1->s, lexvalue(lex2));
+				if( lex1->l == TITLE )
 				{	if( dontOverride() && *title ) error("Multiple titles"); 
 					title = lex2->s;
 					if( verboseOption ) fprintf(stderr, "|    Title '%s'\n", title);
@@ -736,7 +774,18 @@ int parse(char *skip, char *filename, char *bp)
 				}
 				getlex();
 				break;
-				
+
+            case TAGS: // expect two strings
+                if( checkOverride("tags") ) break;
+                getlex();
+                if( lex1->l != ID && lex2->l != ID )
+                        error("tag must be followed by two strings, not %s %s", lex1->s, lex2->s);
+                startTag = setTag(lex1->s);
+                endTag = setTag(lex2->s);
+                if( verboseOption )
+                   fprintf(stderr, "Tags set to:\n   %s\n   %s\n", startTag.tagString, endTag.tagString);
+                break;
+
 			case REF:
 				if( checkOverride("highlight") ) break;
 				getlex();
@@ -825,7 +874,7 @@ int parse(char *skip, char *filename, char *bp)
 					if( lex1->l == SEMI ) 
 						getlex();
 				}
-				
+
 				if( lex1->l == IS ) // expect: title note
 				{	getlex();
 					if( lex1->l != ID ) { error("Expected %s name after 'is'", sort); getlex(); break; }
@@ -842,8 +891,8 @@ int parse(char *skip, char *filename, char *bp)
 					{	//printf("assigning %s\n", lex2->s);
 						defineArrowNote(nl->u, nl->v, lex2, lex1);
 					}
-					getlex();
-					break;
+                    getlex();
+                    break;
 				}
 				if( lex1->l != ID ) error("Expected note text but got %s", lex1->s); 
 				else if( isnode ) 

@@ -104,6 +104,14 @@ int flagOption = 0,
     componentsOption = 0,
     generatePDFOption = 0;
 
+int handletags = 0, handleInsert = 0;
+tag startTag = {"", 0}, endTag = {"", 0};
+
+tag setTag(char *str)
+{   tag tmp = {str, strlen(str)};
+    return tmp;
+}
+
 struct structOption
 {	char *option, *usage;
 	int *optionFlag;
@@ -115,6 +123,7 @@ struct structOption
 	{"-f", "show textual descriptions of flag colours in REED drawing", &flagTextOption},
 	{"-g", "open generated REED graphics GraphViz file automatically *- using dot on MacOS", &graphvizOption},
 	{"-h", "generate an interactive HTML REED document*- will refer to a PDF of the REED (generate using -p flag)", &htmlOption},
+    {"-insert", "<text> insert this text to process before next file", &handleInsert},
 	{"-l", "generate a Latex REED document*- also generates some useful definition files*- will refer to a PDF of the REED", &latexOption},
     {"-m", "generate a Mathematica notebook*- representing the REED graph as a series of expressions", &mathematicaOption},
     {"-p", "generate a PDF file*- representing the REED graph", &generatePDFOption},
@@ -122,7 +131,8 @@ struct structOption
 	{"-r", "show all HTML <-> Latex rules", &showRulesOption},
 	{"-s", "show REED file signatures", &showSignatures},
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption},
-	{"-v", "verbose mode", &verboseOption},
+    {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files, and you also set new tags within a REED file by: tags \"start\" \"end\"", &handletags},
+    {"-v", "verbose mode", &verboseOption},
     {"-w", "what versions are used in these files?*- helpful to know if using the v= flag", &showVersionsOption},
 	{"-x", "generate an XML file*- representing all REED data for import into other applications", &xmlOption},
 	{"--", "treat all further parameters as filenames*- if you want filenames to start with a dash", &optionsOption},
@@ -139,8 +149,14 @@ void usage(char *process)
 {	fprintf(stderr, "** did not process any files\nUsage: %s ", process);
 	fprintf(stderr, "[v=value] ");
 	for( int o = 0; o < sizeof options/sizeof(struct structOption); o++ )
-		fprintf(stderr, "[%s] ", options[o].option);
-	fprintf(stderr, "files...\n");
+    {	fprintf(stderr, "[%s", options[o].option);
+        if( !strcmp(options[o].option, "-tags") )
+            fprintf(stderr, " <start> <end>");
+        if( !strcmp(options[o].option, "-insert") )
+            fprintf(stderr, " <text>");
+        fprintf(stderr, "] ");
+    }
+    fprintf(stderr, "files...\n");
 	for( int o = 0; o < sizeof options/sizeof(struct structOption); o++ )
 	{	fprintf(stderr, "       %s ", options[o].option);
 		for( char *s = options[o].usage; *s; s++ )
@@ -169,8 +185,46 @@ int main(int argc, char *argv[])
 	char *bp, *openedfile, *processedFileName, *skip = NULL;
 	int successfulskip = 0;
 	for( int i = 1; i < argc; i++ ) 
-		if( setOption(argv[i]) ) continue;
-		else if( !optionsOption && (bp = index(argv[i], '=')) != NULL ) 
+		if( setOption(argv[i]) )
+        {   // fprintf(stderr, "i=%d arg=%d\n", i, argc);
+            if( handleInsert )
+            {    if( i+1 >= argc ) // can't use error() as there is no lineno yet
+                {   fprintf(stderr, "-insert <text> must be followed by some text to insert\n");
+                    exit(1);
+                }
+                fprintf(stderr, "-insert this text: %s\n", argv[i+1]);
+                opened = 1;
+                openedfile = "inserted-text";
+                bp = argv[i+1];
+                if( !parse(skip, openedfile, bp) ) // return 0 means a fatal error or matched version number to skip
+                {   processedFileName = bp;
+                    successfulskip = 1;
+                    break;
+                }
+                processedFileName = openedfile;
+                i++; // skip over the insert text
+                handleInsert = 0;
+            }
+            if( handletags )
+            {   if( i+2 >= argc ) // can't use error() as there is no lineno yet
+                {   fprintf(stderr, "-tags must be followed by both a start tag and an end tag\n");
+                    exit(1);
+                }
+                fprintf(stderr, "tag start=\"%s\"\n", argv[i+1]);
+                if( startTag.tagLength > 0 )
+                {   // may fix this limitation soon
+                    fprintf(stderr, "Attempting to redefine tags, but can only have one set of start and end tags\n");
+                    exit(1);
+                }
+                startTag = setTag(argv[i+1]);
+                endTag = setTag(argv[i+2]);
+                fprintf(stderr, "tag end=\"%s\"\n", endTag.tagString);
+                i += 2;
+                handletags = 0;
+            }
+            continue;
+        }
+        else if( !optionsOption && (bp = index(argv[i], '=')) != NULL )
 		{	bp[0] = (char) 0;
 			skip = skipversion(newstr(argv[i])->s, &bp[1]);
 		}
@@ -191,7 +245,7 @@ int main(int argc, char *argv[])
 			//if( verboseOption ) fprintf(stderr, ": File %s\n", processedFileName);
 			//fprintf(stderr, "Parse %s starting with successfulskip=%d\n", openedfile, successfulskip);
 			hash(openedfile);
-			if( !parse(skip, openedfile, bp) ) // return 0 means a fatal error or matched version number to skip
+            if( !parse(skip, openedfile, bp) ) // return 0 means a fatal error or matched version number to skip
 			{	processedFileName = openedfile;
 				successfulskip = 1;
 				break;
