@@ -767,10 +767,10 @@ int parse(char *skip, char *filename, char *bp)
 					int ok = 0;
 					direction = lex2->s;
 					for( int t = 0; valid[t]; t++ )
-						if( !strcmp(direction, valid[t]) )
+						if( !strcasecmp(direction, valid[t]) )
 							ok = 1;
 					if( !ok )
-						error("invalid direction '%s'; possible options are BT, TB, LR, RL", direction);
+						error("invalid direction '%s'; possible options are BT, TB, LR, RL (in upper or lower case)", direction);
 				}
 				getlex();
 				break;
