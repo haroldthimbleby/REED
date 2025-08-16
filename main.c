@@ -102,9 +102,34 @@ int flagOption = 0,
     showVersionsOption = 0,
     showRulesOption = 0,
     componentsOption = 0,
-    generatePDFOption = 0;
+    generatePDFOption = 0,
+    syntaxOption = 0;
 
-int handletags = 0, handleInsert = 0;
+char *syntaxSummary = "REED syntax quick outline\n  # comment\n"
+"  tags <begin> <end>\n"
+"  title \"string\"\n"
+"  author \"strings\"\n"
+"  date \"string\"\n"
+"  abstract \"string\"\n"
+"  1->2<-3<->4 # arrows\n"
+"  1 is \"long name\"\n"
+"  note 1 [is \"long name\"] \"string\"\n"
+"  note 1<->2 [is \"long name\"] \"string\"\n"
+"  highlight green is \"description\"\n"
+"  highlight 23 is white\n"
+"  highlight 2 cascade is blue\n"
+"  group (1 2 3 4) is \"name\"\n"
+"  <<< DELIM\n    ...string\n    ...string\nDELIM # end of here string\n"
+"  note 1 [is \"long name\"] \"the note\"\n"
+"  style 1->4 is \"arrowhead=dot,fontname=\\\"Helvetica-Bold\\\"\" # Dot syntax\n"
+"  new style style_id is \"arrowhead=dot...\""
+"  style 17 is style_id\n"
+"  style (nodes arrows...) ...\n"
+"  \"<html> <latex> <both>\"\n"
+"  numbering ((1 2 3 ...) (4 5 6 ...) ...)\n"
+"See more at https://www.harold.thimbleby.net/reeds\n";
+
+int handleTags = 0, handleInsert = 0, handleWatch = 0;
 tag startTag = {"", 0}, endTag = {"", 0};
 
 tag setTag(char *str)
@@ -130,10 +155,12 @@ struct structOption
     {"-n", "show node IDs in graph drawing", &showIDsOption},
 	{"-r", "show all HTML <-> Latex rules", &showRulesOption},
 	{"-s", "show REED file signatures", &showSignatures},
+    {"-syntax", "summarise REED syntax", &syntaxOption},
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption},
-    {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files, and you also set new tags within a REED file by: tags \"start\" \"end\"", &handletags},
+    {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files, and you also set new tags within a REED file by: tags \"start\" \"end\"", &handleTags},
     {"-v", "verbose mode", &verboseOption},
     {"-w", "what versions are used in these files?*- helpful to know if using the v= flag", &showVersionsOption},
+    {"-watch", "run reed when any file changes (nice with -g)", &handleWatch},
 	{"-x", "generate an XML file*- representing all REED data for import into other applications", &xmlOption},
 	{"--", "treat all further parameters as filenames*- if you want to have no restrictions on filenames (they otherwise cannot be flags)", &optionsOption},
 };
@@ -179,13 +206,46 @@ char *skipversion(char *name, char *value)
 	return NULL;
 }
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {	int opened = 0;
 	FILE *fp;
-	char *bp, *openedfile, *processedFileName, *skip = NULL;
+	char *bp, *openedfile, *processedFileName = NULL, *skip = NULL;
 	int successfulskip = 0;
-	for( int i = 1; i < argc; i++ ) 
-		if( setOption(argv[i]) )
+
+    // if any argument is -watch
+    // pull out string of files for fswatch
+    // create new argument string minus all -watch parameters
+    // then system out and exit
+    for( int i = 1; i < argc; i++ )
+        if( !strcmp(argv[i], "-watch") )
+        {   str *command = newstr("reed"), *files = newstr(""), *fswatch = newstr("fswatch ");
+            int filecount = 0;
+            for( int ii = 1; ii < argc; ii++ )
+            {   if( strcmp(argv[ii], "-watch") )
+                {   appendcstr(command, " ");
+                    appendcstr(command, argv[ii]);
+                }
+                if( argv[ii][0] != '-' )
+                {   filecount++;
+                    appendcstr(files, argv[ii]);
+                    appendcstr(files, " ");
+                }
+            }
+            if( !filecount )
+            {   fprintf(stderr, "-watch specified, but no files to watch, so nothing to do\n");
+                exit(1);
+            }
+            //fprintf(stderr, "command = %s\n", command->s);
+            fprintf(stderr, "%s watching file%s: %s\n", argv[0], filecount? "": "s", files->s);
+            appendstr(fswatch, files);
+            appendcstr(fswatch, " | xargs -I {} ");
+            appendstr(fswatch, command);
+            fprintf(stderr, "System:  %s\n", fswatch->s);
+            system(fswatch->s);
+            exit(0);
+        }
+    for( int i = 1; i < argc; i++ )
+        if( setOption(argv[i]) )
         {   // fprintf(stderr, "i=%d arg=%d\n", i, argc);
             if( handleInsert )
             {    if( i+1 >= argc ) // can't use error() as there is no lineno yet
@@ -205,7 +265,7 @@ int main(int argc, char *argv[])
                 i++; // skip over the insert text
                 handleInsert = 0;
             }
-            if( handletags )
+            if( handleTags )
             {   if( i+2 >= argc ) // can't use error() as there is no lineno yet
                 {   fprintf(stderr, "-tags must be followed by both a start tag and an end tag\n");
                     exit(1);
@@ -220,48 +280,52 @@ int main(int argc, char *argv[])
                 endTag = setTag(argv[i+2]);
                 fprintf(stderr, "tag end=\"%s\"\n", endTag.tagString);
                 i += 2;
-                handletags = 0;
+                handleTags = 0;
             }
             continue;
         }
         else if( !optionsOption && (bp = index(argv[i], '=')) != NULL )
-		{	bp[0] = (char) 0;
-			skip = skipversion(newstr(argv[i])->s, &bp[1]);
-		}
-		else if( (fp = fopen(openedfile = argv[i], "r")) != NULL )
-		{	struct stat stat_buf;
-			int errno;
-			if( (errno = fstat(fileno(fp), &stat_buf)) != 0 )
-			{	fprintf(stderr, "Cannot stat %s: %s\n", openedfile, strerror(errno));
-				exit(0);
-			}
-			bp = safealloc(1+stat_buf.st_size);
-			if( fread(bp, 1, stat_buf.st_size, fp) != stat_buf.st_size )
-			{	fprintf(stderr, "** cannot read from \"%s\" (maybe a permissions problem?)\n", openedfile);
-				continue;
-			}
-			bp[stat_buf.st_size] = (char) 0;
-			opened = 1;
-			//if( verboseOption ) fprintf(stderr, ": File %s\n", processedFileName);
-			//fprintf(stderr, "Parse %s starting with successfulskip=%d\n", openedfile, successfulskip);
-			hash(openedfile);
+        {   bp[0] = (char) 0;
+            skip = skipversion(newstr(argv[i])->s, &bp[1]);
+        }
+        else
+        if( (fp = fopen(openedfile = argv[i], "r")) != NULL )
+        {   struct stat stat_buf;
+            int errno;
+            if( (errno = fstat(fileno(fp), &stat_buf)) != 0 )
+            {   fprintf(stderr, "Cannot stat %s: %s\n", openedfile, strerror(errno));
+                exit(0);
+            }
+            bp = safealloc(1+stat_buf.st_size);
+            if( fread(bp, 1, stat_buf.st_size, fp) != stat_buf.st_size )
+            {   fprintf(stderr, "** cannot read from \"%s\" (maybe a permissions problem?)\n", openedfile);
+                continue;
+            }
+            bp[stat_buf.st_size] = (char) 0;
+            opened = 1;
+            //if( verboseOption ) fprintf(stderr, ": File %s\n", processedFileName);
+            //fprintf(stderr, "Parse %s starting with successfulskip=%d\n", openedfile, successfulskip);
+            hash(openedfile);
             if( !parse(skip, openedfile, bp) ) // return 0 means a fatal error or matched version number to skip
-			{	processedFileName = openedfile;
-				successfulskip = 1;
-				break;
-			}
-			processedFileName = openedfile;
-			//fprintf(stderr, "file processed = %s\n", openedfile);
-			free(bp);
-			fclose(fp);
-		}
-		else fprintf(stderr, "** cannot open file \"%s\"\n", openedfile);
-	if( showRulesOption ) explainTranslationRules();
-	if( !opened ) usage(argv[0]);
-	if( skip && !successfulskip )
-		nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
-	findComponents(); // find components before generating HTML, Latex, etc
-	if( *processedFileName ) // make dot, latex, etc files after last processed file name
-		generateFiles(processedFileName); // processFileName is the last name
-	return 0;
+            {   processedFileName = openedfile;
+                successfulskip = 1;
+                break;
+            }
+            processedFileName = openedfile;
+            //fprintf(stderr, "file processed = %s\n", openedfile);
+            free(bp);
+            fclose(fp);
+        }
+    if( syntaxOption )
+        fprintf(stderr, "%s\n", syntaxSummary);
+    if( !opened ) fprintf(stderr, "** did not open any files\n");
+    if( !opened ) usage(argv[0]);
+    if( showRulesOption )
+        explainTranslationRules();
+    if( skip && !successfulskip )
+        nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
+    findComponents(); // find components before generating HTML, Latex, etc
+    if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
+        generateFiles(processedFileName); // processFileName is the last name
+    return 0;
 }
