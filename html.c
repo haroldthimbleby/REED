@@ -330,12 +330,12 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	{	fprintf(opfd, "<h1>No notes provided</h1>\n");
 		for( node *t = nodeList; t != NULL; t = t->next )
 			if( t->s->note == NULL )
-			{	myfprintf(opfd, "\\textbf{Node ");
+			{	myfprintf(opfd, "<h2>Node ");
 				printrank(opfd, t->s, version);
-				myfprintf(opfd, " %t}", t->s->is != NULL? t->s->is->s: t->s->s);
+				myfprintf(opfd, " %t", t->s->is != NULL? t->s->is->s: t->s->s);
 				if( t->s->is != NULL )
 					myfprintf(opfd, " [%t]", t->s->s);
-				fprintf(opfd, "<br/>");
+				fprintf(opfd, "<h2/>");
 			} 
 	}
 	
