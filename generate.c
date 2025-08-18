@@ -7,6 +7,7 @@ char *defaultstyle = "fillcolor=\"gray90\"; style=filled; shape=ellipse; fontnam
 rownodes *cols = NULL;
 extern char *title, *date, *version, *abstract, *direction;
 extern void summarizeMissingFlagDefinitions();
+str *latexdefinitions;
 
 void xmlconverted(FILE *opfd, char *content)
 {	for( char *s = content; *s; s++ )

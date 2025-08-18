@@ -144,8 +144,19 @@ void colorkey(FILE *opfd, char *heading, char *vskip)
 // generate the narrative .tex (latex) file
 void notes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract)
 { 	// note use of %t in myfprintf instead of %s in fprintf - this makes %s latex-safe
-	
-	myfprintf(opfd, "\\title{%t%t%t%t}\\author{", title, 
+
+    myfprintf(opfd, "\\documentclass[10pt,a4wide]{article}\n"
+              "\\usepackage{geometry}\n\\geometry{a4paper}\n"
+              "\\usepackage{xcolor}\n"
+              "\\usepackage{url}\n"
+              "\\usepackage{graphicx}\n"
+              "\\usepackage{hyperref}\n"
+              "\\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}"
+            );
+
+    myfprintf(opfd, "\n%s\n", latexdefinitions->s);
+
+	myfprintf(opfd, "\\title{%t%t%t%t}\\author{", title,
 			*title? "\\\\": "", *version? "Version ": "", version);
 
 	while( authors != NULL )
@@ -375,7 +386,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 				fprintf(opfd, "\\\\");
 			} 
 	}
-	fprintf(opfd, "\n");
+	fprintf(opfd, "\n\n\\end{document}\n");
 }
 
 void defineArrowNote(str *u, str *v, str *theNote, str *theIs)

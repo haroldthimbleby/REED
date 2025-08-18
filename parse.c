@@ -127,7 +127,8 @@ struct { lexval l; char *symbol; } lexes[] =
     { ROWS, "<rows>"},
     { DIRECTION, "<direction>"},
     { OVERRIDE, "<override>"},
-    { TAGS, "<tags>"}
+    { TAGS, "<tags>"},
+    { LATEXDEFINITIONS, "<latexdefinitions>"}
 };
 
 str *currentlexstr;
@@ -201,6 +202,7 @@ lexval readlex(str **lexstr)
 					if( !strcmp("ref", (*lexstr)->s) ) return REF;
                     if( !strcmp("direction", (*lexstr)->s) ) return DIRECTION;
                     if( !strcmp("tags", (*lexstr)->s) ) return TAGS;
+                    if( !strcmp("latexdefinitions", (*lexstr)->s) ) return LATEXDEFINITIONS;
                     // if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n");
 					return ID;
 				}
@@ -690,6 +692,7 @@ int parse(char *skip, char *filename, char *bp)
 	 lex1 = newstr("");
 	 lex2 = newstr("");
 	 lex3 = newstr("");
+    latexdefinitions = newstr("");
 
 	 for( int i = 0; i < 3; i++ )
         getlex();
@@ -775,6 +778,16 @@ int parse(char *skip, char *filename, char *bp)
 				}
 				getlex();
 				break;
+
+            case LATEXDEFINITIONS:
+                if( lex2->l != ID )
+                    error("latexdefinitions should be followed by a string of Latex");
+                else {
+                    appendcstr(latexdefinitions, "\n");
+                    appendstr(latexdefinitions, lex2);
+                    getlex();
+                }
+                break;
 
             case TAGS: // expect two strings
                 if( checkOverride("tags") ) break;
