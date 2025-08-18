@@ -476,11 +476,21 @@ void generated(char *filename, char *reason)
     fprintf(stderr, "Generated %s   --   %s\n", filename, reason);
 }
 
+void stopiferror()
+{
+    if( errcount > 0 )
+    {   nolineerror("Stopped due to error%s", errcount>1? "s": "");
+        exit(1);
+    }
+}
+
 void generateFiles(char *filename)
 {	str *base = basename(filename); 
 	// printf("Styles are:\n");
 	// for( node *u = stylelist; u != NULL; u = u->next )
 	//	printf("  %s = %s\n", u->s->style->s, u->s->s);
+
+    checkIS();
 
 	// now everything collected, replace use of style nodes with the style values themselves
 	for( node *t = nodeList; t != NULL; t = t->next )
@@ -533,23 +543,27 @@ void generateFiles(char *filename)
     checkAllRtrans();
 	summarizeMissingFlagDefinitions();
 
-	if( 0 )
+    if( 0 )
 		for( node *t = nodeList; t != NULL; t = t->next )
 			if( !t->s->pointsTo && !t->s->pointedFrom )
 				fprintf(stderr, "Node %s is not on any arrow: %d %d\n", t->s->s, t->s->pointsTo, t->s->pointedFrom);
 	
-	FILE *fd = fopen(filename = newappendcstr(base, ".gv")->s, "w");
+    stopiferror();
+    FILE *fd = fopen(filename = newappendcstr(base, ".gv")->s, "w");
 	if( fd == NULL ) error("Can't open %s (graphviz file) for writing", filename);
 	else
 	{	// try: $ dot -Tps graph1.gv -o graph1.ps
-		dot(fd, title, version, date, direction);
+        if( verboseOption )
+            fprintf(stderr, "|--NB https://magjac.com/graphviz-visual-editor is a playground that can pinpoint errors\n");
+        dot(fd, title, version, date, direction);
 		fclose(fd);
         generated(filename, "dot file of the REED graph (use -p flag or dot -Tpdf to convert it to PDF)");
 		if( graphvizOption )
 		{	str *cmd = newstr("open ");
 			appendstr(cmd, base);
 			appendcstr(cmd, ".gv");
-			fprintf(stderr, "System:  %s\n", cmd->s);
+            if( verboseOption ) fprintf(stderr, "|--");
+            if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
 			system(cmd->s);
 		}
         if( generatePDFOption )
@@ -558,7 +572,8 @@ void generateFiles(char *filename)
             appendcstr(cmd, ".gv > ");
             appendstr(cmd, base);
             appendcstr(cmd, ".pdf");
-            fprintf(stderr, "System:  %s\n", cmd->s);
+            if( verboseOption ) fprintf(stderr, "|--");
+            if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
             system(cmd->s);
             cmd = newstr(base->s);
             appendcstr(cmd, ".pdf");
@@ -568,7 +583,8 @@ void generateFiles(char *filename)
 	}
 
 	if( latexOption )
-	{	fd = fopen(filename = newappendcstr(base, ".tex")->s, "w");
+    {	stopiferror();
+        fd = fopen(filename = newappendcstr(base, ".tex")->s, "w");
 		if( fd == NULL ) error("Can't open %s (tex/latex file) for writing", filename);
 		else
 		{	
@@ -603,7 +619,8 @@ void generateFiles(char *filename)
 	}
 	
 	if( htmlOption )
-    {	fd = fopen(filename = newappendcstr(base, ".html")->s, "w");
+    {	stopiferror();
+        fd = fopen(filename = newappendcstr(base, ".html")->s, "w");
 		if( fd == NULL ) error("Can't open %s (HTML file) for writing", filename);
 		else
 		{	
@@ -621,7 +638,8 @@ void generateFiles(char *filename)
 	}
 
 	if( xmlOption )
-	{	fd = fopen(filename = newappendcstr(base, ".xml")->s, "w");
+    {	stopiferror();
+        fd = fopen(filename = newappendcstr(base, ".xml")->s, "w");
 		if( fd == NULL ) error("Can't open %s (XML file) for writing", filename);
 		else
 		{	xml(fd);
@@ -631,7 +649,8 @@ void generateFiles(char *filename)
 	}
 
 	if( mathematicaOption )
-	{	fd = fopen(filename = newappendcstr(base, ".nb")->s, "w");
+    {	stopiferror();
+        fd = fopen(filename = newappendcstr(base, ".nb")->s, "w");
 		if( fd == NULL ) error("Can't open %s (mathematica file) for writing", filename);
 		else
 		{	mathematica(fd, title, version, authors, date, abstract);
@@ -639,7 +658,4 @@ void generateFiles(char *filename)
             generated(filename, "Experimental Mathematica definition of the REED graph");
 		}
 	}
-
-	if( verboseOption )
-		fprintf(stderr, "|--NB https://magjac.com/graphviz-visual-editor is a playground that can pinpoint errors\n");
 }

@@ -675,8 +675,9 @@ int checkOverride(char *e)
 int skipnexttime = 0; // must be preserved between files
 
 int parse(char *skip, char *filename, char *bp)
-{	if( verboseOption ) fprintf(stdout, "|--Reading file %s\n", filename);
-	str *base = basename(filename); 
+{	if( separatorOption ) fprintf(stderr, "***************************************\n");
+    if( verboseOption ) fprintf(stdout, "|--Reading file %s\n", filename);
+	str *base = basename(filename);
 	//fprintf(stderr, "Basename is %s\n\n", base->s);
 	//fprintf(stderr, "Example pdf %s\n", newappendcstr(base, ".pdf")->s);
 	//fprintf(stderr, "Example tex %s\n", newappendcstr(base, ".tex")->s);
@@ -1018,7 +1019,7 @@ int parse(char *skip, char *filename, char *bp)
 				break;
 
 			default: error("Unexpected %s [e1]", lexvalue(lex1)); 
-				return 1;
+				break;
 		}
 		getlex();
 	}

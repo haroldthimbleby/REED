@@ -166,3 +166,31 @@ void checkAllRtrans()
             fprintf(stderr, "** Failed: %s ->* %s\n", p->u->s, p->v->s);
     }
 }
+
+void checkISaux(char *id, str *t)
+{
+    if( t != NULL )
+    {   //fprintf(stderr, "got %s\n", t->s);
+        // is there any node with this as its name?
+        for( node *u = nodeList; u != NULL; u = u->next )
+        {   //fprintf(stderr," %s <> %s\n", t->s, u->s->s);
+            if( !strcmp(u->s->s, t->s) )
+                nolineerror("To avoid confusion, you must not have\n   \"%s\" is \"%s\"\nand a node called\n   \"%s\"!\n", id, u->s->s, u->s->s);
+        }
+    }
+}
+
+void checkIS() // warn if any name occurs as a node if there is any node is name or arrow is name
+{
+    for( arrow *a = arrowList; a != NULL; a = a->next )
+    {   //checkISaux(a->s, a->arrowis);
+        checkISaux(a->u->s, a->u->is);
+        checkISaux(a->v->s, a->v->is);
+    }
+    for( arrow *t = noteArrowList; t != NULL; t = t->next )
+        checkISaux(t->u->s, t->arrowis);
+    for( node *u = nodeList; u != NULL; u = u->next )
+    {   //fprintf(stderr, "Node %s\n", u->s->s);
+        checkISaux(u->s->s, u->s->is);
+    }
+}

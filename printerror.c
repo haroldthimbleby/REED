@@ -48,7 +48,7 @@ void nolineerror(char *fmt, ...)
        }
        va_end(ap);
        fprintf(stderr, "\n");
-	if( 0 && ++errcount > MAXERRORS )
+	if( ++errcount > MAXERRORS )
 	{	fprintf(stderr, "... too many errors!\n");
 		exit(1);
 	}

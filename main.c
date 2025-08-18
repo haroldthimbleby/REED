@@ -129,7 +129,7 @@ char *syntaxSummary = "REED syntax quick outline\n  # comment\n"
 "  numbering ((1 2 3 ...) (4 5 6 ...) ...)\n"
 "See more at https://www.harold.thimbleby.net/reeds\n";
 
-int handleTags = 0, handleInsert = 0, handleWatch = 0;
+int handleTags = 0, handleInsert = 0, handleWatch = 0, separatorOption = 0;
 tag startTag = {"", 0}, endTag = {"", 0};
 
 tag setTag(char *str)
@@ -155,9 +155,10 @@ struct structOption
     {"-n", "show node IDs in graph drawing", &showIDsOption},
 	{"-r", "show all HTML <-> Latex rules", &showRulesOption},
 	{"-s", "show REED file signatures", &showSignatures},
+    {"-sep", "draw a separator line before any output (useful with -watch)", &separatorOption},
     {"-syntax", "summarise REED syntax", &syntaxOption},
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption},
-    {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files, and you also set new tags within a REED file by: tags \"start\" \"end\"", &handleTags},
+    {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: tags \"start\" \"end\"", &handleTags},
     {"-v", "verbose mode", &verboseOption},
     {"-w", "what versions are used in these files?*- helpful to know if using the v= flag", &showVersionsOption},
     {"-watch", "run reed when any file changes (nice with -g)", &handleWatch},
@@ -230,17 +231,19 @@ int main(int argc, char *argv[])
                     appendcstr(files, argv[ii]);
                     appendcstr(files, " ");
                 }
+                if( !strcmp(argv[ii], "-v") )
+                    verboseOption = 1; // this is the only option we pay attention in -watch
             }
             if( !filecount )
             {   fprintf(stderr, "-watch specified, but no files to watch, so nothing to do\n");
                 exit(1);
             }
             //fprintf(stderr, "command = %s\n", command->s);
-            fprintf(stderr, "%s watching file%s: %s\n", argv[0], filecount? "": "s", files->s);
+            if( verboseOption ) fprintf(stderr, "|--%s watching file%s: %s\n", argv[0], filecount? "": "s", files->s);
             appendstr(fswatch, files);
-            appendcstr(fswatch, " | xargs -I {} ");
+            appendcstr(fswatch, "| xargs -I {} ");
             appendstr(fswatch, command);
-            fprintf(stderr, "System:  %s\n", fswatch->s);
+            if( verboseOption ) fprintf(stderr, "|--System:  %s\n", fswatch->s);
             system(fswatch->s);
             exit(0);
         }
@@ -248,7 +251,7 @@ int main(int argc, char *argv[])
         if( setOption(argv[i]) )
         {   // fprintf(stderr, "i=%d arg=%d\n", i, argc);
             if( handleInsert )
-            {    if( i+1 >= argc ) // can't use error() as there is no lineno yet
+            {   if( i+1 >= argc ) // can't use error() as there is no lineno yet
                 {   fprintf(stderr, "-insert <text> must be followed by some text to insert\n");
                     exit(1);
                 }
@@ -293,12 +296,12 @@ int main(int argc, char *argv[])
         {   struct stat stat_buf;
             int errno;
             if( (errno = fstat(fileno(fp), &stat_buf)) != 0 )
-            {   fprintf(stderr, "Cannot stat %s: %s\n", openedfile, strerror(errno));
+            {   fprintf(stderr, "** Cannot stat %s: %s\n", openedfile, strerror(errno));
                 exit(0);
             }
             bp = safealloc(1+stat_buf.st_size);
             if( fread(bp, 1, stat_buf.st_size, fp) != stat_buf.st_size )
-            {   fprintf(stderr, "** cannot read from \"%s\" (maybe a permissions problem?)\n", openedfile);
+            {   fprintf(stderr, "** Cannot read from \"%s\" (maybe a permissions problem?)\n", openedfile);
                 continue;
             }
             bp[stat_buf.st_size] = (char) 0;
