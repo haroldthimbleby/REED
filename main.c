@@ -170,12 +170,13 @@ int setOption(char *argvi)
 {	if( !optionsOption )
 		for( int o = 0; o < sizeof options/sizeof(struct structOption); o++ )
 			if( !strcmp(options[o].option, argvi) ) return *options[o].optionFlag = 1;
+    if( !optionsOption && argvi[0] == '-' )
+        nolineerror("Flag %s not recognised", argvi);
 	return 0;
 }
 
 void usage(char *process)
-{	fprintf(stderr, "** did not process any files\nUsage: %s ", process);
-	fprintf(stderr, "[v=value] ");
+{	fprintf(stderr, "[v=value] ");
 	for( int o = 0; o < sizeof options/sizeof(struct structOption); o++ )
     {	fprintf(stderr, "[%s", options[o].option);
         if( !strcmp(options[o].option, "-tags") )
@@ -201,7 +202,7 @@ void usage(char *process)
 
 char *skipversion(char *name, char *value)
 {	if( strcmp(name, "v") ) 
-		fprintf(stderr, "** only v=value skip versions option implemented\n");
+		nolineerror("** only v=value skip versions option implemented\n");
 	else
 		return value;
 	return NULL;
@@ -235,7 +236,7 @@ int main(int argc, char *argv[])
                     verboseOption = 1; // this is the only option we pay attention in -watch
             }
             if( !filecount )
-            {   fprintf(stderr, "-watch specified, but no files to watch, so nothing to do\n");
+            {   nolineerror("-watch specified, but no files to watch, so nothing to do\n");
                 exit(1);
             }
             //fprintf(stderr, "command = %s\n", command->s);
@@ -252,7 +253,7 @@ int main(int argc, char *argv[])
         {   // fprintf(stderr, "i=%d arg=%d\n", i, argc);
             if( handleInsert )
             {   if( i+1 >= argc ) // can't use error() as there is no lineno yet
-                {   fprintf(stderr, "-insert <text> must be followed by some text to insert\n");
+                {   nolineerror("-insert <text> must be followed by some text to insert\n");
                     exit(1);
                 }
                 fprintf(stderr, "-insert this text: %s\n", argv[i+1]);
@@ -270,13 +271,13 @@ int main(int argc, char *argv[])
             }
             if( handleTags )
             {   if( i+2 >= argc ) // can't use error() as there is no lineno yet
-                {   fprintf(stderr, "-tags must be followed by both a start tag and an end tag\n");
+                {   nolineerror("-tags must be followed by both a start tag and an end tag\n");
                     exit(1);
                 }
                 fprintf(stderr, "tag start=\"%s\"\n", argv[i+1]);
                 if( startTag.tagLength > 0 )
                 {   // may fix this limitation soon
-                    fprintf(stderr, "Attempting to redefine tags, but can only have one set of start and end tags\n");
+                    nolineerror("Attempting to redefine tags, but can only have one set of start and end tags\n");
                     exit(1);
                 }
                 startTag = setTag(argv[i+1]);
@@ -296,12 +297,12 @@ int main(int argc, char *argv[])
         {   struct stat stat_buf;
             int errno;
             if( (errno = fstat(fileno(fp), &stat_buf)) != 0 )
-            {   fprintf(stderr, "** Cannot stat %s: %s\n", openedfile, strerror(errno));
+            {   nolineerror("** Cannot stat %s: %s\n", openedfile, strerror(errno));
                 exit(0);
             }
             bp = safealloc(1+stat_buf.st_size);
             if( fread(bp, 1, stat_buf.st_size, fp) != stat_buf.st_size )
-            {   fprintf(stderr, "** Cannot read from \"%s\" (maybe a permissions problem?)\n", openedfile);
+            {   nolineerror("** Cannot read from \"%s\" (maybe a permissions problem?)\n", openedfile);
                 continue;
             }
             bp[stat_buf.st_size] = (char) 0;
@@ -321,7 +322,7 @@ int main(int argc, char *argv[])
         }
     if( syntaxOption )
         fprintf(stderr, "%s\n", syntaxSummary);
-    if( !opened ) fprintf(stderr, "** did not open any files\n");
+    if( !opened ) fprintf(stderr, "** did not process any files\n");
     if( !opened ) usage(argv[0]);
     if( showRulesOption )
         explainTranslationRules();
