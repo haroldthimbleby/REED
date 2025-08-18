@@ -60,7 +60,7 @@ extern void strpad(str **s, int d); // pad to length d with spaces
 extern str *appendstr(str *d, str *e); // append a string to a string
 
 extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption,generatePDFOption, showVersionsOption, componentsOption,
-	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption;
+	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption;
 
 extern void generateFiles(char *filename);
 
@@ -108,3 +108,6 @@ typedef struct {
 
 extern tag startTag, endTag;
 extern tag setTag(char *string);
+
+extern void checkIS();
+extern int errcount;
