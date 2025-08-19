@@ -64,7 +64,7 @@ char getch()
         while( 1 )
         {   putchar(buffer[p]);
             if( !buffer[p] )
-            {   fprintf(stderr, "Missing start tag (%s)? EOF encountered after end tag (%s)\n", startTag.tagString, endTag.tagString);
+            {   error("Missing start tag (\"%s\"), and EOF encountered after end tag (\"%s\")\n", startTag.tagString, endTag.tagString);
                 eof = 1;
                 return EndOfFile;
             }
@@ -128,7 +128,9 @@ struct { lexval l; char *symbol; } lexes[] =
     { DIRECTION, "<direction>"},
     { OVERRIDE, "<override>"},
     { TAGS, "<tags>"},
-    { LATEXDEFINITIONS, "<latexdefinitions>"}
+    { LATEXDEFINITIONS, "<latexdefinitions>"},
+    { CHECK, "<check>"},
+    { TRANSARROW, "=>"}
 };
 
 str *currentlexstr;
@@ -203,6 +205,7 @@ lexval readlex(str **lexstr)
                     if( !strcmp("direction", (*lexstr)->s) ) return DIRECTION;
                     if( !strcmp("tags", (*lexstr)->s) ) return TAGS;
                     if( !strcmp("latexdefinitions", (*lexstr)->s) ) return LATEXDEFINITIONS;
+                    if( !strcmp("check", (*lexstr)->s) ) return CHECK;
                     // if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n");
 					return ID;
 				}
@@ -256,7 +259,7 @@ lexval readlex(str **lexstr)
 					else error("<< not formed into a proper <<<");
 					return SEMI;
 				}
-				if( nextch() != '-' ) error("< not followed by - to make <- or <-> arrows");
+				if( nextch() != '-' ) error("< not followed by - to make either <- or <-> arrows");
 				else getch();
 				if( nextch() == '>' )
 				{
@@ -264,13 +267,15 @@ lexval readlex(str **lexstr)
 					return DOUBLEARROW;
 				}
 				return LARROW;
-			case '-': 
-				if( nextch() != '>' ) error("- not followed by > to make -> arrow");
-				else getch();
-                if( nextch() == '*' )
-                {   getch();
-                    return TRANSRARROW;
-                }
+            case '=':
+                if( nextch() != '>' )
+                    error("= not followed by > to make checking arrow =>");
+                else getch();
+                return TRANSARROW;
+                break;
+			case '-':
+                if( nextch() != '>' ) error("- not followed by > to make -> arrow");
+                else getch();
 				return RARROW;
 			case '#': // comment
                 if( commentOption ) fprintf(stderr, "Line %4d #", lineno);
@@ -310,7 +315,7 @@ lexval readlex(str **lexstr)
 				*lexstr = newstr("<eof>");
 				return EndOfFile;
 		}
-		error("Unrecognized character '%c' (%d) ignored", ch, ch); 
+		error("Unrecognized or out of place character '%c' (%d) ignored", ch, ch);
 	}
 }
 
@@ -792,12 +797,14 @@ int parse(char *skip, char *filename, char *bp)
             case TAGS: // expect two strings
                 if( checkOverride("tags") ) break;
                 getlex();
+                //fprintf(stderr, "tag followed by two strings, %s %s\n", lex1->s, lex2->s);
                 if( lex1->l != ID && lex2->l != ID )
-                        error("tag must be followed by two strings, not %s %s", lex1->s, lex2->s);
+                    error("Tag must be followed by two strings, not %s %s", lex1->s, lex2->s);
                 startTag = setTag(lex1->s);
                 endTag = setTag(lex2->s);
                 if( verboseOption )
-                   fprintf(stderr, "Tags set to:\n   %s\n   %s\n", startTag.tagString, endTag.tagString);
+                   fprintf(stderr, "|--Tags set to:\n|--   %s\n|--   %s\n", startTag.tagString, endTag.tagString);
+                getlex();
                 break;
 
 			case REF:
@@ -990,13 +997,26 @@ int parse(char *skip, char *filename, char *bp)
 				makenewstyle = 0;
 				break;
 
+            case CHECK: // check id => id
+                // fprintf(stderr, "got check...\n");
+                getlex();
+                if( lex1->l != ID || lex2->l != TRANSARROW || lex3->l != ID ) error("check should be followed by node => node");
+                else
+                    saveCheckRtrans(lex1, lex3);
+                getlex();
+                getlex();
+                break;
+
 			case ID:
 				if( checkOverride("nodes or arrows") ) break;
-				
 				switch( lex2->l )
 				{ 	case IS: // id1 is id3
 						newnode(&lex1);
-						if( lex3->l != ID ) { error("Expected string or identifier afer 'is'"); getlex(); break; }
+                        if( lex3->l != ID )
+                        {   error("Expected string or identifier afer 'is'");
+                            getlex();
+                            break;
+                        }
 						if( lex1->is ) error("Mutliple 'is' names for same node %s", lex1->s);
 						lex1->is = lex3;
 						getlex();
@@ -1005,12 +1025,7 @@ int parse(char *skip, char *filename, char *bp)
 					case LARROW: case RARROW: case DOUBLEARROW:
 						whilearrow(&arrowList, 1);
 						break;
-                    case TRANSRARROW:
-                        saveCheckRtrans(lex1, lex3);
-                        getlex();
-                        getlex();
-                        break;
-					default: // an isolated node
+                    default: // an isolated node
 						fprintf(stderr, "Warning: isolated node with no arrow or 'is': %s\n", lex1->s);
 						newnode(&lex1);
 						break;

@@ -135,6 +135,7 @@ void saveCheckRtrans(str *u, str *v)
     transPairsList->next = np;
     transPairsList->u = u;
     transPairsList->v = v;
+    // fprintf(stderr, "save check %s => %s\n", u->s, v->s);
 }
 
 int checkOneRtrans(str *u, str *v)
@@ -157,13 +158,12 @@ int checkOneRtrans(str *u, str *v)
 
 void checkAllRtrans()
 {   for( struct transpair *p = transPairsList; p != NULL; p = p->next )
-    {
-        if( checkOneRtrans(p->u, p->v) )
+    {   if( checkOneRtrans(p->u, p->v) )
         {   if( verboseOption )
-            fprintf(stderr, "|    Checked OK: %s ->* %s\n", p->u->s, p->v->s);
+                fprintf(stderr, "|    ** Passed check %s -> %s\n", p->u->s, p->v->s);
         }
         else
-            fprintf(stderr, "** Failed: %s ->* %s\n", p->u->s, p->v->s);
+            fprintf(stderr, "** Failed check %s => %s\n", p->u->s, p->v->s);
     }
 }
 
