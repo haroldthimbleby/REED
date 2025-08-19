@@ -19,11 +19,11 @@ typedef enum { None, String, Node, Arrow, Annotation } type;
 enum flagcolor { noflag, black, blue, green, red, white, yellow };  // in alpha order
 
 typedef enum {
-            DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSRARROW,
+            DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK,
 			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
 			ID,// assumes the string s is initialised
-            TAGS
+            TAGS, LATEXDEFINITIONS
 		 } lexval;
 
 typedef struct tmpstr { 
@@ -44,7 +44,7 @@ extern void colorkey(FILE *opfd, char *heading, char *vskip);
 typedef struct rownode { str *node; int label; struct rownode *right, *down;} rownodes;
 
 extern char *undefinedVersion;
-
+extern str *latexdefinitions;
 extern str *newstr(char *s);
 
 extern str *appendch(str *d, char c);
