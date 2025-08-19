@@ -176,7 +176,7 @@ int setOption(char *argvi)
 }
 
 void usage(char *process)
-{	fprintf(stderr, "[v=value] ");
+{	fprintf(stderr, "%s [v=value] ", process);
 	for( int o = 0; o < sizeof options/sizeof(struct structOption); o++ )
     {	fprintf(stderr, "[%s", options[o].option);
         if( !strcmp(options[o].option, "-tags") )
