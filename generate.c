@@ -492,6 +492,7 @@ void generateFiles(char *filename)
 	//	printf("  %s = %s\n", u->s->style->s, u->s->s);
 
     checkIS();
+    checkNumbering();
 
 	// now everything collected, replace use of style nodes with the style values themselves
 	for( node *t = nodeList; t != NULL; t = t->next )

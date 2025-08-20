@@ -111,3 +111,4 @@ extern tag setTag(char *string);
 
 extern void checkIS();
 extern int errcount;
+extern void checkNumbering();
