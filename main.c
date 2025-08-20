@@ -322,11 +322,13 @@ int main(int argc, char *argv[])
         }
     if( syntaxOption )
         fprintf(stderr, "%s\n", syntaxSummary);
-    if( !opened ) fprintf(stderr, "** did not process any files\n");
-    if( !opened ) usage(argv[0]);
     if( showRulesOption )
         explainTranslationRules();
-    if( skip && !successfulskip )
+    if( !opened )
+        fprintf(stderr, "** did not process any files\n");
+   if( !syntaxOption && !showRulesOption && !opened )
+        usage(argv[0]);
+     if( skip && !successfulskip )
         nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
     findComponents(); // find components before generating HTML, Latex, etc
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
