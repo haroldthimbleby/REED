@@ -42,7 +42,7 @@
 "    note node-or-arrow-list [is id [;]] [author id [;]] id!Provide narrative note for the nodes or arrows, optionally naming them\n"
 "    numbering ( {( id-or-star+ )}++ )!Make node references row.column numbers following the grid layout\n"
 "    [override] {abstract | date | title | version} id!Provide abstract, date, etc. Just once, unless overide\n"
-"    ref id is id!Change the reference of node id1 to be id2\n"
+"    ref id is id!Set the reference of node id1 to be id2\n"
 "    rows [TOC] ( {id ( id+ )}++ )!Draw a graph with a structured layout, with optional Theory of Change styling\n"
 "    style node-or-arrow-list is id!Set style of nodes or arrows, either to explicit Dot style or to a named style\n"
 "    tags id id!Only process REED code between id1 (begin) and id2 (end) (so needs id2 to stop REED processing)\n"
