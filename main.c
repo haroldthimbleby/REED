@@ -301,7 +301,13 @@ int main(int argc, char *argv[])
             fclose(fp);
         }
     if( syntaxOption )
-        fprintf(stderr, "%s\n", syntaxSummary);
+    {   for( char *summary = syntaxSummary; *summary; summary++ )
+        {  if( *summary == '!' ) fprintf(stderr, "\n        -  ");
+           else
+               fprintf(stderr, "%c", *summary);
+        }
+        fprintf(stderr, "\n");
+    }
     if( showRulesOption )
         explainTranslationRules();
     if( !opened )
