@@ -465,28 +465,18 @@ void numbering()
 
 void checkNumbering()
 {   // have we set reference numbers for all nodes?
-    int notset = 1;
+    int notset = 0;
     for( node *t = nodeList; t != NULL; t = t->next )
-        if( t->s->rankx || t->s->ranky )
-        {   notset = 0;
-            break;
-        }
-    if( notset )
-        fprintf(stderr, "Suggestion: Use numbering (...) to set x.y numbering if you want it\n");
-    else
-    {   notset = 0;
-        for( node *t = nodeList; t != NULL; t = t->next )
-        {   if( !t->s->rankx || !t->s->ranky )
-            {   if( t->s->noderef && *t->s->noderef ) continue;
-                if( !notset )
-                    fprintf(stderr, "Warning: Some nodes have not had their reference or x.y numbering set:\n   ");
-                fprintf(stderr, "%s ", t->s->s);
-                notset = 1;
-            }
+    {   if( !t->s->rankx || !t->s->ranky )
+        {   if( t->s->noderef && *t->s->noderef ) continue;
+            if( !notset )
+                fprintf(stderr, "Warning: Some nodes have not had their reference or x.y numbering set:\n   ");
+            fprintf(stderr, "%s ", t->s->s);
+            notset = 1;
         }
     }
     if( notset )
-        fprintf(stderr, "\n(use numbering or ref if you want to set references)\n");
+        fprintf(stderr, "\n   (use numbering or ref if you want to define references)\n");
 }
 
 // typedef struct rownode { str *node; int label; struct rownode *right, *down;} rownodes;
