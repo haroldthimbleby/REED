@@ -18,6 +18,8 @@ main.o: SyntaxCode.c header.h notes.h
 
 SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 	SyntaxCodeScript > SyntaxCode.c
+	git add SyntaxCode.c SyntaxOutline.tex
+	git commit -m "Updated SyntaxOutline.tex"
 
 paper: inputs website
 
