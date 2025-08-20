@@ -1,0 +1,11 @@
+awk 'BEGIN { blankline = 0 }
+{	if( length($0) > 0) 
+	{	if( blankline ) print "\"\\n\""
+		blankline = 0
+		gsub("\"", "\\\"", $0)
+		print sprintf("%s%s%s", "\"    ", $0, "\\n\"")
+ 	}
+	else
+ 		blankline = 1
+}
+' SyntaxOutline.tex

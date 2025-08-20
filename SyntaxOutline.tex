@@ -1,0 +1,60 @@
+# comment to end of line
+
+### syntax notation...
+
+x ::= y # define non-terminal x to be y
+x | y # x or y
+{x} # bracket in syntax definitions
+x+ # at least one x
+x++ # at least one x, separated by spaces
+[x] # optional x
+
+### REED syntax...
+
+id ::= {letter | digit | underline}+ | string
+string ::= "C string" | <<< terminator\n                            arbitrary-string\n                            terminator
+
+# reserved words cannot be used as ids unless written inside strings
+# id xyz and string "xyz" are equivalent
+# the string notation just allows more characters
+
+### the following are non-terminals
+arrow ::= -> | <- | <->
+color ::= black | blue | green | red | white | yellow
+id-or-star ::= id | *
+node-or-arrow ::= id | id {arrow id}+
+node-or-arrow-list ::= node-or-arrow | ( node-or-arrow++ )
+
+### all terminals below are reserved words
+### the following are REED statements
+
+check id => id
+direction {LR | RL | TB | BT}
+group node-or-arrow-list is id
+highlight color [cascade] is id
+highlight id is color
+htmldefinitions id
+latexdefinitions id
+new style id is id
+node-or-arrow [is id]
+note node-or-arrow-list [is id [;]] [author id [;]] id
+numbering ( {( id-or-star+ )}++ )
+[override] {abstract | date | title | version} id
+ref id is id
+rows [TOC] ( {id ( id+ )}++ )
+style node-or-arrow-list is id
+tags id id
+; # semicolons are empty statements, and can be placed only between statements
+
+Use Unix command reed (no parameters) to summarise flags
+
+
+
+
+
+
+
+
+
+
+
