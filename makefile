@@ -12,8 +12,13 @@ run: reed
 	$(CC) -c $< $(CFLAGS) 
 
 $(TARGET) : $(OBJECTS)
-	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@ 
-	
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+
+main.o: SyntaxCode.c header.h notes.h
+
+SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
+	SyntaxCodeScript > SyntaxCode.c
+
 paper: inputs website
 
 inputs: reed
