@@ -129,6 +129,7 @@ struct { lexval l; char *symbol; } lexes[] =
     { OVERRIDE, "<override>"},
     { TAGS, "<tags>"},
     { LATEXDEFINITIONS, "<latexdefinitions>"},
+    { HTMLDEFINITIONS, "<htmldefinitions>"},
     { CHECK, "<check>"},
     { TRANSARROW, "=>"}
 };
@@ -205,6 +206,7 @@ lexval readlex(str **lexstr)
                     if( !strcmp("direction", (*lexstr)->s) ) return DIRECTION;
                     if( !strcmp("tags", (*lexstr)->s) ) return TAGS;
                     if( !strcmp("latexdefinitions", (*lexstr)->s) ) return LATEXDEFINITIONS;
+                    if( !strcmp("htmldefinitions", (*lexstr)->s) ) return HTMLDEFINITIONS;
                     if( !strcmp("check", (*lexstr)->s) ) return CHECK;
                     // if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n");
 					return ID;
@@ -535,7 +537,6 @@ void rows()
 	//printf(" - ROWS\n");
 }
 
-// typedef struct tmpnode { str *s; struct tmpnode *next; } node;
 arrow *parsenodelist(int makenodes, int makearrows)
 {	//fprintf(stderr, "parsenodelist()\n");
 	if( lex1->l == ID ) // we have a single node or arrow
@@ -550,7 +551,8 @@ arrow *parsenodelist(int makenodes, int makearrows)
 		}
 		else
 		{	// single node
-			if( makenodes && lex1->l != HIGHLIGHT ) newnode(&lex1);
+			if( makenodes && lex1->l != HIGHLIGHT )
+                newnode(&lex1);
 			t = (arrow*) malloc(sizeof(arrow));
 			t->u = lex1;
 			t->v = NULL;
@@ -697,7 +699,8 @@ int parse(char *skip, char *filename, char *bp)
 	 lex1 = newstr("");
 	 lex2 = newstr("");
 	 lex3 = newstr("");
-    latexdefinitions = newstr("");
+     latexdefinitions = newstr("");
+     htmldefinitions = newstr("");
 
 	 for( int i = 0; i < 3; i++ )
         getlex();
@@ -794,6 +797,16 @@ int parse(char *skip, char *filename, char *bp)
                 }
                 break;
 
+            case HTMLDEFINITIONS:
+                if( lex2->l != ID )
+                    error("htmldefinitions should be followed by a string of HTML");
+                else {
+                    appendcstr(htmldefinitions, "\n");
+                    appendstr(htmldefinitions, lex2);
+                    getlex();
+                }
+                break;
+
             case TAGS: // expect two strings
                 if( checkOverride("tags") ) break;
                 getlex();
@@ -869,58 +882,7 @@ int parse(char *skip, char *filename, char *bp)
 				}
 				break;
 
-			case NOTE:  // EITHER note [author string [;]] idlist string 
-					    // OR     note idlist [author string [;]] is string string
-				if( checkOverride("note") ) break;
-				getlex();
-				nl = parsenodelist(1, 1);
-				if( nl == NULL ) error("Expected a node or arrow after 'note'");
-				int isnode = nl->v == NULL;
-				char *sort = isnode? "node": "arrow";
-				if( nl->next != NULL ) error("Expected at least one node or arrow after 'note'");
 
-				//printf(" * got note for %s", nl->u->s);
-				//if( !isnode ) printf("->%s", nl->v->s);
-				//printf(" (%s) --- lex1 = %s; lex2 = %s\n", sort, lexvalue(lex1), lexvalue(lex2));
-				
-				char *noteauthor = (char*) NULL;
-				if( lex1->l == AUTHOR )
-				{	if( lex2->l != ID )
-						error("%s must be followed by a string", lex1->s);
-					if( newauthor(lex2->s) ) // try author in main document author list
-						error("Author of note, '%s', is not mentioned as a document author", lex2->s);
-					noteauthor = lex2->s;
-					getlex();
-					getlex();
-					if( lex1->l == SEMI ) 
-						getlex();
-				}
-
-				if( lex1->l == IS ) // expect: title note
-				{	getlex();
-					if( lex1->l != ID ) { error("Expected %s name after 'is'", sort); getlex(); break; }
-					if( nl->u->is ) error("Multiple 'is' names for %s %s --- previously %s", sort, nl->u->s, nl->u->is->s);
-					//else if( isnode ) fprintf(stderr, "... %s is %s\n", nl->u->s, lex1->s);
-					//else fprintf(stderr, "... %s->%s is %s\n", nl->u->s, nl->v->s, lex1->s);
-					if( lex2->l != ID ) error("'note ... is ...' should be followed a note");
-					if( isnode ) 
-					{	nl->u->is = lex1;
-						if( nl->u->note != NULL ) error("Defining another note for %s", nl->u->s);
-						nl->u->note = lex2;
-					}
-					else 
-					{	//printf("assigning %s\n", lex2->s);
-						defineArrowNote(nl->u, nl->v, lex2, lex1);
-					}
-                    getlex();
-                    break;
-				}
-				if( lex1->l != ID ) error("Expected note text but got %s", lex1->s); 
-				else if( isnode ) 
-					defineNodeNote(nl, lex1);
-				else // void defineArrowNote(str *u, str *v, str *theNote, str *theIs)
-					defineArrowNote(nl->u, nl->v, lex1, NULL);
-				break;
 
 			case GROUP:
 				if( checkOverride("group") ) break;
@@ -947,6 +909,62 @@ int parse(char *skip, char *filename, char *bp)
 					nl = nl->next;
 				}
 				break;
+
+            case NOTE:  // EITHER note [author string [;]] idlist string
+                        // OR     note idlist [author string [;]] is string string
+                if( checkOverride("note") ) break;
+                getlex();
+                nl = parsenodelist(1, 1);
+                if( nl == NULL ) error("Expected a node or arrow after 'note'");
+                int isnode = nl->v == NULL;
+                char *sort = isnode? "node": "arrow";
+                if( nl->next != NULL ) error("Expected at least one node or arrow after 'note'");
+
+                //printf(" * got note for %s", nl->u->s);
+                //if( !isnode ) printf("->%s", nl->v->s);
+                //printf(" (%s) --- lex1 = %s; lex2 = %s\n", sort, lexvalue(lex1), lexvalue(lex2));
+
+                if( lex1->l == IS ) // expect: title note
+                {    getlex();
+                    if( lex1->l != ID ) { error("Expected %s name after 'is'", sort); getlex(); break; }
+                    if( nl->u->is ) error("Multiple 'is' names for %s %s --- previously %s", sort, nl->u->s, nl->u->is->s);
+                    //else if( isnode ) fprintf(stderr, "... %s is %s\n", nl->u->s, lex1->s);
+                    //else fprintf(stderr, "... %s->%s is %s\n", nl->u->s, nl->v->s, lex1->s);
+                    if( lex2->l != ID ) error("'note ... is ...' should be followed a note");
+                    if( isnode )
+                    {    nl->u->is = lex1;
+                        if( nl->u->note != NULL ) error("Defining another note for %s", nl->u->s);
+                        nl->u->note = lex2;
+                    }
+                    else
+                    {    //printf("assigning %s\n", lex2->s);
+                        defineArrowNote(nl->u, nl->v, lex2, lex1);
+                    }
+                    getlex();
+                    if( lex1->l == SEMI )
+                        getlex();
+                    break;
+                }
+
+                char *noteauthor = (char*) NULL;
+                if( lex1->l == AUTHOR )
+                {    if( lex2->l != ID )
+                        error("%s must be followed by a string", lex1->s);
+                    if( newauthor(lex2->s) ) // try author in main document author list
+                        error("Author of note, '%s', is not mentioned as a document author", lex2->s);
+                    noteauthor = lex2->s;
+                    getlex();
+                    getlex();
+                    if( lex1->l == SEMI )
+                        getlex();
+                }
+
+                if( lex1->l != ID ) error("Expected note text but got %s", lex1->s);
+                else if( isnode )
+                    defineNodeNote(nl, lex1);
+                else // void defineArrowNote(str *u, str *v, str *theNote, str *theIs)
+                    defineArrowNote(nl->u, nl->v, lex1, NULL);
+                break;
 
 			case NEW:
 				getlex();

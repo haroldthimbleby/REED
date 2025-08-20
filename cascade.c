@@ -82,9 +82,9 @@ void findComponents() // weakly connected components
 	
 	if( (numberOfComponents = c-1) > 1 )
 	{	myfprintf(stderr, "Warning: There are %d components, so there may be missing arrows that should have linked %s components", numberOfComponents, numberOfComponents == 2? "the": "some"); 
-                myfprintf(stderr, "\n         ('components' here means weakly connected components - groups of nodes connected by arrows, regardless of which way they point)\n");
-		if( !componentsOption ) 
-			myfprintf(stderr, "         (use option -c to show component details)");
+                myfprintf(stderr, "\n         - 'components' here means weakly connected components\n         - i.e., groups of nodes connected by arrows, regardless of which way they point\n");
+		if( !componentsOption )
+			myfprintf(stderr, "         Use option -c to show more details");
 		myfprintf(stderr, "\n");
 	}
 	
@@ -92,9 +92,13 @@ void findComponents() // weakly connected components
 	{   fprintf(stderr, "\n%d component%s\n\n", numberOfComponents, numberOfComponents > 1? "s": "");
     	for( int ac = 1; ac < c; ac++ )
     	{	fprintf(stderr, "Component %d:\n", ac);
-    		for( node *n =  nodeList; n != NULL; n = n->next ) 
+    		for( node *n = nodeList; n != NULL; n = n->next ) 
     			if( n->s->component == ac )
-    				myfprintf(stderr, "   %s %s is %t\n", n->s->isgroup? "Group":"     ", n->s->s, n->s->is->s);
+                {	fprintf(stderr, "    %s ", n->s->isgroup? "Group":"     ");
+                    fprintf(stderr, "%s", n->s->s);
+                    if( n->s->is != NULL ) fprintf(stderr, " is %s", n->s->is->s);
+                    fprintf(stderr, "\n");
+                }
     		fprintf(stderr, "\n");
     	}
 	}

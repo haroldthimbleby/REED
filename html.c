@@ -88,7 +88,8 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 { 	myfprintf(opfd, "<!DOCTYPE html>\n<html>\n<head>\n<title>%t%t%t%t</title>\n", title, 
 			*title? "<br/>": "", *version? "Version ": "", version);
 	fprintf(opfd, "<style>%s</style></head>\n", css);
-	myfprintf(opfd, "<body>\n<center><h1>%t%t%t%t</h1>\n<h2>", title, 
+    fprintf(opfd, "<body>\n%s\n", htmldefinitions->s);
+	myfprintf(opfd, "<center><h1>%t%t%t%t</h1>\n<h2>", title,
 			*title? "<br/>": "", *version? "Version ": "", version);
 
 	while( authors != NULL )

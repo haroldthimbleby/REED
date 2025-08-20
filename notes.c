@@ -390,8 +390,8 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 }
 
 void defineArrowNote(str *u, str *v, str *theNote, str *theIs)
-{	//fprintf(stderr, "defineArrowNote: label='%s' a->arrownote->s = %s\n", theIs == NULL? "*": theIs->s, theNote->s);
-	
+{	//fprintf(stderr, "defineArrowNote: label=%s a->arrownote->s = %s\n", theIs == NULL? "NULL": theIs->s, theNote->s);
+
 	for( arrow *t = noteArrowList; t != NULL; t = t->next )
 		if( t->u == u && t->v == v )
 			error("arrow %s -> %s note being redefined", t->u->s, t->v->s);

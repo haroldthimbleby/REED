@@ -105,29 +105,9 @@ int flagOption = 0,
     generatePDFOption = 0,
     syntaxOption = 0;
 
-char *syntaxSummary = "REED syntax quick outline\n  # comment\n"
-"  tags <begin> <end>\n"
-"  title \"string\"\n"
-"  author \"strings\"\n"
-"  date \"string\"\n"
-"  abstract \"string\"\n"
-"  1->2<-3<->4 # arrows\n"
-"  1 is \"long name\"\n"
-"  note 1 [is \"long name\"] \"string\"\n"
-"  note 1<->2 [is \"long name\"] \"string\"\n"
-"  highlight green is \"description\"\n"
-"  highlight 23 is white\n"
-"  highlight 2 cascade is blue\n"
-"  group (1 2 3 4) is \"name\"\n"
-"  <<< DELIM\n    ...string\n    ...string\nDELIM # end of here string\n"
-"  note 1 [is \"long name\"] \"the note\"\n"
-"  style 1->4 is \"arrowhead=dot,fontname=\\\"Helvetica-Bold\\\"\" # Dot syntax\n"
-"  new style style_id is \"arrowhead=dot...\""
-"  style 17 is style_id\n"
-"  style (nodes arrows...) ...\n"
-"  \"<html> <latex> <both>\"\n"
-"  numbering ((1 2 3 ...) (4 5 6 ...) ...)\n"
-"See more at https://www.harold.thimbleby.net/reeds\n";
+char *syntaxSummary =
+    #include "SyntaxCode.c"
+;
 
 int handleTags = 0, handleInsert = 0, handleWatch = 0, separatorOption = 0;
 tag startTag = {"", 0}, endTag = {"", 0};
