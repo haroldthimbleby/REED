@@ -496,20 +496,27 @@ void generateFiles(char *filename)
 
 	// now everything collected, replace use of style nodes with the style values themselves
 	for( node *t = nodeList; t != NULL; t = t->next )
-		if( t->s->style != NULL && !t->s->style->isstyle )
-		{	//printf("%s has style [%s] ", t->s->s, t->s->style->s);
-			//printf(" .. and that istyle = %d\n", t->s->style->isstyle);
-			for( node *u = stylelist; u != NULL; u = u->next )
-			{	//printf("compare %s (node) ..with.. %s (style)\n", t->s->style->s, u->s->style->s); 
-				if(  t->s->style->s == u->s->style->s )
-				{
-					//printf("  set %s in %s\n", t->s->style->s, t->s->s);
-					//printf("  to style %s\n**\n", u->s->s);
-					t->s->style = u->s;
-				}
-			}
-		}
+    {	if( (t->s->rankx || t->s->ranky) && t->s->noderef && *t->s->noderef )
+        {   fprintf(stderr, "Warning: node %s has references set by ref (%s) and numbering (", t->s->s, t->s->noderef);
+            if( t->s->rankx ) fprintf(stderr, "%d", t->s->rankx);
+            if( t->s->ranky ) fprintf(stderr, ".%d", t->s->ranky);
+            fprintf(stderr, ")\n");
+        }
 
+        if( t->s->style != NULL && !t->s->style->isstyle )
+        {	//printf("%s has style [%s] ", t->s->s, t->s->style->s);
+            //printf(" .. and that istyle = %d\n", t->s->style->isstyle);
+            for( node *u = stylelist; u != NULL; u = u->next )
+            {	//printf("compare %s (node) ..with.. %s (style)\n", t->s->style->s, u->s->style->s);
+                if(  t->s->style->s == u->s->style->s )
+                {
+                    //printf("  set %s in %s\n", t->s->style->s, t->s->s);
+                    //printf("  to style %s\n**\n", u->s->s);
+                    t->s->style = u->s;
+                }
+            }
+        }
+    }
 	// DO THE SAME WITH ARROW STYLES...
 	for( node *u = stylelist; u != NULL; u = u->next )
 		for( arrow *styleda = styledArrowList; styleda != NULL; styleda = styleda->next )
