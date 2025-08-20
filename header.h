@@ -23,7 +23,7 @@ typedef enum {
 			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
 			ID,// assumes the string s is initialised
-            TAGS, LATEXDEFINITIONS
+            TAGS, LATEXDEFINITIONS, HTMLDEFINITIONS
 		 } lexval;
 
 typedef struct tmpstr { 
@@ -44,7 +44,7 @@ extern void colorkey(FILE *opfd, char *heading, char *vskip);
 typedef struct rownode { str *node; int label; struct rownode *right, *down;} rownodes;
 
 extern char *undefinedVersion;
-extern str *latexdefinitions;
+extern str *latexdefinitions, *htmldefinitions;
 extern str *newstr(char *s);
 
 extern str *appendch(str *d, char c);
