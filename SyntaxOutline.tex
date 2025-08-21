@@ -49,15 +49,14 @@ new style id is id!Define id1 as a style, using Dot syntax for id2 (e.g., "fontc
 node-or-arrow [is id]!Create nodes or arrows, with optional name id
 note node-or-arrow-list [is id [;]] [author id [;]] id!Provide narrative note for the nodes or arrows, optionally naming them
 numbering ( {( id-or-star+ )}++ )!Make node references row.column numbers following the grid layout
- | version} id!Provide abstract, date, etc. 
 ref id is id!Set the reference of node id1 to be id2
 rows [TOC] ( {id ( id+ )}++ )!Draw a graph with a structured layout, with optional Theory of Change styling
-style node-or-arrow-list is id!Set style of nodes or arrows, either to explicit Dot style or to a named style
+style node-or-arrow-list is id!Set style of nodes or arrows, either to a named style or to an explicit Dot specification
 tags id id!Only process REED code between id1 (begin) and id2 (end) (so needs id2 to stop REED processing)
 version id!Subsequent REED code is version id (see flag v=value)
 
 ;!semicolons are empty statements, and can be placed between statements
-override ...!Permit conflicting commands (e.g., title) to override
+override ...!Permit conflicting commands (e.g., title) to override. Used with version id
 
 Use Unix command reed (no parameters) to summarise flags
 
