@@ -131,7 +131,7 @@ structOption options[] =
 	{"-h", "generate an interactive HTML REED document*- will refer to a PDF of the REED (generate using -p flag)", &htmlOption, 0},
     {"-insert", "<text> insert this text to process before next file", &handleInsert, 0},
     {"-json", "generate a JSON document*- generated from the .gv file, so contains everything", &JSONOption, 1},
-	{"-l", "generate a Latex REED document*- also generates some useful definition files*- will refer to a PDF of the REED", &latexOption, 0},
+	{"-l", "generate a Latex REED document*- also generates some useful Latex definition files", &latexOption, 0},
     {"-m", "generate a Mathematica notebook*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
     {"-o", "open generated REED graphics GraphViz file automatically *- using dot on MacOS", &openGraphvizOption, 1},
     {"-p", "generate a PDF file*- representing the REED graph", &generatePDFOption, 1},

@@ -94,9 +94,9 @@ void findComponents() // weakly connected components
     	{	fprintf(stderr, "Component %d:\n", ac);
     		for( node *n = nodeList; n != NULL; n = n->next ) 
     			if( n->s->component == ac )
-                {	fprintf(stderr, "    %s ", n->s->isgroup? "Group":"     ");
-                    fprintf(stderr, "%s", n->s->s);
-                    if( n->s->is != NULL ) fprintf(stderr, " is %s", n->s->is->s);
+                {	myfprintf(stderr, "    %t ", n->s->isgroup? "Group":"     ");
+                    myfprintf(stderr, "%t", n->s->s);
+                    if( n->s->is != NULL ) myfprintf(stderr, " is %t", n->s->is->s);
                     fprintf(stderr, "\n");
                 }
     		fprintf(stderr, "\n");
