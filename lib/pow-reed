@@ -30,7 +30,7 @@ Example automatically-generated evidence narrative file revisiting the 2014 Prin
 \end{figure}\newpage
 **** 
 
-highlight white is "No information available (yet). This may or may not be considered a problem after relevant evidence is provided."
+highlight white is "No information is available yet. This may or may not be considered a problem after relevant evidence is provided."
 
 highlight yellow is "Problems that have not yet been resolved. Concerns need to be addressed in cross-examination."
 
@@ -38,7 +38,7 @@ highlight red is "Specific, relevant computer problems as already admitted in ev
 
 numbering
 	(
-		(16 1 2 13)
+		( 16 1 2 13 )
 		(17 4)
 		(18 manual 5 14)
 		(xceedpro 7 6 15 forensicProblems)
