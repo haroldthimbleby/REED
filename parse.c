@@ -837,7 +837,7 @@ int parse(char *skip, char *filename, char *bp)
                 break;
 
 			case REF:
-				if( checkOverride("highlight") ) break;
+				if( checkOverride("ref") ) break;
 				getlex();
 				str *thenodetoref = lex1;
 				if( thenodetoref->l != ID ) { error("Expected a node after 'ref'"); getlex(); break; }

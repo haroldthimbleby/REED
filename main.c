@@ -135,7 +135,7 @@ struct structOption
     {"-n", "show node IDs in graph drawing", &showIDsOption},
 	{"-r", "show all HTML <-> Latex rules", &showRulesOption},
 	{"-s", "show REED file signatures", &showSignatures},
-    {"-sep", "draw a separator line before any output (useful with -watch)", &separatorOption},
+    {"-sep", "draw a separator line before processing any files (useful with -watch)", &separatorOption},
     {"-syntax", "summarise REED syntax", &syntaxOption},
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption},
     {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: tags \"start\" \"end\"", &handleTags},
