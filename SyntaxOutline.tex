@@ -15,6 +15,12 @@ x++     # at least one x, separated by spaces
 id ::= {letter | digit | underline}+ | string
 string ::= "C string, \\n for newline etc" | <<< terminator\n                                                        arbitrary-string\n                                                terminator
 
+# note strings that are translated to HTML or Latex can include:
+<html> ...!following text is copied to HTML, but skipped in Latex
+<latex> ...!following text is copied to Latex, but skipped in HTML
+<both> ...!following text is both (use flag -r to see translation rules)
+[[[id]]]!replace with id's name and make a cross-reference link
+
 # reserved words cannot be used as ids unless written inside strings
 # id xyz and string "xyz" are equivalent
 # the string notation just allows more characters
