@@ -519,9 +519,9 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     myfprintf(opfd, "};\"],\"Input\"]}\n]\n");
 }
 
-void generated(char *filename, char *reason)
+void generated(char *filename, char *suffix, char *reason)
 {   if( verboseOption ) fprintf(stderr, "| ** ");
-    fprintf(stderr, "Generated %s   --   %s\n", filename, reason);
+    fprintf(stderr, "Generated %s%s   - %s\n", filename, suffix, reason);
 }
 
 void stopiferror()
@@ -533,7 +533,9 @@ void stopiferror()
 }
 
 void generateFiles(char *filename)
-{	str *base = basename(filename); 
+{	FILE *fd = NULL;
+
+    str *base = basename(filename);
 	// printf("Styles are:\n");
 	// for( node *u = stylelist; u != NULL; u = u->next )
 	//	printf("  %s = %s\n", u->s->style->s, u->s->s);
@@ -605,42 +607,57 @@ void generateFiles(char *filename)
 				fprintf(stderr, "Node %s is not on any arrow: %d %d\n", t->s->s, t->s->pointsTo, t->s->pointedFrom);
 	
     stopiferror();
-    FILE *fd = fopen(filename = newappendcstr(base, ".gv")->s, "w");
-	if( fd == NULL ) error("Can't open %s (graphviz file) for writing", filename);
-	else
-	{	// try: $ dot -Tps graph1.gv -o graph1.ps
-        if( verboseOption )
-            fprintf(stderr, "|--NB https://magjac.com/graphviz-visual-editor is a playground that can pinpoint errors\n");
+
+    if( verboseOption && graphvizOption )
+        fprintf(stderr, "|--NB https://magjac.com/graphviz-visual-editor is a playground that can pinpoint Graphviz errors\n");
+
+
+    if( graphvizOption ) // also true if a .gv file is needed for PDF, JSON, etc
+    {	// try: $ dot -Tps graph1.gv -o graph1.ps
+        fd = fopen(filename = newappendcstr(base, ".gv")->s, "w");
+        if( fd == NULL )
+        {   error("Can't open %s (graphviz file) for writing", filename);
+            exit(1);
+        }
         dot(fd, title, version, date, direction);
 		fclose(fd);
-        generated(filename, "dot file of the REED graph (use -p flag or dot -Tpdf to convert it to PDF)");
-		if( graphvizOption )
-		{	str *cmd = newstr("open ");
-			appendstr(cmd, base);
-			appendcstr(cmd, ".gv");
-            if( verboseOption ) fprintf(stderr, "|--");
-            if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
-			system(cmd->s);
-		}
-        if( generatePDFOption )
-        {   str *cmd = newstr("dot -Tpdf ");
-            appendstr(cmd, base);
-            appendcstr(cmd, ".gv > ");
-            appendstr(cmd, base);
-            appendcstr(cmd, ".pdf");
-            if( verboseOption ) fprintf(stderr, "|--");
-            if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
-            system(cmd->s);
-            cmd = newstr(base->s);
-            appendcstr(cmd, ".pdf");
-            generated(cmd->s, "PDF file of the REED graph");
+        generated(filename, "", "dot file of the REED graph (use -o flag to see it, or -p flag or dot -Tpdf <file.gv> to convert to PDF)");
+    }
+    if( openGraphvizOption ) // open the .gv file using dot to get the preview
+    {	// running dot on its own just generates .gv output, doesn't display it
+        str *cmd = newstr("open ");
+        appendstr(cmd, base);
+        appendcstr(cmd, ".gv");
+        if( verboseOption ) fprintf(stderr, "|--");
+        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        system(cmd->s);
+    }
+    if( JSONOption )
+    {   str *cmd = newstr("dot -Tjson ");
+        appendstr(cmd, base);
+        appendcstr(cmd, ".gv > ");
+        appendstr(cmd, base);
+        appendcstr(cmd, ".js");
+        if( verboseOption ) fprintf(stderr, "|--");
+        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        system(cmd->s);
+        generated(base->s, ".js", "JSON file of the REED graph");
+    }
+    if( generatePDFOption )
+    {   str *cmd = newstr("dot -Tpdf ");
+        appendstr(cmd, base);
+        appendcstr(cmd, ".gv > ");
+        appendstr(cmd, base);
+        appendcstr(cmd, ".pdf");
+        if( verboseOption ) fprintf(stderr, "|--");
+        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        system(cmd->s);
+        generated(base->s, ".pdf", "PDF file of the REED graph");
+    }
 
-        }
-	}
-
+    stopiferror();
 	if( latexOption )
-    {	stopiferror();
-        fd = fopen(filename = newappendcstr(base, ".tex")->s, "w");
+    {	fd = fopen(filename = newappendcstr(base, ".tex")->s, "w");
 		if( fd == NULL ) error("Can't open %s (tex/latex file) for writing", filename);
 		else
 		{	
@@ -653,7 +670,7 @@ void generateFiles(char *filename)
 			}
 			notes(fd, title, version, authors, date, abstract);
 			fclose(fd);
-            generated(filename, "Latex REED file");
+            generated(filename, "", "Latex REED file");
 		}
         fd = fopen(filename = newappendcstr(base, "-color-legend.tex")->s, "w");
         if( fd == NULL ) error("Can't open %s (tex/latex highlighting legend file) for writing", filename);
@@ -661,7 +678,7 @@ void generateFiles(char *filename)
         {
             colorkey(fd, "", "");
             fclose(fd);
-            generated(filename, "Latex file explaining colour highlighting");
+            generated(filename, "", "Latex file explaining colour highlighting");
         }
 
         fd = fopen(filename = newappendcstr(base, "-xrefs.aux")->s, "w");
@@ -670,13 +687,13 @@ void generateFiles(char *filename)
         {
             latexxrefs(fd);
             fclose(fd);
-            generated(filename, "Latex .aux file defining cross-references: short node name to node reference, and short name-is to full node name");
+            generated(filename, "", "Latex .aux file defining cross-references: short node name to node reference, and short name-is to full node name");
         }
 	}
-	
+
+    stopiferror();
 	if( htmlOption )
-    {	stopiferror();
-        fd = fopen(filename = newappendcstr(base, ".html")->s, "w");
+    {	fd = fopen(filename = newappendcstr(base, ".html")->s, "w");
 		if( fd == NULL ) error("Can't open %s (HTML file) for writing", filename);
 		else
 		{	
@@ -689,29 +706,29 @@ void generateFiles(char *filename)
 			}
 			htmlnotes(fd, title, version, authors, date, abstract);
 			fclose(fd);
-            generated(filename, "HTML REED file");
+            generated(filename, "", "HTML REED file");
 		}
 	}
 
+    stopiferror();
 	if( xmlOption )
-    {	stopiferror();
-        fd = fopen(filename = newappendcstr(base, ".xml")->s, "w");
+    {	fd = fopen(filename = newappendcstr(base, ".xml")->s, "w");
 		if( fd == NULL ) error("Can't open %s (XML file) for writing", filename);
 		else
 		{	xml(fd);
 			fclose(fd);
-            generated(filename, "Full XML definition of the REED");
+            generated(filename, "", "Full XML definition of the REED");
 		}
 	}
 
-	if( mathematicaOption )
-    {	stopiferror();
-        fd = fopen(filename = newappendcstr(base, ".nb")->s, "w");
+    stopiferror();
+    if( mathematicaOption )
+    {	fd = fopen(filename = newappendcstr(base, ".nb")->s, "w");
 		if( fd == NULL ) error("Can't open %s (mathematica file) for writing", filename);
 		else
 		{	mathematica(fd, title, version, authors, date, abstract);
 			fclose(fd);
-            generated(filename, "Experimental Mathematica definition of the REED graph");
+            generated(filename, "", "Mathematica definition of the REED graph");
 		}
 	}
 }

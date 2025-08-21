@@ -59,7 +59,12 @@ extern str *newappendcstr(str *d, char *e); // appends to a new string (not chan
 extern void strpad(str **s, int d); // pad to length d with spaces
 extern str *appendstr(str *d, str *e); // append a string to a string
 
-extern int verboseOption, graphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption,generatePDFOption, showVersionsOption, componentsOption,
+typedef struct
+{    char *option, *usage;
+    int *optionFlag;
+    int needGraphViz;
+} structOption;
+extern int verboseOption, graphvizOption, openGraphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption,
 	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption;
 
 extern void generateFiles(char *filename);
