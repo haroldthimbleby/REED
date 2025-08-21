@@ -403,8 +403,8 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 
 	myfprintf(opfd, "Notebook[{\n");
 	
-	myfprintf(opfd, "Cell[BoxData[\"title=\\\"%m\\\";\"],\"Input\"],\n", title);
-	
+	if( *title ) myfprintf(opfd, "Cell[BoxData[\"title=\\\"%m\\\";\"],\"Input\"],\n", title);
+
 	myfprintf(opfd, "Cell[BoxData[\"authors=\\\"");
 	while( authors != NULL )
 	{	myfprintf(opfd, "%m", authors->author);
@@ -413,6 +413,10 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 		authors = authors->next;
 	}
 	myfprintf(opfd, "\\\";\"],\"Input\"],\n");
+
+    if( *version ) myfprintf(opfd, "Cell[BoxData[\"version=\\\"%m\\\";\"],\"Input\"],\n", version);
+    if( *date ) myfprintf(opfd, "Cell[BoxData[\"date=\\\"%m\\\";\"],\"Input\"],\n", date);
+
 
 	myfprintf(opfd, "Cell[BoxData[\"edges={");
 
@@ -466,10 +470,53 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 			{	myfprintf(opfd, "%s\\\"%m\\\"", commarise, t->s->s);
 				commarise = ",";
 			}
-		fprintf(opfd, "}\n");
+		fprintf(opfd, "}");
 	}
 	}
-	myfprintf(opfd, "};\"],\"Input\"]}\n]\n");
+	myfprintf(opfd, "\n};\"],\"Input\"],\n");
+
+    char *outercomma = "";
+    myfprintf(opfd, "Cell[BoxData[\"groups={");
+    for( node *t = nodeList; t != NULL; t = t->next )
+        if( t->s->isgroup &&
+            !(flagOption && t->s->flag != noflag) // bug in graphviz means we can't have both
+        )
+        {   char *comma = "";
+            myfprintf(opfd, "%s{\\\"name\\\"->\\\"%S\\\", \\\"nodes\\\"->{", outercomma, t->s->s);
+            outercomma = ",\n";
+            for( node *u = nodeList; u != NULL; u = u->next )
+                if( u->s->group == t->s )
+                {    t->s->exampleGroupMember = u->s;
+                    // myfprintf(opfd, //fprintf(opfd, "    %s [color=%s; style=filled];\n", u->s->s, u->s->flag? "pink": "white");
+                    fprintf(opfd, "%s\\\"%s\\\"", comma, u->s->s);
+                    comma = ", ";
+                }
+           myfprintf(opfd, "},\n\\\"label\\\"->\\\"");
+            if( !t->s->plain )
+            {   int print = printrank(opfd, t->s, version);
+                if( showIDsOption )
+                {     if( print ) myfprintf(opfd, " ");
+                    myfprintf(opfd, "(%j)", t->s->s);
+                }
+                if( print || showIDsOption )
+                    fprintf(opfd, "\\n");
+            }
+            else
+            {    if( showIDsOption )
+                {    if( !t->s->plain && *version ) fprintf(opfd, "-");
+                    myfprintf(opfd, "(%j)\\n", t->s->s);
+                }
+                else if( !t->s->plain && *version )
+                    myfprintf(opfd, "\n");
+            }
+            myfprintf(opfd, "%S", t->s->is != NULL? t->s->is->s: t->s->s);
+            if( flagTextOption )
+                {    if( t->s->flag != noflag )
+                        myfprintf(opfd, "\n\nHighlighted %j", flagcolor(t->s->flag));
+                }
+            myfprintf(opfd, "\\\"}");
+        }
+    myfprintf(opfd, "};\"],\"Input\"]}\n]\n");
 }
 
 void generated(char *filename, char *reason)
