@@ -1,6 +1,7 @@
 Use Unix command reed (no parameters) to summarise flags
 
 Syntax summary
+==============
 
 # comment to end of line!Hash can be used in REED files, and is also used in this syntax summary
 
@@ -15,7 +16,7 @@ x++     # at least one x, separated by spaces
 
 ### REED syntax...
 id ::= {letter | digit | underline}+ | string
-string ::= "C string, \\n for newline etc" | <<< arbitrary-terminator\n                                                        arbitrary-string\n                                                same-arbitrary-terminator
+string ::= "C string, \\n for newline etc" | <<< arbitrary-terminator\n                                                        arbitrary-string\n                                                     same-arbitrary-terminator
 
 ### narrative strings in notes are translated to HTML and Latex, and can include:
 <html> ...!following text is copied to HTML, but skipped in Latex
