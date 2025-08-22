@@ -17,7 +17,7 @@
 "    ### REED syntax...\n"
 "    id ::= {letter | digit | underline}+ | Cstring | Herestring\n"
 "    Cstring ::= \"C string, \\n for newline etc\" \n"
-"    Herestring ::= <<< arbitrary-terminator\n                                          arbitrary-string over any number of lines\n                                        same-arbitrary-terminator\n"
+"    Herestring ::= <<< arbitrary-terminator\n                      arbitrary-string over any number of lines\n                    same-arbitrary-terminator\n"
 "\n"
 "    ### narrative strings in notes are translated to HTML and Latex, and can include:\n"
 "    <html> ...!following text is copied to HTML, but skipped in Latex\n"
