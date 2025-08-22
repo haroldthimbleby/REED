@@ -1,21 +1,23 @@
+Use Unix command reed (no parameters) to summarise flags
+
+Syntax summary
+
 # comment to end of line!Hash can be used in REED files, and is also used in this syntax summary
 
 ### syntax notation...
-
 x ::= y # define non-terminal x to be y
 x | y   # x or y
-{x}     # bracket in syntax definitions
+{x}     # grouping in syntax definitions
 x+      # at least one x
 x++     # at least one x, separated by spaces
 [x]     # optional x
         # spaces/blanks can be put between all syntactic items and used freely for layout 
 
 ### REED syntax...
-
 id ::= {letter | digit | underline}+ | string
-string ::= "C string, \\n for newline etc" | <<< terminator\n                                                        arbitrary-string\n                                                terminator
+string ::= "C string, \\n for newline etc" | <<< arbitrary-terminator\n                                                        arbitrary-string\n                                                same-arbitrary-terminator
 
-# narrative strings in notes are translated to HTML and Latex, and can include:
+### narrative strings in notes are translated to HTML and Latex, and can include:
 <html> ...!following text is copied to HTML, but skipped in Latex
 <latex> ...!following text is copied to Latex, but skipped in HTML
 <both> ...!following text is mixed basic HTML and Latex (use flag -r to see translation rules)
@@ -26,7 +28,6 @@ string ::= "C string, \\n for newline etc" | <<< terminator\n                   
 # the string notation just allows more characters
 
 ### the following are definitions of non-terminals
-
 arrow ::= -> | <- | <->
 color ::= black | blue | green | red | white | yellow
 id-or-star ::= id | *
@@ -36,8 +37,7 @@ document-details ::= abstract | author | date | title
 
 ### the following are REED statements
 ### all terminals below are reserved words
-
-check id => id!Check there is a path from id1 to id2
+check id1 => id2!Check there is a path from id1 to id2
 direction {LR | RL | TB | BT}!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top
 document-details id!Specify document details. author id can be used multiple times
 group node-or-arrow-list is id!The nodes are grouped, and the group is named
@@ -45,28 +45,18 @@ highlight color [cascade] is id!Explain color as id, optionally cascading when i
 highlight id is color!Highlight node id with color
 htmldefinitions id!Insert id at start of <body> in HTML file. htmldefinitions id can be used multiple times
 latexdefinitions id!Insert id at start of Latex file. latexdefinitions id can be used multiple times
-new style id is id!Define id1 as a style, using Dot syntax for id2 (e.g., "fontcolor=blue;fontsize=18")
+new style id1 is id2!Define id1 as a style, using Dot syntax for id2 (e.g., "fontcolor=blue;fontsize=18")
 node-or-arrow [is id]!Create nodes or arrows, with optional name id
-note node-or-arrow-list [is id [;]] [author id [;]] id!Provide narrative note for the nodes or arrows, optionally naming them
+note node-or-arrow-list [is id1 [;]] [author id2 [;]] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them
 numbering ( {( id-or-star+ )}++ )!Make node references row.column numbers following the grid layout
-ref id is id!Set the reference of node id1 to be id2
+ref id1 is id2!Set the reference of node id1 to be id2
 rows [TOC] ( {id ( id+ )}++ )!Draw a graph with a structured layout, with optional Theory of Change styling
 style node-or-arrow-list is id!Set style of nodes or arrows, either to a named style or to an explicit Dot specification
-tags id id!Only process REED code between id1 (begin) and id2 (end) (so needs id2 to stop REED processing)
+tags id1 id2!Only process REED code between id1 (begin) and id2 (end) (so needs id2 to stop REED processing)
 version id!Subsequent REED code is version id (see flag v=value)
 
 ;!semicolons are empty statements, and can be placed between statements
 override ...!Permit conflicting commands (e.g., title) to override. Used with version id
-
-Use Unix command reed (no parameters) to summarise flags
-
-
-
-
-
-
-
-
 
 
 
