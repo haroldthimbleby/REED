@@ -17,17 +17,17 @@ x++     # at least one x, separated by spaces
 ### REED syntax...
 id ::= {letter | digit | underline}+ | Cstring | Herestring
 Cstring ::= "C string, \\n for newline etc" 
-Herestring ::= <<< arbitrary-terminator\n                      arbitrary-string over any number of lines\n                    same-arbitrary-terminator
+Herestring ::= <<< arbitrary-terminator\n                           characters (no escapes needed) over any number of lines\n                       same-arbitrary-terminator
 
 ### narrative strings in notes are translated to HTML and Latex, and can include:
-<html> ...!following text is copied to HTML, but skipped in Latex
-<latex> ...!following text is copied to Latex, but skipped in HTML
-<both> ...!following text is mixed basic HTML and Latex (use flag -r to see translation rules)
-[[[id]]]!replace with id's name and make a cross-reference link
+<html> ...  following text is copied to HTML, but skipped in Latex
+<latex> ... following text is copied to Latex, but skipped in HTML
+<both> ...  following text is mixed basic HTML and Latex (use flag -r to see translation rules)
+[[[id]]]!replace with id's name and make a cross-reference link (in both HTML and Latex)
 
-# reserved words cannot be used as ids unless written inside strings
-# id xyz and string "xyz" are equivalent
-# the string notation just allows more characters
+# reserved words can be used as ids if written inside strings
+# otherwise, id xyz and string "xyz" are equivalent
+# the string notation just allows more characters to be used
 
 ### the following are definitions of non-terminals
 arrow ::= -> | <- | <->
@@ -41,7 +41,7 @@ document-details ::= abstract | author | date | title
 ### all terminals below are reserved words
 check id1 => id2!Check there is a path from id1 to id2
 direction {LR | RL | TB | BT}!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top
-document-details id!Specify document details. author id can be used multiple times
+document-details id!Specify document details. author id can be used multiple times for multiple authors
 group node-or-arrow-list is id!The nodes are grouped, and the group is named
 highlight color [cascade] is id!Explain color as id, optionally cascading when it is used
 highlight id is color!Highlight node id with color
@@ -57,8 +57,8 @@ style node-or-arrow-list is id!Set style of nodes or arrows, either to a named s
 tags id1 id2!Only process REED code between id1 (begin) and id2 (end) (so needs id2 to stop REED processing)
 version id!Subsequent REED code is version id (see flag v=value)
 
-;!semicolons are empty statements, and can be placed between statements
-override ...!Permit conflicting commands (e.g., title) to override. Used with version id
+;!semicolons are empty statements, and can be placed freely between statements
+override ...!Permit conflicting commands (e.g., title) to override earlier commands (used with version id and flag v=id)
 
 
 
