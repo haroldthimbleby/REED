@@ -15,8 +15,9 @@ x++     # at least one x, separated by spaces
         # spaces/blanks can be put between all syntactic items and used freely for layout 
 
 ### REED syntax...
-id ::= {letter | digit | underline}+ | string
-string ::= "C string, \\n for newline etc" | <<< arbitrary-terminator\n                                                        arbitrary-string over any number of lines\n                                                    same-arbitrary-terminator
+id ::= {letter | digit | underline}+ | Cstring | Herestring
+Cstring ::= "C string, \\n for newline etc" 
+Herestring ::= <<< arbitrary-terminator\n                                          arbitrary-string over any number of lines\n                                        same-arbitrary-terminator
 
 ### narrative strings in notes are translated to HTML and Latex, and can include:
 <html> ...!following text is copied to HTML, but skipped in Latex
