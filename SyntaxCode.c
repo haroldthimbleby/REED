@@ -16,7 +16,7 @@
 "\n"
 "    ### REED syntax...\n"
 "    id ::= {letter | digit | underline}+ | string\n"
-"    string ::= \"C string, \\n for newline etc\" | <<< arbitrary-terminator\n                                                        arbitrary-string\n                                                     same-arbitrary-terminator\n"
+"    string ::= \"C string, \\n for newline etc\" | <<< arbitrary-terminator\n                                                        arbitrary-string over any number of lines\n                                                    same-arbitrary-terminator\n"
 "\n"
 "    ### narrative strings in notes are translated to HTML and Latex, and can include:\n"
 "    <html> ...!following text is copied to HTML, but skipped in Latex\n"
