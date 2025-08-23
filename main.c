@@ -241,10 +241,6 @@ int main(int argc, char *argv[])
     for( int i = 1; i < argc; i++ )
         if( setOption(argv[i]) )
         {   // fprintf(stderr, "i=%d arg=%d\n", i, argc);
-            if( rawOption )
-            {   if( !hasHadTagsOption )
-                    nolineerror("Using -raw makes no sense unless -tags has been set, because in raw mode nothing will be processed until a begin tag is found");
-            }
             if( handleInsert )
             {   if( i+1 >= argc ) // can't use error() as there is no lineno yet
                 {   nolineerror("-insert <text> must be followed by some text to insert\n");
@@ -305,6 +301,10 @@ int main(int argc, char *argv[])
             //if( verboseOption ) fprintf(stderr, ": File %s\n", processedFileName);
             //fprintf(stderr, "Parse %s starting with successfulskip=%d\n", openedfile, successfulskip);
             hash(openedfile);
+
+            if( rawOption && !hasHadTagsOption )
+                    nolineerror("Using -raw makes no sense unless -tags has been set, because in raw mode nothing will be processed until a begin tag is found");
+
             if( !parse(skip, openedfile, bp) ) // return 0 means a fatal error or matched version number to skip
             {   processedFileName = openedfile;
                 successfulskip = 1;

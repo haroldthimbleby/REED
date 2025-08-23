@@ -281,8 +281,8 @@ lexval readlex(str **lexstr)
 							if( !matched ) appendch(*lexstr, nextch());
 							getch();
 						}
-						fprintf(stderr, "end of file after unmatched herestring started with <<<");
-					}
+						error("end of file after unmatched herestring started with <<< %s\nlikely caused by missing newline+'%s'", &ending->s[1], &ending->s[1]);
+                    }
 					else error("<< not formed into a proper <<<");
 					return SEMI;
 				}
@@ -334,7 +334,7 @@ lexval readlex(str **lexstr)
 						ch = getch();
 					}
 					if( ch == EndOfFile )
-						error("End of file inside a string");
+						error("End of file found inside a string (perhaps caused by a missing \")");
 					//fprintf(stderr, "string = '%s'\n", (*lexstr)->s);
 					return ID;
 				}
