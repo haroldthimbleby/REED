@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
                 {   nolineerror("-tags must be followed by both a start tag and an end tag\n");
                     exit(1);
                 }
-                fprintf(stderr, "tag start=\"%s\"\n", argv[i+1]);
+                //fprintf(stderr, "tag start=\"%s\"\n", argv[i+1]);
                 if( startTag.tagLength > 0 )
                 {   // may fix this limitation soon
                     nolineerror("Attempting to redefine tags, but can only have one set of start and end tags\n");
@@ -273,7 +273,9 @@ int main(int argc, char *argv[])
                 }
                 startTag = setTag(argv[i+1]);
                 endTag = setTag(argv[i+2]);
-                fprintf(stderr, "tag end=\"%s\"\n", endTag.tagString);
+                //fprintf(stderr, "tag end=\"%s\"\n", endTag.tagString);
+                if( !strcmp(startTag.tagString, endTag.tagString) )
+                    fprintf(stderr, "Warning: it's usually a bad idea for start and end tags to be the same (they are currently both set to \"%s\")\n", endTag.tagString);
                 i += 2;
                 handleTags = 0;
             }

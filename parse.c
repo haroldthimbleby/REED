@@ -49,7 +49,7 @@ int rowsTOCstyled = 0;
 // this then puts the input stream into READ mode
 int ifRAWskipToStart(int p)
 {   if( rawOption )
-    {   if( verboseOption ) fprintf(stdout, "|--Skipping over raw text to start tag %s\n", startTag.tagString);
+    {   if( verboseOption ) fprintf(stdout, "|--Skipping over raw text to start tag \"%s\"\n", startTag.tagString);
         // fprintf(stderr, "start=%s, |start|=%d\nbuffer=%s\nEND\n", startTag.tagString, startTag.tagLength, buffer);
         while( buffer[p] && strncmp(&buffer[p], startTag.tagString, startTag.tagLength) )
             p++;
@@ -58,7 +58,7 @@ int ifRAWskipToStart(int p)
         // fprintf(stderr, "after start tag, buffer=%s\nEND\n", &buffer[p]);
         // printf("We've got this left: %s\n", &buffer[p]);
         if( !buffer[p] )
-            fprintf(stderr, "Warning: raw text mode never left as start tag '%s' not found\n", startTag.tagString);
+            fprintf(stderr, "Warning: raw text mode never left as start tag \"%s\" not found\n", startTag.tagString);
     }
     return p;
 }
@@ -76,9 +76,9 @@ char getch()
     if( countStarTagWarnings < 2 && startTag.tagLength > 0 && !strncmp(startTag.tagString, &buffer[p], startTag.tagLength) )
     {   countStarTagWarnings++;
         if( countStarTagWarnings == 1 )
-            fprintf(stderr, "Warning: start tag (%s) found inside REED code\n", startTag.tagString);
+            fprintf(stderr, "Warning: start tag \"%s\" found inside REED code\n", startTag.tagString);
         else
-            fprintf(stderr, "Second warning: start tag (%s) found inside REED code\nNo further warnings will be given!\n", startTag.tagString);
+            fprintf(stderr, "Second warning: start tag \"%s\" found inside REED code\nNo further warnings will be given!\n", startTag.tagString);
     }
     if( endTag.tagLength > 0 && !strncmp(endTag.tagString, &buffer[p], endTag.tagLength) )
     {   // end of REED code, skip to startTag
@@ -87,9 +87,9 @@ char getch()
            error("There is an end tag, but the start tag has zero length!\n");
         //p += endTag.tagLength;
         while( 1 )
-        {   putchar(buffer[p]);
+        {   //putchar(buffer[p]);
             if( !buffer[p] )
-            {   error("Missing start tag (\"%s\"), and EOF encountered after end tag (\"%s\")\n", startTag.tagString, endTag.tagString);
+            {   error("Missing start tag \"%s\", and EOF encountered after end tag \"%s\"\n", startTag.tagString, endTag.tagString);
                 eof = 1;
                 return EndOfFile;
             }
