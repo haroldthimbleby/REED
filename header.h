@@ -65,7 +65,7 @@ typedef struct
     int needGraphViz;
 } structOption;
 extern int verboseOption, graphvizOption, openGraphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption,
-	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption;
+	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption;
 
 extern void generateFiles(char *filename);
 

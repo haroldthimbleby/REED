@@ -105,13 +105,14 @@ int flagOption = 0,
     generatePDFOption = 0,
     syntaxOption = 0,
     openGraphvizOption = 0,
+    rawOption = 0,
     JSONOption = 0;
 
 char *syntaxSummary =
     #include "SyntaxCode.c"
 ;
 
-int handleTags = 0, handleInsert = 0, handleWatch = 0, separatorOption = 0;
+int handleTags = 0, handleInsert = 0, handleWatch = 0, separatorOption = 0, hasHadTagsOption = 0;
 tag startTag = {"", 0}, endTag = {"", 0};
 
 tag setTag(char *str)
@@ -136,7 +137,8 @@ structOption options[] =
     {"-o", "open generated REED graphics GraphViz file automatically *- using dot on MacOS", &openGraphvizOption, 1},
     {"-p", "generate a PDF file*- representing the REED graph", &generatePDFOption, 1},
     {"-n", "show node IDs in graph drawing", &showIDsOption, 1},
-	{"-rules", "show all HTML <-> Latex rules", &showRulesOption, 0},
+    {"-raw", "start processing in raw mode (non-REED); only use -raw with -tags flag", &rawOption, 0},
+    {"-rules", "show all HTML <-> Latex rules", &showRulesOption, 0},
 	{"-s", "show REED file signatures", &showSignatures, 0},
     {"-sep", "draw a separator line before processing any files (useful with -watch)", &separatorOption, 0},
     {"-syntax", "summarise REED syntax", &syntaxOption, 0},
@@ -165,7 +167,7 @@ int setOption(char *argvi)
 }
 
 void usage(char *process)
-{	fprintf(stderr, "%s [v=value] ", process);
+{	fprintf(stderr, "%s [v=<value>] ", process);
 	for( int o = 0; o < sizeof options/sizeof(structOption); o++ )
     {	fprintf(stderr, "[%s", options[o].option);
         if( !strcmp(options[o].option, "-tags") )
@@ -184,13 +186,13 @@ void usage(char *process)
 				fputc(*s, stderr);
 		fprintf(stderr, "\n");
     }
-    fprintf(stderr, "       v=value include all versions up to <value> and skip later versions in file\n");
+    fprintf(stderr, "       v=<value> include all versions up to <value> and skip all later versions in file\n");
     exit(0);
 }
 
 char *skipversion(char *name, char *value)
 {	if( strcmp(name, "v") ) 
-		nolineerror("** only v=value skip versions option implemented\n");
+		nolineerror("** only v=<value> skip versions option implemented\n");
 	else
 		return value;
 	return NULL;
@@ -239,6 +241,10 @@ int main(int argc, char *argv[])
     for( int i = 1; i < argc; i++ )
         if( setOption(argv[i]) )
         {   // fprintf(stderr, "i=%d arg=%d\n", i, argc);
+            if( rawOption )
+            {   if( !hasHadTagsOption )
+                    nolineerror("Using -raw makes no sense unless -tags has been set, because in raw mode nothing will be processed until a begin tag is found");
+            }
             if( handleInsert )
             {   if( i+1 >= argc ) // can't use error() as there is no lineno yet
                 {   nolineerror("-insert <text> must be followed by some text to insert\n");
@@ -257,8 +263,9 @@ int main(int argc, char *argv[])
                 i++; // skip over the insert text
                 handleInsert = 0;
             }
-            if( handleTags )
-            {   if( i+2 >= argc ) // can't use error() as there is no lineno yet
+            if( handleTags ) // set on each use of -tags
+            {   hasHadTagsOption = 1;
+                if( i+2 >= argc ) // can't use error() as there is no lineno yet
                 {   nolineerror("-tags must be followed by both a start tag and an end tag\n");
                     exit(1);
                 }

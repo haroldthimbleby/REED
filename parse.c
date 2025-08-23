@@ -45,6 +45,26 @@ int lineno, nextlineno, startline, nextstartline;
 
 int rowsTOCstyled = 0;
 
+// if rawOption is set, move p (in buffer[p) to just beyond matching startTag.tagString
+// this then puts the input stream into READ mode
+int ifRAWskipToStart(int p)
+{   if( rawOption )
+    {   if( verboseOption ) fprintf(stdout, "|--Skipping over raw text to start tag %s\n", startTag.tagString);
+        // fprintf(stderr, "start=%s, |start|=%d\nbuffer=%s\nEND\n", startTag.tagString, startTag.tagLength, buffer);
+        while( buffer[p] && strncmp(&buffer[p], startTag.tagString, startTag.tagLength) )
+            p++;
+        for( int n = startTag.tagLength; n > 0 && buffer[p]; n-- )
+            p++;
+        // fprintf(stderr, "after start tag, buffer=%s\nEND\n", &buffer[p]);
+        // printf("We've got this left: %s\n", &buffer[p]);
+        if( !buffer[p] )
+            fprintf(stderr, "Warning: raw text mode never left as start tag '%s' not found\n", startTag.tagString);
+    }
+    return p;
+}
+
+int countStarTagWarnings = 0;
+
 char getch()
 {	if( eof || !buffer[p] )
 	{	eof = 1;
@@ -53,11 +73,16 @@ char getch()
     // if startTag is recognised, warn
     // if endTag is recognised, skip to (just after) startTag
     // check for EOF during search
-    if( startTag.tagLength > 0 && !strncmp(startTag.tagString, &buffer[p], startTag.tagLength) )
-        fprintf(stderr, "Warning: start tag (%s) found inside REED code\n", startTag.tagString);
+    if( countStarTagWarnings < 2 && startTag.tagLength > 0 && !strncmp(startTag.tagString, &buffer[p], startTag.tagLength) )
+    {   countStarTagWarnings++;
+        if( countStarTagWarnings == 1 )
+            fprintf(stderr, "Warning: start tag (%s) found inside REED code\n", startTag.tagString);
+        else
+            fprintf(stderr, "Second warning: start tag (%s) found inside REED code\nNo further warnings will be given!\n", startTag.tagString);
+    }
     if( endTag.tagLength > 0 && !strncmp(endTag.tagString, &buffer[p], endTag.tagLength) )
     {   // end of REED code, skip to startTag
-        printf("end tag matched\n");
+        // printf(">end tag matched\n");
         if( !startTag.tagLength )
            error("There is an end tag, but the start tag has zero length!\n");
         //p += endTag.tagLength;
@@ -482,7 +507,7 @@ void checkNumbering()
 // typedef struct rownode { str *node; int label; struct rownode *right, *down;} rownodes;
 // rownodes *cols = NULL;
 
-int  rowsCount = 0;
+int rowsCount = 0;
 
 void rows()
 {	if( rowsCount++ > 0 )
@@ -711,6 +736,7 @@ int parse(char *skip, char *filename, char *bp)
 	 eof = 0;
 	 buffer = bp;
 	 nextlineno = lineno = 1;
+     p = ifRAWskipToStart(p);
 	 nextstartline = startline = p;
 	 lex1 = newstr("");
 	 lex2 = newstr("");
