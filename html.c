@@ -22,7 +22,7 @@ void href(FILE *opfd, char *id, char *close)
 		{	version = t->s->nodeversion;
 			fprintf(opfd, "<a href=\"#%s\">", t->s->s);
 			if( showIDsOption ) myfprintf(opfd, "(%t) ", t->s->s);
-			fprintf(opfd, "%s%s%d.%d, &ldquo;%s&rdquo;%s", 
+			fprintf(opfd, "%s%s%d.%d (%s)%s", 
 				*version? version: "", *version? "-": "",
 				t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s, close);
 			found = 1;

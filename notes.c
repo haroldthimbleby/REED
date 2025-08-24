@@ -243,7 +243,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 	fprintf(opfd, "}\n");
 
     if( numberOfComponents > 1 )
-    {    myfprintf(opfd, "\n\n\\vskip 5mmw\\noindent\nThere are %d weakly connected components (i.e., there are %d independent REED diagrams not connected to each other with any arrows, regardless of the directions of the arrows).\n\n", numberOfComponents, numberOfComponents);
+    {    myfprintf(opfd, "\n\n\\vskip 5mm\\noindent\nThere are %d weakly connected components (i.e., there are %d independent REED diagrams not connected to each other with any arrows, regardless of the directions of the arrows).\n\n", numberOfComponents, numberOfComponents);
         myfprintf(opfd, "\\begin{description}\n");
         for( int c = 1; c <= numberOfComponents; c++ )
             myfprintf(opfd, "\\item[$\\rightarrow$] \\hyperlink{component%d-narrative}{Narrative evidence for component %d}\n", c, c);
