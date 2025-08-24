@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
         {   struct stat stat_buf;
             int errno;
             if( (errno = fstat(fileno(fp), &stat_buf)) != 0 )
-            {   nolineerror("** Cannot stat %s: %s\n", openedfile, strerror(errno));
+            {   nolineerror("** Cannot stat \"%s\": %s\n", openedfile, strerror(errno));
                 exit(0);
             }
             bp = safealloc(1+stat_buf.st_size);
@@ -317,6 +317,7 @@ int main(int argc, char *argv[])
             free(bp);
             fclose(fp);
         }
+        else nolineerror("** Cannot open file \"%s\": %s", openedfile, strerror(errno));
     if( syntaxOption )
     {   for( char *summary = syntaxSummary; *summary; summary++ )
         {  if( *summary == '!' ) fprintf(stderr, "\n        -  ");
