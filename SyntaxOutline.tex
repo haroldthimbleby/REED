@@ -1,35 +1,41 @@
-Use Unix command reed (no parameters) to summarise flags
+Use reed (no parameters) to summarise flags
 
 Syntax summary
 ==============
 
-# comment to end of line!Hash can be used in REED files, and is also used in this syntax summary
+# comment to end of line
+# Hash "#" is used in REED files, and is also used for comments in this syntax summary
 
 ### syntax notation...
+
 x ::= y # define non-terminal x to be y
 x | y   # x or y
-{x}     # grouping in syntax definitions
-x+      # at least one x
-x++     # at least one x, separated by spaces
-[x]     # optional x
+{ x }   # grouping in syntax definitions
+x+      # at least one x. Short for: x | xx | xxx...
+x++     # at least one x. Short for: x | x x | x x x... separated by spaces
+[ x ]   # optional x
         # spaces/blanks can be put between all syntactic items and used freely for layout 
 
 ### REED syntax...
-id ::= {letter | digit | underline}+ | Cstring | Herestring
-Cstring ::= "C string, \\n for newline etc" 
+
+id ::= { letter | digit | underline }+ | Cstring | Herestring
+Cstring ::= "C string, \\n for newline, \\\\ for backslash etc" 
 Herestring ::= <<< arbitrary-terminator\n                           characters (no escapes needed) over any number of lines\n                       same-arbitrary-terminator
 
 ### narrative strings in notes are translated to HTML and Latex, and can include:
+
 <html> ...  following text is copied to HTML, but skipped in Latex
 <latex> ... following text is copied to Latex, but skipped in HTML
 <both> ...  following text is mixed basic HTML and Latex (use flag -r to see translation rules)
 [[[id]]]!replace with id's name and make a cross-reference link (in both HTML and Latex)
 
-# reserved words can be used as ids if written inside strings
+# reserved words can be used as ids if written as strings
 # otherwise, id xyz and string "xyz" are equivalent
+# so red is reserved, but "red" can be used arbitrarily
 # the string notation just allows more characters to be used
 
 ### the following are definitions of non-terminals
+
 arrow ::= -> | <- | <->
 color ::= black | blue | green | red | white | yellow
 id-or-star ::= id | *
@@ -39,26 +45,28 @@ document-details ::= abstract | author | date | title
 
 ### the following are REED statements
 ### all terminals below are reserved words
+
 check id1 => id2!Check there is a path from id1 to id2
-direction {LR | RL | TB | BT}!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top
+direction { LR | RL | TB | BT }!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top
 document-details id!Specify document details. author id can be used multiple times for multiple authors
 group node-or-arrow-list is id!The nodes are grouped, and the group is named
-highlight color [cascade] is id!Explain color as id, optionally cascading when it is used
+highlight color [ cascade ] is id!Explain color as id, optionally cascading when it is used
 highlight id is color!Highlight node id with color
-htmldefinitions id!Insert id at start of <body> in HTML file. htmldefinitions id can be used multiple times
-latexdefinitions id!Insert id at start of Latex file. latexdefinitions id can be used multiple times
-new style id1 is id2!Define id1 as a style, using Dot syntax for id2 (e.g., "fontcolor=blue;fontsize=18")
-node-or-arrow [is id]!Create nodes or arrows, with optional name id
-note node-or-arrow-list [is id1 [;]] [author id2 [;]] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them
-numbering ( {( id-or-star+ )}++ )!Make node references row.column numbers following the grid layout
+htmldefinitions id!Insert id at start of <body> in HTML file; multiple htmldefinitions append it
+latexdefinitions id!Insert id at start of Latex file; multiple latexdefinitions append id 
+new style id1 is id2!Define id1 as a style, using Dot syntax for id2!(e.g., new style blue18 is "fontcolor=blue; fontsize=18")
+node-or-arrow [ is id ]!Create nodes or arrows, with optional name id
+note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them
+numbering ( { ( id-or-star+ ) }++ )!Make node references row.column numbers following the grid layout
 ref id1 is id2!Set the reference of node id1 to be id2
-rows [TOC] ( {id ( id+ )}++ )!Draw a graph with a structured layout, with optional Theory of Change styling
+rows [ TOC ] ( { id ( id+ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling
 style node-or-arrow-list is id!Set style of nodes or arrows, either to a named style or to an explicit Dot specification
-tags id1 id2!Only process REED code between id1 (begin) and id2 (end) (so needs id2 to stop REED processing)
+tags id1 id2!Only process REED code between id1 (begin) and id2 (end)
 version id!Subsequent REED code is version id (see flag v=value)
 
 ;!semicolons are empty statements, and can be placed freely between statements
 override ...!Permit conflicting commands (e.g., title) to override earlier commands (used with version id and flag v=id)
 
-
+### Apart from override, tags, and version the order of commands does not matter
+### Except author, htmldefinitions, and latexdefinitions append in REED file order
 
