@@ -20,7 +20,7 @@ x++     # at least one x. Short for: x | x x | x x x... separated by spaces
 
 id ::= { letter | digit | underline }+ | Cstring | Herestring
 Cstring ::= "C string, \\n for newline, \\\\ for backslash etc" 
-Herestring ::= <<< arbitrary-terminator\n                           characters (no escapes needed) over any number of lines\n                       same-arbitrary-terminator
+Herestring ::= <<< arbitrary-terminator\n                           characters (no escapes needed) over any number of lines\n                       same arbitrary-terminator at start of line
 
 ### narrative strings in notes are translated to HTML and Latex, and can include:
 
@@ -39,7 +39,7 @@ Herestring ::= <<< arbitrary-terminator\n                           characters (
 arrow ::= -> | <- | <->
 color ::= black | blue | green | red | white | yellow
 id-or-star ::= id | *
-node-or-arrow ::= id | id {arrow id}+
+node-or-arrow ::= id | id { arrow id }+
 node-or-arrow-list ::= node-or-arrow | ( node-or-arrow++ )
 document-details ::= abstract | author | date | title
 
@@ -64,7 +64,7 @@ style node-or-arrow-list is id!Set style of nodes or arrows, either to a named s
 tags id1 id2!Only process REED code between id1 (begin) and id2 (end)
 version id!Subsequent REED code is version id (see flag v=value)
 
-;!semicolons are empty statements, and can be placed freely between statements
+;!semicolons are empty statements, and can be placed freely between statements!... and in note statements for legibility
 override ...!Permit conflicting commands (e.g., title) to override earlier commands (used with version id and flag v=id)
 
 ### Apart from override, tags, and version the order of commands does not matter
