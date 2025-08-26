@@ -56,7 +56,7 @@
 "    latexdefinitions id!Insert id at start of Latex file; multiple latexdefinitions append id \n"
 "    new style id1 is id2!Define id1 as a style, using Dot syntax for id2!(e.g., new style blue18 is \"fontcolor=blue; fontsize=18\")\n"
 "    node-or-arrow [ is id ]!Create nodes or arrows, with optional name id\n"
-"    note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them\n"
+"    note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them id1\n"
 "    numbering ( { ( id-or-star+ ) }++ )!Make node references row.column numbers following the grid layout\n"
 "    ref id1 is id2!Set the reference of node id1 to be id2\n"
 "    rows [ TOC ] ( { id ( id+ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling\n"
