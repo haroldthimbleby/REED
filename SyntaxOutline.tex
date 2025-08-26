@@ -26,13 +26,13 @@ Herestring ::= <<< arbitrary-terminator\n                           characters (
 
 <html> ...  following text is copied to HTML, but skipped in Latex
 <latex> ... following text is copied to Latex, but skipped in HTML
-<both> ...  following text is mixed basic HTML and Latex (use flag -r to see translation rules)
+<both> ...  following text is mixed basic HTML and Latex (use flag -rules to see translation rules)
 [[[id]]]!replace with id's name and make a cross-reference link (in both HTML and Latex)
 
 # reserved words can be used as ids if written as strings
 # otherwise, id xyz and string "xyz" are equivalent
 # so red is reserved, but "red" can be used arbitrarily
-# the string notation just allows more characters to be used
+# string notations allow more characters to be used
 
 ### the following are definitions of non-terminals
 
@@ -55,7 +55,7 @@ highlight id is color!Highlight node id with color
 htmldefinitions id!Insert id at start of <body> in HTML file; multiple htmldefinitions append it
 latexdefinitions id!Insert id at start of Latex file; multiple latexdefinitions append id 
 new style id1 is id2!Define id1 as a style, using Dot syntax for id2!(e.g., new style blue18 is "fontcolor=blue; fontsize=18")
-node-or-arrow [ is id ]!Create nodes or arrows, with optional name id
+node-or-arrow [ is id ]!Create nodes or arrows, with optional display name id
 note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them id1
 numbering ( { ( id-or-star+ ) }++ )!Make node references row.column numbers following the grid layout
 ref id1 is id2!Set the reference of node id1 to be id2
