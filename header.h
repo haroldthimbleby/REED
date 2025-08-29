@@ -18,6 +18,8 @@ typedef enum { None, String, Node, Arrow, Annotation } type;
 
 enum flagcolor { noflag, black, blue, green, red, white, yellow };  // in alpha order
 
+enum flagcolor pullString;
+
 typedef enum {
             DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK,
 			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT,
@@ -65,7 +67,7 @@ typedef struct
     int needGraphViz;
 } structOption;
 extern int verboseOption, graphvizOption, openGraphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption,
-	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption;
+	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption;
 
 extern void generateFiles(char *filename);
 

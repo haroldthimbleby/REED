@@ -106,7 +106,10 @@ int flagOption = 0,
     syntaxOption = 0,
     openGraphvizOption = 0,
     rawOption = 0,
-    JSONOption = 0;
+    JSONOption = 0,
+    pullOption = 0;
+
+enum flagcolor pullString = noflag;
 
 char *syntaxSummary =
     #include "SyntaxCode.c"
@@ -119,7 +122,6 @@ tag setTag(char *str)
 {   tag tmp = {str, strlen(str)};
     return tmp;
 }
-
 
 // the final 0/1 is to generate a .gv file
 // for instance, a .gv file is needed to generate PDF
@@ -135,7 +137,8 @@ structOption options[] =
 	{"-l", "generate a Latex REED document*- also generates some useful Latex definition files", &latexOption, 0},
     {"-m", "generate a Mathematica notebook*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
     {"-o", "open generated REED graphics GraphViz file automatically *- using dot on MacOS", &openGraphvizOption, 1},
-    {"-p", "generate a PDF file*- representing the REED graph", &generatePDFOption, 1},
+    {"-pdf", "generate a PDF file*- representing the REED graph", &generatePDFOption, 1},
+    {"-pull", "\"<flag color...>\" restrict -h and -l documents to just these colors", &pullOption, 0},
     {"-n", "show node IDs in graph drawing", &showIDsOption, 1},
     {"-raw", "start processing in raw mode (non-REED); only use -raw with -tags flag", &rawOption, 0},
     {"-rules", "show all HTML <-> Latex rules", &showRulesOption, 0},
@@ -167,16 +170,7 @@ int setOption(char *argvi)
 }
 
 void usage(char *process)
-{	fprintf(stderr, "%s [v=<value>] ", process);
-	for( int o = 0; o < sizeof options/sizeof(structOption); o++ )
-    {	fprintf(stderr, "[%s", options[o].option);
-        if( !strcmp(options[o].option, "-tags") )
-            fprintf(stderr, " <start> <end>");
-        if( !strcmp(options[o].option, "-insert") )
-            fprintf(stderr, " <text>");
-        fprintf(stderr, "] ");
-    }
-    fprintf(stderr, "files...\n");
+{	fprintf(stderr, "%s command line parameters summary\n", process);
 	for( int o = 0; o < sizeof options/sizeof(structOption); o++ )
 	{	fprintf(stderr, "       %s ", options[o].option);
 		for( char *s = options[o].usage; *s; s++ )
@@ -187,6 +181,7 @@ void usage(char *process)
 		fprintf(stderr, "\n");
     }
     fprintf(stderr, "       v=<value> include all versions up to <value> and skip all later versions in file\n");
+    fprintf(stderr, "       filenames\n             - process files (according to preceding flags)\n");
     exit(0);
 }
 
@@ -217,13 +212,13 @@ int main(int argc, char *argv[])
                 {   appendcstr(command, " ");
                     appendcstr(command, argv[ii]);
                 }
-                if( argv[ii][0] != '-' )
+                if( argv[ii][0] != '-' ) // skip other flags
                 {   filecount++;
                     appendcstr(files, argv[ii]);
                     appendcstr(files, " ");
                 }
                 if( !strcmp(argv[ii], "-v") )
-                    verboseOption = 1; // this is the only option we pay attention in -watch
+                    verboseOption = 1; // this is the only option we need pay attention to in -watch
             }
             if( !filecount )
             {   nolineerror("-watch specified, but no files to watch, so nothing to do\n");
@@ -268,7 +263,7 @@ int main(int argc, char *argv[])
                 //fprintf(stderr, "tag start=\"%s\"\n", argv[i+1]);
                 if( startTag.tagLength > 0 )
                 {   // may fix this limitation soon
-                    nolineerror("Attempting to redefine tags, but can only have one set of start and end tags\n");
+                    nolineerror("Attempting to redefine tags, but can only have one set of start and end tags");
                     exit(1);
                 }
                 startTag = setTag(argv[i+1]);
@@ -278,6 +273,18 @@ int main(int argc, char *argv[])
                     fprintf(stderr, "Warning: it's usually a bad idea for start and end tags to be the same (they are currently both set to \"%s\")\n", endTag.tagString);
                 i += 2;
                 handleTags = 0;
+            }
+            if( pullOption )
+            {   pullOption = 0;
+                if( i+1 >= argc || iscolor(argv[i+1]) == noflag ) // can't use error() as there is no lineno yet
+                {   nolineerror("-pull must be followed by highlight colors to pull");
+                    exit(1);
+                }
+                pullString = iscolor(argv[i+1]);
+                if( verboseOption ) fprintf(stderr, "|-- -pull %s\n", flagcolor(pullString));
+                fprintf(stderr, "Warning: -pull for -l has not been implemented yet, so -h is applied automatically\n");
+                htmlOption = 1;
+                i += 1;
             }
             continue;
         }

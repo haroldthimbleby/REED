@@ -120,7 +120,7 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
                         while( *t && isalpha(*t) ) t++;
                         char save = *t;
                         *t = (char) 0;
-                        fprintf(stderr, "Unrecognised Latex which has been copied directly to HTML: %s...\n", s);
+                        fprintf(stderr, "Warning: Unrecognised Latex which has been copied directly to HTML: %s...\n", s);
                         *t = save;
                         break;
                     }

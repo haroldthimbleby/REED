@@ -24,7 +24,7 @@ SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 paper: inputs website
 
 inputs: reed
-	reed v=v2 -l lib/pow-reed
+	reed v=v2 -l -g lib/pow-reed
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv2.pdf
 	mv lib/pow-reed-color-legend.tex ../REED-paper/figures
 	grab lib/pow-reed.tex "/Node v2-1.1 Wrong XceedPros/" "/summary/" > ../REED-paper/figures/node-examplev2.tex
@@ -36,19 +36,19 @@ inputs: reed
 	echo "\\\\noindent\\hbox{" > ../REED-paper/figures/flags-examplev3.tex
 	grab lib/pow-reed.tex "/hbox{.colorflag/" "/end{tabular/" >> ../REED-paper/figures/flags-examplev3.tex
 	echo "}" >> ../REED-paper/figures/flags-examplev3.tex
-	reed lib/toc-styles lib/pow-toc
+	reed -g lib/toc-styles lib/pow-toc
 	dot -Tpdf lib/pow-toc.gv > ../REED-paper/figures/pow-toc.pdf
-	reed lib/pow-basic
+	reed -g lib/pow-basic
 	dot -Tpdf lib/pow-basic.gv > ../REED-paper/figures/pow-basic.pdf
-	reed lib/LR lib/ABCD
+	reed -g lib/LR lib/ABCD
 	dot -Tpdf lib/ABCD.gv > ../REED-paper/figures/ABCD.pdf
-	reed lib/LR lib/ABCD lib/ABCDis
+	reed -g lib/LR lib/ABCD lib/ABCDis
 	dot -Tpdf lib/ABCDis.gv > ../REED-paper/figures/ABCDis.pdf
-	reed lib/TB lib/ABCD lib/ABCDis-styles 
+	reed -g lib/TB lib/ABCD lib/ABCDis-styles 
 	dot -Tpdf lib/ABCDis-styles.gv > ../REED-paper/figures/ABCDis-styles.pdf
 	
 rsm: lib/darzi
-	reed lib/darzi
+	reed -g lib/darzi
 	echo darzi: fix arrow to arc upwards
 	sed 's/"b2"->"b4"/&:n/' lib/darzi.gv > tmp
 	mv tmp darzi.gv
