@@ -107,6 +107,7 @@ int flagOption = 0,
     openGraphvizOption = 0,
     rawOption = 0,
     JSONOption = 0,
+    colorsOption = 0,
     pullOption = 0;
 
 enum flagcolor pullString = noflag;
@@ -128,9 +129,10 @@ tag setTag(char *str)
 structOption options[] =
 {	{"-#", "show comments, if any", &commentOption, 0},
     {"-c", "show weakly connected components", &componentsOption, 0},
+    {"-colors", "list all colors used on standard output", &colorsOption, 0},
 	{"-F", "highlight flags in drawing*- unfortunately due to a Graphviz bug, this breaks up any groups", &flagOption, 1},
 	{"-f", "show textual descriptions of flag colors in REED drawing", &flagTextOption, 1},
-	{"-g", "generate a GraphViz file*- default option if nothing else chosen", &graphvizOption, 1},
+	{"-g", "generate a GraphViz file*- default option if nothing else chosen*- See https://graphviz.org", &graphvizOption, 1},
 	{"-h", "generate an interactive HTML REED document*- will refer to a PDF of the REED (generate using -p flag)", &htmlOption, 0},
     {"-insert", "<text> insert this text to process before next file", &handleInsert, 0},
     {"-json", "generate a JSON document*- generated from the .gv file, so contains everything", &JSONOption, 1},
@@ -343,6 +345,8 @@ int main(int argc, char *argv[])
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
     {   if( !setSomeInterestingOption ) graphvizOption = 1; // effectively set -g if nothing else
         generateFiles(processedFileName); // processFileName is the last file named
+        if( colorsOption )
+            listColorsUsed();
     }
     else
     if( !syntaxOption && !showRulesOption && !opened )

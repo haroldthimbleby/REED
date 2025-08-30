@@ -7,7 +7,7 @@ extern rownodes *cols;
 
 char *title = "", *date = "", *version = "", *abstract = "", *direction = "";
 
-char *flagcolors[] = {"NONE", "black", "blue", "green", "red", "white", "yellow"};
+char *flagcolors[] = {"NONE", "black", "blue", "gray", "green", "red", "white", "yellow"};
 
 str *lex1 = NULL, *lex2 = NULL, *lex3 = NULL;
 
@@ -19,8 +19,9 @@ char *flagcolor(enum flagcolor fc)
 		case red: return "red";
 		case black: return "black";
 		case yellow: return "yellow";
-		case green: return "green";
-		default: error("unknown flag color"); return "?flag colour error?";
+        case green: return "green";
+        case gray: return "gray";
+        default: error("unknown flag color"); return "?flag colour error?";
 	}
 }
 
@@ -671,14 +672,15 @@ enum flagcolor iscolor(char *s)
 	if( !strcmp(s, "red") ) return red; 
 	if( !strcmp(s, "black") ) return black; 
 	if( !strcmp(s, "yellow") ) return yellow; 
-	if( !strcmp(s, "green") ) return green; 
+	if( !strcmp(s, "green") ) return green;
+    if( !strcmp(s, "gray") ) return gray;
 	return noflag;
 }
 
-char *flagdefinitions[] = {"'Noflag' can't have a meaning","","","","","",""};
-int flagsused[] = {0,0,0,0,0,0,0};
-int flagsusedaftercascades[] = {0,0,0,0,0,0,0};
-int flagcascade[] = {0,0,0,0,0,0,0};
+char *flagdefinitions[] = {"'Noflag' can't have a meaning","","","","","","",""};
+int flagsused[] = {0,0,0,0,0,0,0,0};
+int flagsusedaftercascades[] = {0,0,0,0,0,0,0,0};
+int flagcascade[] = {0,0,0,0,0,0,0,0};
 
 void defineflag(char *color, char *meaning, int cascade)
 {	if( iscolor(color) == noflag )

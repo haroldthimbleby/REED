@@ -12,7 +12,10 @@ extern void HTMLtranslate(FILE *opfd, char *note); // translate Latex and HTML t
 
 char *css = ".showCells { border:1px solid; border-collapse:collapse; }\n\
 .showCells td  { border:1px solid; padding: 8px;  border-collapse:collapse; margin:0; }\n\
-table {padding: 0; margin:0; }\n";
+table {padding: 0; margin:0; }\n\
+    .boxed {\n\
+      border: 2.5px solid black; padding: 10px; margin: 10px;\n\
+    }\n";
 
 void href(FILE *opfd, char *id, char *close)
 {	//fprintf(stderr, "Got '%s' at offset %d\n", &s[2], id);
@@ -22,7 +25,7 @@ void href(FILE *opfd, char *id, char *close)
 		{	version = t->s->nodeversion;
 			fprintf(opfd, "<a href=\"#%s\">", t->s->s);
 			if( showIDsOption ) myfprintf(opfd, "(%t) ", t->s->s);
-			fprintf(opfd, "%s%s%d.%d (%s)%s", 
+			fprintf(opfd, "%s%s%d.%d (%s)%s",
 				*version? version: "", *version? "-": "",
 				t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s, close);
 			found = 1;
@@ -35,11 +38,45 @@ void href(FILE *opfd, char *id, char *close)
 
 /* ⚐	9872		WHITE FLAG
    ⚑	9873		BLACK FLAG */
-void htmlflagcolor(FILE *opfd, int flag)
-{	char *color = flagcolor(flag);
-	int iswhite = !strcmp(color, "white");
-	if( !strcmp(color, "yellow") ) color = "gold";
-	fprintf(opfd, "<span style='color:%s;'>&#%s;</span>", iswhite? "black": color, iswhite? "9872": "9873"); 
+void htmlflagcolor(FILE *opfd, int flag, int saycolor)
+{	char *color = flagcolor(flag), *clearerColor = color;
+    int iswhite = !strcmp(color, "white");
+    if( !strcmp(color, "yellow") ) clearerColor = "gold";
+    if( iswhite ) clearerColor = "black";
+    if( saycolor )
+        fprintf(opfd, "<span style='color:%s;'>%s</span>", iswhite? "black": clearerColor, color);
+	fprintf(opfd, "<span style='color:%s;'>&#%s;</span>", clearerColor, iswhite? "9872": "9873");
+}
+
+void pullColorTitle(FILE *opfd, enum flagcolor pullString)
+{   fprintf(opfd, "<table class=\"boxed\"><tr align=\"center\"><td><h1>Narrative restricted to ");
+    htmlflagcolor(opfd, pullString, 1);
+    fprintf(opfd, " highlighting");
+    if( pullString == gray ) fprintf(opfd, " or not hightlighted");
+    fprintf(opfd, "</h1></td></tr><tr><td>");
+    HTMLtranslate(opfd, flagdefinitions[pullString]);
+    fprintf(opfd, "</td></tr></table>\n");
+}
+
+void pullAcolor(FILE *opfd, enum flagcolor pullString)
+{   int count = 0;
+    for( node *t = nodeList; t != NULL; t = t->next )
+        if( (t->s->flag == pullString || (t->s->flag == noflag && pullString == gray)) && t->s->note != NULL )
+        {   count++;
+            fprintf(opfd, "\n<a name=\"%s\"><h2>", t->s->s);
+            myfprintf(opfd, t->s->isgroup? "Group ": "Node ");
+            (void) printrank(opfd, t->s, version);
+            myfprintf(opfd, " %T",
+                t->s->is != NULL? t->s->is->s: t->s->s);
+            if( t->s->group != NULL )
+                myfprintf(opfd, " &mdash; in group: %t ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
+            if( showIDsOption ) myfprintf(opfd, "%t ", t->s->s);
+            if( t->s->flag == noflag ) fprintf(opfd, " (not highlighted)");
+            myfprintf(opfd, "</h2></a>\n");
+            HTMLtranslate(opfd, t->s->note->s);
+        }
+    if( !count )
+        nolineerror("No notes highlighted in %s, so nothing to pull", flagcolor(pullString));
 }
 
 void HTMLcolorkey(FILE *opfd, char *heading, char *vskip)
@@ -49,12 +86,12 @@ void HTMLcolorkey(FILE *opfd, char *heading, char *vskip)
 	char *hbar = hasHeading? "\\hline": "";
 		
 		// if there was a cascade, all the flagsused will be wrong, so fix them -- because we thought auxcascade() was the wrong place to do it :-)
-		for( int flag = 0; flag < 7; flag++ )
-			flagsusedaftercascades[flag] = 0;	
+		for( int flag = 0; flag < 8; flag++ )
+			flagsusedaftercascades[flag] = 0;
 		for( node *t = nodeList; t != NULL; t = t->next )
 			flagsusedaftercascades[t->s->flag]++;
 		
-		for( int i = 1; i < 7; i++ ) // gets them in alphabetical order
+		for( int i = 1; i < 8; i++ ) // gets them in alphabetical order
 		{	if( *flagdefinitions[i] )
 			{	if( !flagLegends )
 				{	myfprintf(opfd, "<table>\n");
@@ -62,7 +99,7 @@ void HTMLcolorkey(FILE *opfd, char *heading, char *vskip)
 				}
 				myfprintf(opfd, "<tr><td style=\"vertical-align:top\">");
 				flagLegends++;
-				htmlflagcolor(opfd, i);
+				htmlflagcolor(opfd, i, 0);
 				fprintf(opfd, "</td><td style=\"vertical-align:top\">%s", flagcolors[i]);
 				if( !flagsusedaftercascades[i] ) myfprintf(opfd, "&nbsp;not&nbsp;used</td><td>");
 				else myfprintf(opfd, "&nbsp;used&nbsp;%d&nbsp;time%s</td><td>", flagsusedaftercascades[i], flagsusedaftercascades[i] == 1? "": "s");
@@ -89,9 +126,12 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 			*title? "<br/>": "", *version? "Version ": "", version);
 	fprintf(opfd, "<style>%s</style></head>\n", css);
     fprintf(opfd, "<body>\n%s\n", htmldefinitions->s);
-	myfprintf(opfd, "<center><h1>%t%t%t%t</h1>\n<h2>", title,
-			*title? "<br/>": "", *version? "Version ": "", version);
-
+	myfprintf(opfd, "<center><h1>%t</h1>", title);
+    if( pullString != noflag )
+        pullColorTitle(opfd, pullString);
+    if( *version )
+        myfprintf(opfd, "<h1>%t</h1>", version);
+    myfprintf(opfd, "<h2>");
 	while( authors != NULL )
 	{	myfprintf(opfd, "%t", authors->author);
 		if( authors->next != NULL ) 
@@ -101,7 +141,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 
 	fprintf(opfd, "</h2>\n<h3>%s</h3></center>\n", date);
 
-	if( *abstract )
+	if( *abstract && pullString == noflag )
 	{	fprintf(opfd, "<blockquote>");
 		HTMLtranslate(opfd, abstract);
 		fprintf(opfd, "</blockquote>\n");
@@ -149,6 +189,12 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		} else anynotes++;
 	}
 
+    if( pullString != noflag ) // -pull used, so restrict to one color and exit
+    {   pullAcolor(opfd, pullString);
+        fprintf(opfd, "</body>\n</html>\n");
+        return;
+    }
+
 	for( arrow *a = arrowList; a != NULL; a = a->next )
 		anyarrows++;
 	for( arrow *t = noteArrowList; t != NULL; t = t->next )
@@ -185,11 +231,11 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		HTMLcolorkey(opfd, "", "");
 			
 		myfprintf(opfd, "<table frame=\"box\">\n");
-		for( int i = 1; i < 7; i++ ) // gets flags in alphabetical order
+		for( int i = 1; i < 8; i++ ) // gets flags in alphabetical order
 		{	for( node *t = nodeList; t != NULL; t = t->next )
 				if( t->s->flag != noflag && t->s->flag == i )
 				{	fprintf(opfd, "<tr><td>");
-					htmlflagcolor(opfd, t->s->flag);
+					htmlflagcolor(opfd, t->s->flag, 0);
 					fprintf(opfd, "</td><td>");
 					href(opfd, t->s->s, "</td>");
 					//printrank(opfd, t->s, version);
@@ -200,7 +246,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					else 
 					if( t->s->originalflag != noflag && t->s->originalflag != t->s->flag )
 					{	fprintf(opfd, "&mdash; was ");
-						htmlflagcolor(opfd, t->s->originalflag);
+						htmlflagcolor(opfd, t->s->originalflag, 0);
 						fprintf(opfd, " before cascade");
 					}
 					
@@ -215,12 +261,12 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		int component;
 	
 		// if there are lots of components, list nodes in order of component number
-	
 		for( component = 1; component <= numberOfComponents; component++ )
 		{	anynotes = 0; // per component...
 		for( node *t = nodeList; t != NULL; t = t->next )
 			if( t->s->note != NULL && t->s->component == component ) 
-			{	if( !anynotes )
+            {	if( pullString != noflag && pullString != t->s->flag ) continue; //
+                if( !anynotes )
 				{	myfprintf(opfd, "<h1 style='text-decoration: underline'><a name=\"component%d-narrative\">Node narrative evidence", component);
 					if( numberOfComponents > 1 )
 						myfprintf(opfd, " for component %d", component);
@@ -233,8 +279,8 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 				}
 				anynotes = 1;
 				fprintf(opfd, "\n<a name=\"%s\"><h2>", t->s->s);
-				if( t->s->flag != noflag ) htmlflagcolor(opfd, t->s->flag);
-				
+				if( t->s->flag != noflag ) htmlflagcolor(opfd, t->s->flag, 0);
+
 				myfprintf(opfd, " Node ");
 				(void) printrank(opfd, t->s, version);
 				myfprintf(opfd, " %T",
@@ -255,7 +301,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 						anyarrows = 1;
 						fprintf(opfd, "<tr><td>&larr;&nbsp;");
 						if( a->u->flag != noflag ) 
-						{	htmlflagcolor(opfd, a->u->flag);
+						{	htmlflagcolor(opfd, a->u->flag, 0);
 							myfprintf(opfd, " ");
 						}
 						else myfprintf(opfd, "&nbsp;&nbsp;&nbsp;");
@@ -269,7 +315,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 						anyarrows = 1;
 						fprintf(opfd, "<tr><td>&rarr;&nbsp;");
 						if( a->v->flag != noflag ) 
-						{	htmlflagcolor(opfd, b->v->flag);
+						{	htmlflagcolor(opfd, b->v->flag, 0);
 							myfprintf(opfd, " ");
 						}
 						else myfprintf(opfd, "&nbsp;&nbsp;&nbsp;");

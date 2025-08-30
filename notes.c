@@ -106,12 +106,12 @@ void colorkey(FILE *opfd, char *heading, char *vskip)
 	char *hbar = hasHeading? "\\hline": "";
 		
 		// if there was a cascade, all the flags used will be wrong, so fix them -- because we thought auxcascade() was the wrong place to do it :-)
-		for( int flag = 0; flag < 7; flag++ )
-			flagsusedaftercascades[flag] = 0;	
+		for( int flag = 0; flag < 8; flag++ )
+			flagsusedaftercascades[flag] = 0;
 		for( node *t = nodeList; t != NULL; t = t->next )
 			flagsusedaftercascades[t->s->flag]++;
 		
-		for( int i = 1; i < 7; i++ ) // gets them in alphabetical order
+		for( int i = 1; i < 8; i++ ) // gets them in alphabetical order
 		{	if( *flagdefinitions[i] )
 			{	if( !flagLegends )
 				{	myfprintf(opfd, "\\setbox0=\\hbox{\\colorflag{white}}%%\n\
@@ -257,7 +257,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 		colorkey(opfd, "Highlighting key", "\\vskip 4ex");
 			
 		myfprintf(opfd, "\\noindent\\begin{tabular}{@{}llll}\n");
-		for( int i = 1; i < 7; i++ ) // gets flags in alphabetical order
+		for( int i = 1; i < 8; i++ ) // gets flags in alphabetical order
 		{	for( node *t = nodeList; t != NULL; t = t->next )
 				if( t->s->flag != noflag && t->s->flag == i )
 				{	myfprintf(opfd, "\\colorflag{%s}&", flagcolor(t->s->flag));

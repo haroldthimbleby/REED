@@ -90,7 +90,7 @@ void xml(FILE *opfd)
  	if( *date ) xmlattribute(opfd, "", "date", date);
  	if( *direction ) xmlattribute(opfd, "", "direction", direction);
 	
-	for( int i = 1; i < 7; i++ ) // gets them in alphabetical order
+	for( int i = 1; i < 8; i++ ) // gets them in alphabetical order
 		{	if( *flagdefinitions[i] )
 			{	myfprintf(opfd, "<highlightDefinition color=\"%s\">", flagcolors[i]);
 				xmlconverted(opfd, flagdefinitions[i]); 
@@ -525,8 +525,7 @@ void generated(char *filename, char *suffix, char *reason)
 }
 
 void stopiferror()
-{
-    if( errcount > 0 )
+{   if( errcount > 0 )
     {   nolineerror("Stopped due to error%s", errcount>1? "s": "");
         exit(1);
     }
@@ -731,4 +730,19 @@ void generateFiles(char *filename)
             generated(filename, "", "Mathematica definition of the REED graph");
 		}
 	}
+}
+
+extern int flagsusedaftercascades[];
+void listColorsUsed() // list highlighting colors used to stdout
+{   for( int flag = 0; flag < 8; flag++ )
+        flagsusedaftercascades[flag] = 0;
+    for( node *t = nodeList; t != NULL; t = t->next )
+        flagsusedaftercascades[t->s->flag]++;
+    char *spacing = "";
+    for( int i = 0; i < 8; i++ ) // gets them in alphabetical order
+        if( flagsusedaftercascades[i] )
+        {   fprintf(stdout, "%s%s", spacing, !i? "gray": flagcolor(i));
+            spacing = " ";
+        }
+    fprintf(stdout, "\n");
 }

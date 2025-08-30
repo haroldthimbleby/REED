@@ -16,7 +16,7 @@ extern void appendVersions(char *version);
 
 typedef enum { None, String, Node, Arrow, Annotation } type;
 
-enum flagcolor { noflag, black, blue, green, red, white, yellow };  // in alpha order
+enum flagcolor { noflag, black, blue, gray, green, red, white, yellow };  // in alpha order
 
 enum flagcolor pullString;
 
@@ -66,7 +66,7 @@ typedef struct
     int *optionFlag;
     int needGraphViz;
 } structOption;
-extern int verboseOption, graphvizOption, openGraphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption,
+extern int verboseOption, graphvizOption, openGraphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption,
 	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption;
 
 extern void generateFiles(char *filename);
@@ -119,3 +119,4 @@ extern tag setTag(char *string);
 extern void checkIS();
 extern int errcount;
 extern void checkNumbering();
+extern void listColorsUsed();
