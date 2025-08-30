@@ -99,14 +99,43 @@ char *fixParagraphs(char *s)
     return parafixed->s;
 }
 
+char *includeFile(FILE *opfd, char *s)
+{   // open and output the file from s[0] to either !*s or blanks
+    FILE *fd;
+    char *file, ch, savech;
+
+    while( *s && (isblank(*s) || *s == '\n') ) // skip blanks
+        s++;
+    file = s;
+    while( *s && !isblank(*s) && *s != '\n' && *s != '<' )
+        s++;
+    savech = *s; *s = (char) 0;
+    // fprintf(stderr, "<input> \"%s\"\n", file);
+    if( (fd = fopen(file, "r")) != NULL )
+    {   struct stat stat_buf;
+        int errno;
+        if( (errno = fstat(fileno(fd), &stat_buf)) != 0 )
+        {   nolineerror("** Cannot stat <input> file: %s\n%s\n", file, strerror(errno));
+            exit(0);
+        }
+        while( (ch = fgetc(fd)) != EOF )
+            fputc(ch, opfd);
+    }
+    else
+        error("Cannot open <input> file: %s", file);
+    *s = savech;
+    return s;
+}
+
 void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, and include [[[id]]] notation
 {	mode = both;
     // first do simple re case (in for loop initialisation)
     for( char *s = fixParagraphs(note); *s; s++ )
     {	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
 		else if( !strncmp(s, "<latex>", 7) ) { mode = latex; s = s+6; continue; }
-		else if( !strncmp(s, "<html>", 6) ) { mode = html; s = s+5; continue; }
-		if( mode == latex ) continue;
+        else if( !strncmp(s, "<html>", 6) ) { mode = html; s = s+5; continue; }
+        else if( !strncmp(s, "<input>", 7) ) { s = includeFile(opfd, s+7); continue; }
+        if( mode == latex ) continue;
 		else if( mode == both )
 		{	if( *s == '}' && closestack.length )
 			{	fprintf(opfd, "%s", pop(&closestack));

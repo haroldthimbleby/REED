@@ -15,7 +15,9 @@ char *css = ".showCells { border:1px solid; border-collapse:collapse; }\n\
 table {padding: 0; margin:0; }\n\
     .boxed {\n\
       border: 2.5px solid black; padding: 10px; margin: 10px;\n\
-    }\n";
+    }\n\
+h1, h2, h3 { font-family: Arial, Helvetica, sans-serif;}\n\
+h3 { font-size: 90%; }\n";
 
 void href(FILE *opfd, char *id, char *close)
 {	//fprintf(stderr, "Got '%s' at offset %d\n", &s[2], id);
@@ -25,7 +27,7 @@ void href(FILE *opfd, char *id, char *close)
 		{	version = t->s->nodeversion;
 			fprintf(opfd, "<a href=\"#%s\">", t->s->s);
 			if( showIDsOption ) myfprintf(opfd, "(%t) ", t->s->s);
-			fprintf(opfd, "%s%s%d.%d (%s)%s",
+			fprintf(opfd, "%s%s%d.%d %s %s",
 				*version? version: "", *version? "-": "",
 				t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s, close);
 			found = 1;
@@ -142,7 +144,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	fprintf(opfd, "</h2>\n<h3>%s</h3></center>\n", date);
 
 	if( *abstract && pullString == noflag )
-	{	fprintf(opfd, "<blockquote>");
+	{	fprintf(opfd, "<a name=\"REEDabstract\"/><blockquote>");
 		HTMLtranslate(opfd, abstract);
 		fprintf(opfd, "</blockquote>\n");
 	}
@@ -287,7 +289,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					t->s->is != NULL? t->s->is->s: t->s->s);
 				
 				if( t->s->group != NULL )
-					myfprintf(opfd, " &mdash; (Group: %t) ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
+					myfprintf(opfd, " &mdash; Group: %t ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
 				if( showIDsOption ) myfprintf(opfd, "%t ", t->s->s);
 				myfprintf(opfd, "</h2></a>\n");
 				HTMLtranslate(opfd, t->s->note->s);
@@ -323,6 +325,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					}
 				if( anyarrows ) fprintf(opfd, "</table></td>\n");
 				fprintf(opfd, "</tr>\n</table>\n");
+                fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>");
 			}
 		}
 	}

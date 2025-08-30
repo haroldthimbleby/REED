@@ -159,7 +159,7 @@ int printrank(FILE *opfd, str *n, char *version) // for tex file
 
 void printNodeLabel(FILE *opfd, node *t, char *version)  // for dot file
 {
-	myfprintf(opfd, "label=\"");
+	myfprintf(opfd, "URL=\"#%s\"; label=\"", t->s->s); 
 	if( !t->s->plain )
 	{	int print = printrank(opfd, t->s, version);
 		if( showIDsOption ) 
