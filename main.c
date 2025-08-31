@@ -103,12 +103,15 @@ int flagOption = 0,
     showRulesOption = 0,
     componentsOption = 0,
     generatePDFOption = 0,
+    generateSVGOption = 0,
     syntaxOption = 0,
     openGraphvizOption = 0,
     rawOption = 0,
     JSONOption = 0,
     colorsOption = 0,
-    pullOption = 0;
+    colorsPlusOption = 0,
+    pullOption = 0,
+    pullPlusOption = 0;
 
 enum flagcolor pullString = noflag;
 
@@ -130,7 +133,8 @@ structOption options[] =
 {	{"-#", "show comments, if any", &commentOption, 0},
     {"-c", "show weakly connected components", &componentsOption, 0},
     {"-colors", "list all colors used on standard output", &colorsOption, 0},
-	{"-F", "highlight flags in drawing*- unfortunately due to a Graphviz bug, this breaks up any groups", &flagOption, 1},
+    {"-colors+", "list meanings of all colors used on standard output", &colorsPlusOption, 0},
+    {"-F", "highlight flags in drawing*- unfortunately due to a Graphviz bug, this breaks up any groups", &flagOption, 1},
 	{"-f", "show textual descriptions of flag colors in REED drawing", &flagTextOption, 1},
 	{"-g", "generate a GraphViz file*- default option if nothing else chosen*- See https://graphviz.org", &graphvizOption, 1},
 	{"-h", "generate an interactive HTML REED document*- will refer to a PDF of the REED (generate using -p flag)", &htmlOption, 0},
@@ -140,12 +144,14 @@ structOption options[] =
     {"-m", "generate a Mathematica notebook*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
     {"-o", "open generated REED graphics GraphViz file automatically *- using dot on MacOS", &openGraphvizOption, 1},
     {"-pdf", "generate a PDF file*- representing the REED graph", &generatePDFOption, 1},
-    {"-pull", "\"<flag color...>\" restrict -h and -l documents to just these colors", &pullOption, 0},
+    {"-pull", "<color> restrict -h and -l documents to just this color", &pullOption, 0},
+    {"-pull+", "<color> does -pull and also explains this color on standard output", &pullPlusOption, 0},
     {"-n", "show node IDs in graph drawing", &showIDsOption, 1},
     {"-raw", "start processing in raw mode (non-REED); only use -raw with -tags flag", &rawOption, 0},
     {"-rules", "show all HTML <-> Latex rules", &showRulesOption, 0},
 	{"-s", "show REED file signatures", &showSignatures, 0},
     {"-sep", "draw a separator line before processing any files (useful with -watch)", &separatorOption, 0},
+    {"-svg", "generate an SVG file*- representing the REED graph", &generateSVGOption, 1},
     {"-syntax", "summarise REED syntax", &syntaxOption, 0},
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption, 0},
     {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: tags \"start\" \"end\"", &handleTags, 0},
@@ -276,8 +282,10 @@ int main(int argc, char *argv[])
                 i += 2;
                 handleTags = 0;
             }
-            if( pullOption )
-            {   pullOption = 0;
+            if( pullOption || pullPlusOption )
+            {   if( pullString != noflag )
+                   nolineerror("Can only pull one color");
+                pullOption = 0;
                 if( i+1 >= argc || iscolor(argv[i+1]) == noflag ) // can't use error() as there is no lineno yet
                 {   nolineerror("-pull must be followed by highlight colors to pull");
                     exit(1);
@@ -345,7 +353,7 @@ int main(int argc, char *argv[])
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
     {   if( !setSomeInterestingOption ) graphvizOption = 1; // effectively set -g if nothing else
         generateFiles(processedFileName); // processFileName is the last file named
-        if( colorsOption )
+        if( colorsOption || colorsPlusOption )
             listColorsUsed();
     }
     else

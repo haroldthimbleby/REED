@@ -66,7 +66,7 @@ typedef struct
     int *optionFlag;
     int needGraphViz;
 } structOption;
-extern int verboseOption, graphvizOption, openGraphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption,
+extern int verboseOption, graphvizOption, openGraphvizOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption,
 	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption;
 
 extern void generateFiles(char *filename);
@@ -120,3 +120,4 @@ extern void checkIS();
 extern int errcount;
 extern void checkNumbering();
 extern void listColorsUsed();
+extern void HTMLtranslate(FILE *opfd, char *note); // translate Latex and HTML to HTML, and include <<id>> notation

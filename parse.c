@@ -677,7 +677,7 @@ enum flagcolor iscolor(char *s)
 	return noflag;
 }
 
-char *flagdefinitions[] = {"'Noflag' can't have a meaning","","","","","","",""};
+char *flagdefinitions[] = {"","","","","","","",""};
 int flagsused[] = {0,0,0,0,0,0,0,0};
 int flagsusedaftercascades[] = {0,0,0,0,0,0,0,0};
 int flagcascade[] = {0,0,0,0,0,0,0,0};

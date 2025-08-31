@@ -45,11 +45,11 @@ LaTeXmappings[] = { // anything that is a prefix of another MUST come later (eg,
 };
 
 void explainTranslationRules()
-{	fprintf(stdout, "In the following * means a space (so you can see it)\n\n");
+{	fprintf(stdout, "In the following * means a space, and \\n a newline (so you can see them)\n\n");
 	fprintf(stdout, "Rules for converting LaTeX to HTML\n\n");
 	for( int i = 0; i < sizeof(HTMLmappings)/sizeof(HTMLmappings[0]); i++ )
 		if( HTMLmappings[i].close )
-			myfprintf(stdout, "  %l...}\n      -> %l...%l\n", HTMLmappings[i].latex, HTMLmappings[i].html, HTMLmappings[i].close);		
+			myfprintf(stdout, "  %l...}\n      -> %l...%l\n", HTMLmappings[i].latex, HTMLmappings[i].html, HTMLmappings[i].close);
 		else
 			myfprintf(stdout, "  %l\n      -> %l\n", HTMLmappings[i].latex, HTMLmappings[i].html);
 
@@ -85,14 +85,14 @@ char *top(struct stack *stack)
 enum mode { latex, html, both } mode = both;
 
 char *fixParagraphs(char *s)
-// replace all \s*\n\s*\n with <p/>
-{   str *parafixed = newstr("");
+// replace all \s*\n\s*\n with \n\n
+{   str *parafixed = newstr(""); return s;
     int newlineCount = 0, blankCount = 0;
     for( ; *s; s++ )
-    {   if( *s == '\n' ) newlineCount++;
-        if( *s == ' ' || *s == '\t' || *s == '\n' ) { blankCount++; continue; }
-        if( newlineCount > 1 ) appendcstr(parafixed, "\n\n");
-        if( blankCount ) appendch(parafixed, ' ');
+    {   if( *s == '\n' ) { newlineCount++; continue; }
+        if( *s == ' ' || *s == '\t' ) { blankCount++; continue; }
+        if( newlineCount > 1 ) appendcstr(parafixed, "\n\n\n");
+        else if( blankCount || newlineCount ) appendch(parafixed, ' ');
         newlineCount = blankCount = 0;
         appendch(parafixed, *s);
     }
@@ -129,22 +129,24 @@ char *includeFile(FILE *opfd, char *s)
 
 void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, and include [[[id]]] notation
 {	mode = both;
-    // first do simple re case (in for loop initialisation)
+
+    // first do simple multinewline->\n\n case (in for loop initialisation)
     for( char *s = fixParagraphs(note); *s; s++ )
-    {	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
+    {	int translated = 0;
+        if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
 		else if( !strncmp(s, "<latex>", 7) ) { mode = latex; s = s+6; continue; }
         else if( !strncmp(s, "<html>", 6) ) { mode = html; s = s+5; continue; }
         else if( !strncmp(s, "<input>", 7) ) { s = includeFile(opfd, s+7); continue; }
-        if( mode == latex ) continue;
+        if( mode == latex ) continue; // ignore latex
+        else if( mode == html ) { fputc(*s, opfd); continue; } // copy HTML
 		else if( mode == both )
 		{	if( *s == '}' && closestack.length )
 			{	fprintf(opfd, "%s", pop(&closestack));
 				continue;
 			}
-			for( int i = 0; i < sizeof(HTMLmappings)/sizeof(HTMLmappings[0]); i++ )
-            {
-                if( !strncmp(s, HTMLmappings[i].latex, strlen(HTMLmappings[i].latex)) )
-				{   if( !strcmp(HTMLmappings[i].html, "error") )
+            for( int i = 0; i < sizeof(HTMLmappings)/sizeof(HTMLmappings[0]); i++ )
+            {   if( !strncmp(s, HTMLmappings[i].latex, strlen(HTMLmappings[i].latex)) )
+                {   if( !strcmp(HTMLmappings[i].html, "error") )
                     {   char *t = s+1;
                         while( *t && isalpha(*t) ) t++;
                         char save = *t;
@@ -154,14 +156,15 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
                         break;
                     }
                     fprintf(opfd, "%s", HTMLmappings[i].html);
-					s += strlen(HTMLmappings[i].latex);
-					if( HTMLmappings[i].close ) 
+                    s += strlen(HTMLmappings[i].latex)-1;
+					if( HTMLmappings[i].close )
 						push(&closestack, HTMLmappings[i].close);
 					//fprintf(stderr, "translated %s -> %s ending on '%c'\n", HTMLmappings[i].latex, HTMLmappings[i].html, *s);
-					break;
+                    translated = 1;
+                    break;
 				}
 			}
-			if( !*s ) break; // avoid an end-of-loop increment if HTML matched right at end of string
+            if( translated ) continue;
 			if( *s == '{' ) push(&closestack, "}");
 			else if( *s == '}' && closestack.length )
 			{	fprintf(opfd, "%s", pop(&closestack));
@@ -191,16 +194,19 @@ void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // trans
 	{	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
 		else if( !strncmp(s, "<latex>", 7) ) { mode = latex; s = s+6; continue; }
 		else if( !strncmp(s, "<html>", 6) ) { mode = html; s = s+5; continue; }
-		if( mode == html ) continue;
+        else if( !strncmp(s, "<input>", 7) ) { s = includeFile(opfd, s+7); continue; }
+        if( mode == html ) continue; // ignore HTML
 		else if( mode == both )
-		{	for( int i = 0; i < sizeof(LaTeXmappings)/sizeof(LaTeXmappings[0]); i++ )
+        {	int translated = 0;
+            for( int i = 0; i < sizeof(LaTeXmappings)/sizeof(LaTeXmappings[0]); i++ ) // bug?
 			{	if( !strncmp(s, LaTeXmappings[i].html, strlen(LaTeXmappings[i].html)) )
 				{	fprintf(opfd, "%s", LaTeXmappings[i].latex);
-					s += strlen(LaTeXmappings[i].html);
+					s += strlen(LaTeXmappings[i].html)-1;
+                    translated = 1;
 					break;
 				}
 			}
-			if( !*s ) break; // avoid an end-of-loop increment if HTML matched right at end of string
+			if( translated ) continue;
 		}
 		if( s[0] == '[' && s[1] == '[' && s[2] == '[' )
 		{	int offset = 3;

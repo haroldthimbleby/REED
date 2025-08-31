@@ -17,7 +17,11 @@ table {padding: 0; margin:0; }\n\
       border: 2.5px solid black; padding: 10px; margin: 10px;\n\
     }\n\
 h1, h2, h3 { font-family: Arial, Helvetica, sans-serif;}\n\
-h3 { font-size: 90%; }\n";
+h3 { font-size: 90%; }\n\
+.shadedBox {\n\
+      padding: 2mm; margin-top: 3mm; margin-bottom: 3mm;\
+      background-color: PapayaWhip;\n\
+}\n";
 
 void href(FILE *opfd, char *id, char *close)
 {	//fprintf(stderr, "Got '%s' at offset %d\n", &s[2], id);
@@ -27,7 +31,7 @@ void href(FILE *opfd, char *id, char *close)
 		{	version = t->s->nodeversion;
 			fprintf(opfd, "<a href=\"#%s\">", t->s->s);
 			if( showIDsOption ) myfprintf(opfd, "(%t) ", t->s->s);
-			fprintf(opfd, "%s%s%d.%d %s %s",
+			fprintf(opfd, "%s%s%d.%d %s%s",
 				*version? version: "", *version? "-": "",
 				t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s, close);
 			found = 1;
@@ -50,13 +54,13 @@ void htmlflagcolor(FILE *opfd, int flag, int saycolor)
 	fprintf(opfd, "<span style='color:%s;'>&#%s;</span>", clearerColor, iswhite? "9872": "9873");
 }
 
-void pullColorTitle(FILE *opfd, enum flagcolor pullString)
+void pullColorTitle(FILE *opfd, enum flagcolor pullStringEnum)
 {   fprintf(opfd, "<table class=\"boxed\"><tr align=\"center\"><td><h1>Narrative restricted to ");
-    htmlflagcolor(opfd, pullString, 1);
+    htmlflagcolor(opfd, pullStringEnum, 1);
     fprintf(opfd, " highlighting");
     if( pullString == gray ) fprintf(opfd, " or not hightlighted");
     fprintf(opfd, "</h1></td></tr><tr><td>");
-    HTMLtranslate(opfd, flagdefinitions[pullString]);
+    HTMLtranslate(opfd, flagdefinitions[pullStringEnum]);
     fprintf(opfd, "</td></tr></table>\n");
 }
 
@@ -65,7 +69,7 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
     for( node *t = nodeList; t != NULL; t = t->next )
         if( (t->s->flag == pullString || (t->s->flag == noflag && pullString == gray)) && t->s->note != NULL )
         {   count++;
-            fprintf(opfd, "\n<a name=\"%s\"><h2>", t->s->s);
+            fprintf(opfd, "\n<a name=\"%s\"><br/></a>\n<div class=\"shadedBox\"><h2>", t->s->s);
             myfprintf(opfd, t->s->isgroup? "Group ": "Node ");
             (void) printrank(opfd, t->s, version);
             myfprintf(opfd, " %T",
@@ -74,11 +78,18 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
                 myfprintf(opfd, " &mdash; in group: %t ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
             if( showIDsOption ) myfprintf(opfd, "%t ", t->s->s);
             if( t->s->flag == noflag ) fprintf(opfd, " (not highlighted)");
-            myfprintf(opfd, "</h2></a>\n");
+            myfprintf(opfd, "</h2>\n");
             HTMLtranslate(opfd, t->s->note->s);
+            myfprintf(opfd, "</div>\n");
         }
     if( !count )
         nolineerror("No notes highlighted in %s, so nothing to pull", flagcolor(pullString));
+    myfprintf(stdout, "%s: ", flagcolor(pullString));
+    if( strlen(flagdefinitions[pullString]) == 0 )
+        fprintf(stdout, "NOT DEFINED.  Say: highlight %s is \"...\" to define %s.", flagcolor(pullString), flagcolor(pullString));
+    else
+        HTMLtranslate(stdout, flagdefinitions[pullString]);
+    fprintf(stdout, "\n");
 }
 
 void HTMLcolorkey(FILE *opfd, char *heading, char *vskip)
@@ -280,7 +291,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					myfprintf(opfd, "</ul>\n");
 				}
 				anynotes = 1;
-				fprintf(opfd, "\n<a name=\"%s\"><h2>", t->s->s);
+				fprintf(opfd, "\n<a name=\"%s\"><br/></a>\n<div class=\"shadedBox\"><h2>", t->s->s);
 				if( t->s->flag != noflag ) htmlflagcolor(opfd, t->s->flag, 0);
 
 				myfprintf(opfd, " Node ");
@@ -289,9 +300,9 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					t->s->is != NULL? t->s->is->s: t->s->s);
 				
 				if( t->s->group != NULL )
-					myfprintf(opfd, " &mdash; Group: %t ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
+					myfprintf(opfd, " &mdash; in group: %t ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
 				if( showIDsOption ) myfprintf(opfd, "%t ", t->s->s);
-				myfprintf(opfd, "</h2></a>\n");
+				myfprintf(opfd, "</h2>\n");
 				HTMLtranslate(opfd, t->s->note->s);
 				
 				int anyarrows = 0;
@@ -325,7 +336,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					}
 				if( anyarrows ) fprintf(opfd, "</table></td>\n");
 				fprintf(opfd, "</tr>\n</table>\n");
-                fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>");
+                fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n</div>\n");
 			}
 		}
 	}
@@ -360,7 +371,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	{ 	if( !arrownotes )
 			myfprintf(opfd, "<h1 style='text-decoration: underline'>Arrow narrative evidence</h1>\n");
 		arrownotes = 1;
-		myfprintf(opfd,"<h2>Arrow ");
+		myfprintf(opfd, "<div class=\"shadedBox\"><h2>Arrow ");
 		if( t->arrowis != NULL )
 			myfprintf(opfd, "%t<br/>\n", t->arrowis->s);
 		fprintf(opfd, "</h2>\n<table><tr><td/><td>");
@@ -371,6 +382,8 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		href(opfd, t->v->s, "</td></tr>\n</table><p/>");//printrank(opfd, t->v, t->v->nodeversion); 
 		//myfprintf(opfd, " %t</td></tr>\n</table><p/>", t->v->is != NULL? t->v->is->s: t->v->s);
 		HTMLtranslate(opfd, t->arrownote->s);
+        fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n");
+        fprintf(opfd, "</div>\n");
 	}
 
 	//if( !anyflags ) 

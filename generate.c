@@ -653,6 +653,17 @@ void generateFiles(char *filename)
         system(cmd->s);
         generated(base->s, ".pdf", "PDF file of the REED graph");
     }
+    if( generateSVGOption )
+    {   str *cmd = newstr("dot -Tsvg ");
+        appendstr(cmd, base);
+        appendcstr(cmd, ".gv > ");
+        appendstr(cmd, base);
+        appendcstr(cmd, ".svg");
+        if( verboseOption ) fprintf(stderr, "|--");
+        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        system(cmd->s);
+        generated(base->s, ".svg", "SVG file of the REED graph");
+    }
 
     stopiferror();
 	if( latexOption )
@@ -745,4 +756,12 @@ void listColorsUsed() // list highlighting colors used to stdout
             spacing = " ";
         }
     fprintf(stdout, "\n");
+    if( colorsPlusOption )
+    {   for( int i = 1; i < 8; i++ ) // gets them in alphabetical order
+            if( strlen(flagdefinitions[i]) != 0 )
+            {   fprintf(stdout, "\n%s: ", flagcolor(i));
+                HTMLtranslate(stdout, flagdefinitions[i]);
+                fprintf(stdout, "\n");
+            }
+    }
 }

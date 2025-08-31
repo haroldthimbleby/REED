@@ -143,7 +143,7 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
 		                       break;
-		               case 'l':	// same as %s but makes newlines visible - used in explainTranslationRules()
+		               case 'l':	// for displaying translation rules: makes newlines visible - used in explainTranslationRules()
 		               		for( s = va_arg(ap, char *); *s; s++ )
 		                       		switch( *s )
 		                       		{
@@ -157,7 +157,7 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 			                       				fprintf(opfd, "\\%c", *++s);
 			                       			}
 			                       			else
-			                       				fprintf(opfd, "\\\\"); break;
+			                       				fprintf(opfd, "\\"); break;
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
 		                       break;
