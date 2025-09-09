@@ -86,7 +86,8 @@ str *newappendcstr(str *d, char *e) // appends to a new string
 	return new;
 }
 
-int flagOption = 0,
+int basenameOption = 0,
+    flagOption = 0,
 	flagTextOption = 0,
 	verboseOption = 0, 
     showIDsOption = 0,
@@ -110,8 +111,12 @@ int flagOption = 0,
     JSONOption = 0,
     colorsOption = 0,
     colorsPlusOption = 0,
-    pullOption = 0,
-    pullPlusOption = 0;
+    matchedpullOption = 0,
+    matchedpullPlusOption = 0,
+    pullPlusOption = 0,
+    pullOption = 0;
+
+char *outputbasename = ""; // no basename is zero length string
 
 enum flagcolor pullString = noflag;
 
@@ -131,9 +136,10 @@ tag setTag(char *str)
 // for instance, a .gv file is needed to generate PDF
 structOption options[] =
 {	{"-#", "show comments, if any", &commentOption, 0},
+    {"-b", "<file.ext> set basename of all files generated (file.gv, file.html, file.pdf, etc)", &basenameOption, 0},
     {"-c", "show weakly connected components", &componentsOption, 0},
     {"-colors", "list all colors used on standard output", &colorsOption, 0},
-    {"-colors+", "list meanings of all colors used on standard output", &colorsPlusOption, 0},
+    {"-colors+", "does -colors and also lists meanings of all colors used on standard output", &colorsPlusOption, 0},
     {"-F", "highlight flags in drawing*- unfortunately due to a Graphviz bug, this breaks up any groups", &flagOption, 1},
 	{"-f", "show textual descriptions of flag colors in REED drawing", &flagTextOption, 1},
 	{"-g", "generate a GraphViz file*- default option if nothing else chosen*- See https://graphviz.org", &graphvizOption, 1},
@@ -144,8 +150,8 @@ structOption options[] =
     {"-m", "generate a Mathematica notebook*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
     {"-o", "open generated REED graphics GraphViz file automatically *- using dot on MacOS", &openGraphvizOption, 1},
     {"-pdf", "generate a PDF file*- representing the REED graph", &generatePDFOption, 1},
-    {"-pull", "<color> restrict -h and -l documents to just this color", &pullOption, 0},
-    {"-pull+", "<color> does -pull and also explains this color on standard output", &pullPlusOption, 0},
+    {"-pull", "<color> restrict generated files to just this color", &matchedpullOption, 1},
+    {"-pull+", "<color> does -pull and also explains this color on standard output", &matchedpullPlusOption, 1},
     {"-n", "show node IDs in graph drawing", &showIDsOption, 1},
     {"-raw", "start processing in raw mode (non-REED); only use -raw with -tags flag", &rawOption, 0},
     {"-rules", "show all HTML <-> Latex rules", &showRulesOption, 0},
@@ -208,7 +214,7 @@ int main(int argc, char *argv[])
 	int successfulskip = 0;
 
     // if any argument is -watch
-    // pull out string of files for fswatch
+    // pull out string of files for fswatch system call
     // create new argument string minus all -watch parameters
     // then system out and exit
     for( int i = 1; i < argc; i++ )
@@ -282,18 +288,34 @@ int main(int argc, char *argv[])
                 i += 2;
                 handleTags = 0;
             }
-            if( pullOption || pullPlusOption )
-            {   if( pullString != noflag )
-                   nolineerror("Can only pull one color");
-                pullOption = 0;
+            if( basenameOption )
+            {   if( i+1 >= argc )
+                {   nolineerror("-b must be followed by a file name");
+                    exit(1);
+                }
+                if( *outputbasename )
+                    nolineerror("Cannot have multiple basenames, '%s' and '%s'", outputbasename, argv[i+1]);
+                outputbasename = argv[i+1];
+                basenameOption = 0;
+                i += 1;
+            }
+            if( matchedpullOption || matchedpullPlusOption )
+            {   char *whichPull = matchedpullPlusOption? "pull+": "pull";
+                if( pullString != noflag )
+                   nolineerror("Can only -%s one color", whichPull);
+                pullOption |= matchedpullOption;
+                pullPlusOption |= matchedpullPlusOption;
+                matchedpullOption = matchedpullPlusOption = 0;
                 if( i+1 >= argc || iscolor(argv[i+1]) == noflag ) // can't use error() as there is no lineno yet
-                {   nolineerror("-pull must be followed by highlight colors to pull");
+                {   nolineerror("-%s must be followed by highlight colors to pull", whichPull);
                     exit(1);
                 }
                 pullString = iscolor(argv[i+1]);
-                if( verboseOption ) fprintf(stderr, "|-- -pull %s\n", flagcolor(pullString));
-                fprintf(stderr, "Warning: -pull for -l has not been implemented yet, so -h is applied automatically\n");
+                if( verboseOption ) fprintf(stderr, "|-- -%s %s\n", whichPull, flagcolor(pullString));
+                fprintf(stderr, "Warning: -%s for -l has not been implemented yet\n", whichPull);
+                fprintf(stderr, "Warning: -h and -svg flags have been applied automatically (and will only generate pulled material)\n");
                 htmlOption = 1;
+                generateSVGOption = 1;
                 i += 1;
             }
             continue;
@@ -352,7 +374,7 @@ int main(int argc, char *argv[])
     findComponents(); // find components before generating HTML, Latex, etc
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
     {   if( !setSomeInterestingOption ) graphvizOption = 1; // effectively set -g if nothing else
-        generateFiles(processedFileName); // processFileName is the last file named
+        generateFiles(*outputbasename? outputbasename: processedFileName); // processFileName is the last file named
         if( colorsOption || colorsPlusOption )
             listColorsUsed();
     }

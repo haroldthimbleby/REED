@@ -21,7 +21,11 @@ h3 { font-size: 90%; }\n\
 .shadedBox {\n\
       padding: 2mm; margin-top: 3mm; margin-bottom: 3mm;\
       background-color: PapayaWhip;\n\
-}\n";
+}\n\
+    .NOTshadedBox {\n\
+          padding: 2mm; margin-top: 3mm; margin-bottom: 3mm;\
+          background-color: white;\n\
+    }\n";
 
 void href(FILE *opfd, char *id, char *close)
 {	//fprintf(stderr, "Got '%s' at offset %d\n", &s[2], id);
@@ -84,11 +88,13 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
         }
     if( !count )
         nolineerror("No notes highlighted in %s, so nothing to pull", flagcolor(pullString));
-    myfprintf(stdout, "%s: ", flagcolor(pullString));
-    if( strlen(flagdefinitions[pullString]) == 0 )
-        fprintf(stdout, "NOT DEFINED.  Say: highlight %s is \"...\" to define %s.", flagcolor(pullString), flagcolor(pullString));
-    else
-        HTMLtranslate(stdout, flagdefinitions[pullString]);
+    if( pullPlusOption )
+    {   myfprintf(stdout, "%s: ", flagcolor(pullString));
+        if( strlen(flagdefinitions[pullString]) == 0 )
+            fprintf(stdout, "NOT DEFINED.  Say: highlight %s is \"...\" to define %s.", flagcolor(pullString), flagcolor(pullString));
+        else
+            HTMLtranslate(stdout, flagdefinitions[pullString]);
+    }
     fprintf(stdout, "\n");
 }
 
@@ -154,10 +160,10 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 
 	fprintf(opfd, "</h2>\n<h3>%s</h3></center>\n", date);
 
-	if( *abstract && pullString == noflag )
-	{	fprintf(opfd, "<a name=\"REEDabstract\"/><blockquote>");
+	if( *abstract ) // && pullString == noflag )
+	{	fprintf(opfd, "<a name=\"REEDabstract\"/><blockquote><div class=\"shadedBox\">");
 		HTMLtranslate(opfd, abstract);
-		fprintf(opfd, "</blockquote>\n");
+		fprintf(opfd, "</div></blockquote>\n");
 	}
 		
 	// sort notes into order using bubble sort

@@ -21,16 +21,19 @@ SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 	git add SyntaxCode.c SyntaxOutline.tex
 	git commit -m "Updated SyntaxOutline.tex"
 
-paper: inputs website
+paper: inputs
 
 inputs: reed
+	reed -pull yellow -b lib/pow-reed-yellow v=v2 -l -g lib/pow-reed
+	dot -Tpdf lib/pow-reed-yellow.gv > ../REED-paper/figures/reedv2-yellow.pdf
 	reed v=v2 -l -g lib/pow-reed
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv2.pdf
-	mv lib/pow-reed-color-legend.tex ../REED-paper/figures
+	cp lib/pow-reed-color-legend.tex ../REED-paper/figures
 	grab lib/pow-reed.tex "/Node v2-1.1 Wrong XceedPros/" "/summary/" > ../REED-paper/figures/node-examplev2.tex
 	grab lib/pow-reed.tex "/Arrow  E/" "/unreliable/" > ../REED-paper/figures/arrow-examplev2.tex
-	reed v=v3 -l -x -h lib/pow-reed 
-	mv lib/pow-reed-xrefs.aux ../REED-paper/figures
+	reed v=v3 -l -x -h -g lib/pow-reed 
+	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv3.pdf
+	cp lib/pow-reed-xrefs.aux ../REED-paper/figures
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv3.pdf
 	grab lib/pow-reed.tex "/Node v3-3.0 Unsupervised Abbott engineer/" "/Abbott PrecisionWeb database/" > ../REED-paper/figures/narrative-examplev3.tex
 	echo "\\\\noindent\\hbox{" > ../REED-paper/figures/flags-examplev3.tex
@@ -57,7 +60,6 @@ rsm: lib/darzi
 	
 tidy:
 	rm -f *.o
-	rm -f narrative.dvi narrative.log narrative.pdf
 
 website: paper narrative $(WEBSITE)/REED.pdf $(WEBSITE)/pow-toc.pdf $(WEBSITE)/reedv2.pdf $(WEBSITE)/reedv3.pdf $(WEBSITE)/pow-reed.xml $(WEBSITE)/pow-reed.html
 
@@ -79,7 +81,7 @@ $(WEBSITE)/reedv2.pdf: $(WEBSITE)/../figures/reedv2.pdf
 $(WEBSITE)/reedv3.pdf: $(WEBSITE)/../figures/reedv3.pdf
 	cp $^ $@
 
-narrative: narrative.tex
-	pdflatex narrative.tex
-	pdflatex narrative.tex
-	cp narrative.pdf $(WEBSITE)
+narrative: lib/pow-reed.tex
+	cd lib; pdflatex pow-reed.tex
+	cp lib/pow-reed.pdf $(WEBSITE)/narrative.pdf 
+

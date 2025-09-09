@@ -199,12 +199,22 @@ void printColor(FILE *opfd, char *scheme, int index, int c)
 	// fprintf(stderr, "/%s%d/%d;\n", scheme, index < 3? 3: index > 11? 11: index, c);
 }
 
+int pullnode(str *n) // if -pull used, return true if color matches
+{   if( pullString == noflag ) return 1;
+    if( n->flag == pullString || (n->flag == noflag && pullString == gray) ) return 1;
+    return 0;
+}
+
 void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
-{ 	fprintf(opfd, "digraph {\n  compound=true;\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
+{ 	fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
 	myfprintf(opfd, "label=\"");
 	if( *title ) myfprintf(opfd, "%j", title);
  	if( *version ) myfprintf(opfd, "\n%j", version);
  	if( *date )  myfprintf(opfd, "%s%j", *title || *version? ", ": "", date);
+    if( pullString != noflag )
+    {   char *s = flagcolor(pullString);
+        myfprintf(opfd, ".  %c%s nodes only", toupper(*s), &s[1]);
+    }
  	if( *title || *version || *date ) myfprintf(opfd, "\n "); // add a blank line after
  	myfprintf(opfd, "\";\n  rankdir=\"%s\";\n", direction);
  	
@@ -260,7 +270,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 	if( flagOption )
 	{	int flagclustern = 1;
 		for( node *t = nodeList; t != NULL; t = t->next )
-			if( t->s->flag != noflag )
+			if( pullnode(t->s) && t->s->flag != noflag )
 			{	enum flagcolor fc = t->s->flag;
 				char *color = flagcolor(fc), *edgecolor = color, *fontcolor = "black";
 				if( fc == white ) edgecolor = "black";
@@ -270,12 +280,12 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 	}
 
 	for( node *t = nodeList; t != NULL; t = t->next )
-		if( t->s->isgroup && 
+		if( pullnode(t->s) && t->s->isgroup &&
 			!(flagOption && t->s->flag != noflag) // bug in graphviz means we can't have both
 		)
 		{	myfprintf(opfd, "subgraph \"cluster%S\" {\n   ", t->s->s);
 			for( node *u = nodeList; u != NULL; u = u->next )
-				if( u->s->group == t->s )
+				if( pullnode(u->s) && u->s->group == t->s )
 				{	t->s->exampleGroupMember = u->s;
 					// myfprintf(opfd, //fprintf(opfd, "    %s [color=%s; style=filled];\n", u->s->s, u->s->flag? "pink": "white");
 					fprintf(opfd, "\"%s\"; ", u->s->s);
@@ -289,7 +299,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 	//	printf("%s: group=%d, style=%d\n",t->s->s,t->s->isgroup,t->s->isstyle); 
 
 	for( node *t = nodeList; t != NULL; t = t->next )
-		if( !t->s->isgroup && !t->s->isstyle && t->s->l != HIGHLIGHT ) 
+		if( pullnode(t->s) && !t->s->isgroup && !t->s->isstyle && t->s->l != HIGHLIGHT )
 		{	myfprintf(opfd, "  \"%s%S\"", t->s->isgroup? "cluster": "", t->s->s);
 			myfprintf(opfd, " [");
 			if( !rowsTOCstyled && t->s->style == NULL ) // do not override an explicit style
@@ -314,8 +324,8 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 	
 	fprintf(opfd, "\n");
 	for( arrow *t = arrowList; t != NULL; t = t->next )
-	{	if( t->u != NULL && t->v != NULL && (t->u->isgroup || t->v->isgroup) )
-		{	myfprintf(opfd, "  \"%S\"->\"%S\" [", 
+	{	if( pullnode(t->u) && pullnode(t->v) && t->u != NULL && t->v != NULL && (t->u->isgroup || t->v->isgroup) )
+		{	myfprintf(opfd, "  \"%S\"->\"%S\" [",
 				t->u->exampleGroupMember == NULL? t->u->s: t->u->exampleGroupMember->s,
 				t->v->exampleGroupMember == NULL? t->v->s: t->v->exampleGroupMember->s);
 			if( t->v->isgroup ) myfprintf(opfd, "lhead=\"cluster%S\"", t->v->s);
@@ -347,6 +357,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			fprintf(opfd, ";\n");
 		}
 		else
+        if( pullnode(t->u) && pullnode(t->v) )
 		{	myfprintf(opfd, "  \"%S\"->\"%S\"", t->u->s, t->v->s);
 			char *openbra = " [", *closebra = "";
 			for( arrow *a = styledArrowList; a != NULL; a = a->next )
@@ -620,7 +631,7 @@ void generateFiles(char *filename)
         }
         dot(fd, title, version, date, direction);
 		fclose(fd);
-        generated(filename, "", "dot file of the REED graph (use -o flag to see it, or -p flag or dot -Tpdf <file.gv> to convert to PDF)");
+        generated(filename, "", "dot file of the REED graph (use -o flag to see it, or -pdf flag or dot -Tpdf <file.gv> to convert to PDF)");
     }
     if( openGraphvizOption ) // open the .gv file using dot to get the preview
     {	// running dot on its own just generates .gv output, doesn't display it

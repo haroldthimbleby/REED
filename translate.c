@@ -99,7 +99,7 @@ char *fixParagraphs(char *s)
     return parafixed->s;
 }
 
-char *includeFile(FILE *opfd, char *s)
+char *includeFile(FILE *opfd, int copy, char *s)
 {   // open and output the file from s[0] to either !*s or blanks
     FILE *fd;
     char *file, ch, savech;
@@ -110,19 +110,21 @@ char *includeFile(FILE *opfd, char *s)
     while( *s && !isblank(*s) && *s != '\n' && *s != '<' )
         s++;
     savech = *s; *s = (char) 0;
-    // fprintf(stderr, "<input> \"%s\"\n", file);
-    if( (fd = fopen(file, "r")) != NULL )
-    {   struct stat stat_buf;
-        int errno;
-        if( (errno = fstat(fileno(fd), &stat_buf)) != 0 )
-        {   nolineerror("** Cannot stat <input> file: %s\n%s\n", file, strerror(errno));
-            exit(0);
+    // fprintf(stderr, "<insert> \"%s\"\n", file);
+    if( copy )
+    {   if( (fd = fopen(file, "r")) != NULL )
+        {   struct stat stat_buf;
+            int errno;
+            if( (errno = fstat(fileno(fd), &stat_buf)) != 0 )
+            {   nolineerror("** Cannot stat <insert> file: %s\n%s\n", file, strerror(errno));
+                exit(0);
+            }
+            while( (ch = fgetc(fd)) != EOF )
+                fputc(ch, opfd);
         }
-        while( (ch = fgetc(fd)) != EOF )
-            fputc(ch, opfd);
+        else
+            error("Cannot open <insert> file: %s", file);
     }
-    else
-        error("Cannot open <input> file: %s", file);
     *s = savech;
     return s;
 }
@@ -136,7 +138,7 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
         if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
 		else if( !strncmp(s, "<latex>", 7) ) { mode = latex; s = s+6; continue; }
         else if( !strncmp(s, "<html>", 6) ) { mode = html; s = s+5; continue; }
-        else if( !strncmp(s, "<input>", 7) ) { s = includeFile(opfd, s+7); continue; }
+        else if( !strncmp(s, "<insert>", 7) ) { s = includeFile(opfd, mode != latex, s+8); continue; }
         if( mode == latex ) continue; // ignore latex
         else if( mode == html ) { fputc(*s, opfd); continue; } // copy HTML
 		else if( mode == both )
@@ -194,7 +196,7 @@ void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // trans
 	{	if( !strncmp(s, "<both>", 6) ) { mode = both; s = s+5; continue; }
 		else if( !strncmp(s, "<latex>", 7) ) { mode = latex; s = s+6; continue; }
 		else if( !strncmp(s, "<html>", 6) ) { mode = html; s = s+5; continue; }
-        else if( !strncmp(s, "<input>", 7) ) { s = includeFile(opfd, s+7); continue; }
+        else if( !strncmp(s, "<insert>", 7) ) { s = includeFile(opfd, mode != html, s+7); continue; }
         if( mode == html ) continue; // ignore HTML
 		else if( mode == both )
         {	int translated = 0;
@@ -217,7 +219,7 @@ void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // trans
 				for( node *t = nodeList; t != NULL; t = t->next )
 					if( !strcmp(t->s->s, &s[3]) )
 					{	version = t->s->nodeversion;
-						myfprintf(opfd, "\\hyperlink{%s}{{%s%s%d.%d} (%t)}",
+						myfprintf(opfd, "\\hyperlink{%s}{{%s%s%d.%d} %t}",
                             t->s->s,
 							*version? version: "", *version? "--": "",
 							t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s);
