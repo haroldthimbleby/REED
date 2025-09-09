@@ -136,7 +136,7 @@ tag setTag(char *str)
 // for instance, a .gv file is needed to generate PDF
 structOption options[] =
 {	{"-#", "show comments, if any", &commentOption, 0},
-    {"-b", "<file.ext> set basename of all files generated (file.gv, file.html, file.pdf, etc)", &basenameOption, 0},
+    {"-basename", "<file.ext> set basename of all files generated (file.gv, file.html, file.pdf, etc)", &basenameOption, 0},
     {"-c", "show weakly connected components", &componentsOption, 0},
     {"-colors", "list all colors used on standard output", &colorsOption, 0},
     {"-colors+", "does -colors and also lists meanings of all colors used on standard output", &colorsPlusOption, 0},
