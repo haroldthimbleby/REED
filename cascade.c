@@ -61,11 +61,48 @@ void markComponent(str *t, int component)
 	}
 }
 
+void mypadstring(FILE *opfd, char *str, int max)
+{   int pad = max-strlen(str);
+    for( int i = 0; i < pad; i++ )
+        fputc(' ', opfd);
+
+    myfprintf(opfd, "%t", str);
+}
+
 int numberOfComponents = 0;
 
 void findComponents() // weakly connected components
-{	// initially all nodes have component set to 0; once we've finished components are numbered from 1
-	int c = 1; 
+{	// dot (graphviz) is very sensitive to node order, so we sort nodes before doing anything interesting
+    // this also sorts the following two diagnostic lists into alphabetic order
+    int swapped = 0;
+    do
+    {   swapped = 0;
+        for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
+            if( (*t)->s->is != NULL && (*t)->next->s->is != NULL &&
+               strcmp((*t)->s->is->s, (*t)->next->s->is->s) > 0 )
+            {    node *u = *t;
+                *t = (*t)->next;
+                u->next = (*t)->next;
+                (*t)->next = u;
+                swapped = 1;
+            }
+    } while( swapped );
+
+    int max = 0, tmp;
+        for( node *n = nodeList; n != NULL; n = n->next )
+            if( (tmp = strlen(n->s->s)) > max )
+                max = tmp;
+
+    if( IDsOption )
+    {   for( node *n = nodeList; n != NULL; n = n->next )
+        {   mypadstring(stderr, n->s->s, max);
+            if( n->s->is != NULL ) myfprintf(stderr, " is \"%t\"", n->s->is->s);
+            fprintf(stderr, "\n");
+        }
+    }
+
+    // initially all nodes have component set to 0; once we've finished components are numbered from 1
+	int c = 1;
 	int repeat = 0; // if true (redundantly:-) keep on looking for more components
 	
 	// find every node in (notional) component 0
@@ -87,16 +124,16 @@ void findComponents() // weakly connected components
 			myfprintf(stderr, "         Use option -c to show more details");
 		myfprintf(stderr, "\n");
 	}
-	
-	if( componentsOption )
+
+ 	if( componentsOption )
 	{   fprintf(stderr, "\n%d component%s\n\n", numberOfComponents, numberOfComponents > 1? "s": "");
     	for( int ac = 1; ac < c; ac++ )
     	{	fprintf(stderr, "Component %d:\n", ac);
     		for( node *n = nodeList; n != NULL; n = n->next ) 
     			if( n->s->component == ac )
                 {	myfprintf(stderr, "    %t ", n->s->isgroup? "Group":"     ");
-                    myfprintf(stderr, "%t", n->s->s);
-                    if( n->s->is != NULL ) myfprintf(stderr, " is %t", n->s->is->s);
+                    mypadstring(stderr, n->s->s, max);
+                    if( n->s->is != NULL ) myfprintf(stderr, " is \"%t\"", n->s->is->s);
                     fprintf(stderr, "\n");
                 }
     		fprintf(stderr, "\n");

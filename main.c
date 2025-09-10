@@ -106,7 +106,8 @@ int basenameOption = 0,
     generatePDFOption = 0,
     generateSVGOption = 0,
     syntaxOption = 0,
-    openGraphvizOption = 0,
+    openOption = 0,
+    IDsOption = 0,
     rawOption = 0,
     JSONOption = 0,
     colorsOption = 0,
@@ -136,35 +137,36 @@ tag setTag(char *str)
 // for instance, a .gv file is needed to generate PDF
 structOption options[] =
 {	{"-#", "show comments, if any", &commentOption, 0},
-    {"-basename", "<file.ext> set basename of all files generated (file.gv, file.html, file.pdf, etc)", &basenameOption, 0},
+    {"-basename", "<path/file.ext> set name of generated files (replacing .ext with .gv, .html, .pdf, etc)", &basenameOption, 0},
     {"-c", "show weakly connected components", &componentsOption, 0},
     {"-colors", "list all colors used on standard output", &colorsOption, 0},
     {"-colors+", "does -colors and also lists meanings of all colors used on standard output", &colorsPlusOption, 0},
     {"-F", "highlight flags in drawing*- unfortunately due to a Graphviz bug, this breaks up any groups", &flagOption, 1},
 	{"-f", "show textual descriptions of flag colors in REED drawing", &flagTextOption, 1},
-	{"-g", "generate a GraphViz file*- default option if nothing else chosen*- See https://graphviz.org", &graphvizOption, 1},
-	{"-h", "generate an interactive HTML REED document*- will refer to a PDF of the REED (generate using -p flag)", &htmlOption, 0},
+	{"-g", "generate a GraphViz .gv file*- default option if nothing else chosen*- See https://graphviz.org", &graphvizOption, 1},
+	{"-h", "generate an interactive .html REED file", &htmlOption, 0},
+    {"-ids", "show full names & ids", &IDsOption, 0},
     {"-insert", "<text> insert this text to process before next file", &handleInsert, 0},
-    {"-json", "generate a JSON document*- generated from the .gv file, so contains everything", &JSONOption, 1},
-	{"-l", "generate a Latex REED document*- also generates some useful Latex definition files", &latexOption, 0},
-    {"-m", "generate a Mathematica notebook*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
-    {"-o", "open generated REED graphics GraphViz file automatically *- using dot on MacOS", &openGraphvizOption, 1},
-    {"-pdf", "generate a PDF file*- representing the REED graph", &generatePDFOption, 1},
+    {"-json", "generate a JSON .js file*- generated from the .gv file, so contains everything", &JSONOption, 1},
+	{"-l", "generate a Latex REED file*- also generates some useful Latex definition files", &latexOption, 0},
+    {"-m", "generate a Mathematica .nb file*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
+    {"-o", "open generated files automatically *- -g will use dot on MacOS", &openOption, 1},
+    {"-pdf", "generate a .pdf file*- representing the REED graph", &generatePDFOption, 1},
     {"-pull", "<color> restrict generated files to just this color", &matchedpullOption, 1},
     {"-pull+", "<color> does -pull and also explains this color on standard output", &matchedpullPlusOption, 1},
     {"-n", "show node IDs in graph drawing", &showIDsOption, 1},
-    {"-raw", "start processing in raw mode (non-REED); only use -raw with -tags flag", &rawOption, 0},
-    {"-rules", "show all HTML <-> Latex rules", &showRulesOption, 0},
+    {"-raw", "start in raw mode (skipping text until a start tag)*- only use -raw with -tags flag", &rawOption, 0},
+    {"-rules", "summarise HTML <-> Latex rules", &showRulesOption, 0},
 	{"-s", "show REED file signatures", &showSignatures, 0},
     {"-sep", "draw a separator line before processing any files (useful with -watch)", &separatorOption, 0},
-    {"-svg", "generate an SVG file*- representing the REED graph", &generateSVGOption, 1},
+    {"-svg", "generate a .svg file*- representing the REED graph", &generateSVGOption, 1},
     {"-syntax", "summarise REED syntax", &syntaxOption, 0},
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption, 0},
     {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: tags \"start\" \"end\"", &handleTags, 0},
     {"-v", "verbose mode", &verboseOption, 0},
     {"-w", "what versions are used in these files?*- helpful to know if using the v= flag", &showVersionsOption, 0},
     {"-watch", "run reed when any file changes (nice with -o)", &handleWatch, 0},
-	{"-x", "generate an XML file*- representing all REED data for import into other applications", &xmlOption, 0},
+	{"-x", "generate an .xml file*- representing all REED data for import into other applications", &xmlOption, 0},
 	{"--", "treat all further parameters as filenames*- if you want to have no restrictions on filenames (they otherwise cannot be flags)", &optionsOption, 0}
 };
 
@@ -185,7 +187,8 @@ int setOption(char *argvi)
 
 void usage(char *process)
 {	fprintf(stderr, "%s command line parameters summary\n", process);
-	for( int o = 0; o < sizeof options/sizeof(structOption); o++ )
+    fprintf(stderr, "       filenames... process files, each according to preceding flags\n");
+    for( int o = 0; o < sizeof options/sizeof(structOption); o++ )
 	{	fprintf(stderr, "       %s ", options[o].option);
 		for( char *s = options[o].usage; *s; s++ )
 			if( *s == '*' )
@@ -195,7 +198,6 @@ void usage(char *process)
 		fprintf(stderr, "\n");
     }
     fprintf(stderr, "       v=<value> include all versions up to <value> and skip all later versions in file\n");
-    fprintf(stderr, "       filenames\n             - process files (according to preceding flags)\n");
     exit(0);
 }
 
@@ -290,7 +292,7 @@ int main(int argc, char *argv[])
             }
             if( basenameOption )
             {   if( i+1 >= argc )
-                {   nolineerror("-b must be followed by a file name");
+                {   nolineerror("-basename must be followed by either pathname/file or file");
                     exit(1);
                 }
                 if( *outputbasename )
@@ -329,12 +331,12 @@ int main(int argc, char *argv[])
         {   struct stat stat_buf;
             int errno;
             if( (errno = fstat(fileno(fp), &stat_buf)) != 0 )
-            {   nolineerror("** Cannot stat \"%s\": %s\n", openedfile, strerror(errno));
+            {   nolineerror("** %s cannot stat \"%s\": %s\n", argv[0], openedfile, strerror(errno));
                 exit(0);
             }
             bp = safealloc(1+stat_buf.st_size);
             if( fread(bp, 1, stat_buf.st_size, fp) != stat_buf.st_size )
-            {   nolineerror("** Cannot read from \"%s\" (maybe a permissions problem?)\n", openedfile);
+            {   nolineerror("** %s cannot read from \"%s\" (maybe a permissions problem?)\n", argv[0], openedfile);
                 continue;
             }
             bp[stat_buf.st_size] = (char) 0;
@@ -356,7 +358,7 @@ int main(int argc, char *argv[])
             free(bp);
             fclose(fp);
         }
-        else nolineerror("** Cannot open file \"%s\": %s", openedfile, strerror(errno));
+        else nolineerror("** %s cannot open file \"%s\": %s", argv[0], openedfile, strerror(errno));
     if( syntaxOption )
     {   for( char *summary = syntaxSummary; *summary; summary++ )
         {  if( *summary == '!' ) fprintf(stderr, "\n        -  ");
@@ -368,7 +370,7 @@ int main(int argc, char *argv[])
     if( showRulesOption )
         explainTranslationRules();
     if( !opened )
-        fprintf(stderr, "** did not process any files\n");
+        fprintf(stderr, "** %s did not process any files\n", argv[0]);
     if( skip && !successfulskip )
         nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
     findComponents(); // find components before generating HTML, Latex, etc

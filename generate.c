@@ -542,6 +542,18 @@ void stopiferror()
     }
 }
 
+void ifopenopenOption(char *what, char *filename)
+{
+    if( openOption ) // open the .gv file using dot to get the preview
+    {    // running dot on its own just generates .gv output, doesn't display it
+        str *cmd = newstr("open ");
+        appendcstr(cmd, filename);
+        if( verboseOption ) fprintf(stderr, "|--");
+        if( 1 || verboseOption ) fprintf(stderr, "[debug %s] System:  %s\n", what, cmd->s);
+        system(cmd->s);
+    }
+}
+
 void generateFiles(char *filename)
 {	FILE *fd = NULL;
 
@@ -585,20 +597,6 @@ void generateFiles(char *filename)
 //	typedef struct tmparrow { str *u, *v; struct tmparrow *next; } arrow;
 // 	typedef struct tmpnode { str *s; struct tmpnode *next; } node;
 
-	// dot (graphviz) is very sensitive to node order, so we sort nodes before doing anything interesting
-	int swapped = 0;
-	do
-	{	swapped = 0;
-		for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
-			if( strcmp((*t)->s->s, (*t)->next->s->s) < 0 ) 
-			{	node *u = *t;
-				*t = (*t)->next;
-				u->next = (*t)->next;
-				(*t)->next = u;
-				swapped = 1;
-			}
-	} while( swapped );
-
 	if( numberingCount ) // not numbering a node is only an error if any nodes are numbered
 		for( node *t = nodeList; t != NULL; t = t->next )
 			if( t->s->l == ID )
@@ -621,6 +619,19 @@ void generateFiles(char *filename)
     if( verboseOption && graphvizOption )
         fprintf(stderr, "|--NB https://magjac.com/graphviz-visual-editor is a playground that can pinpoint Graphviz errors\n");
 
+    // dot (graphviz) is very sensitive to node order, so we sort nodes before doing anything interesting
+    int swapped = 0;
+    do
+    {    swapped = 0;
+        for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
+            if( strcmp((*t)->s->s, (*t)->next->s->s) < 0 )
+            {    node *u = *t;
+                *t = (*t)->next;
+                u->next = (*t)->next;
+                (*t)->next = u;
+                swapped = 1;
+            }
+    } while( swapped );
 
     if( graphvizOption ) // also true if a .gv file is needed for PDF, JSON, etc
     {	// try: $ dot -Tps graph1.gv -o graph1.ps
@@ -631,16 +642,8 @@ void generateFiles(char *filename)
         }
         dot(fd, title, version, date, direction);
 		fclose(fd);
-        generated(filename, "", "dot file of the REED graph (use -o flag to see it, or -pdf flag or dot -Tpdf <file.gv> to convert to PDF)");
-    }
-    if( openGraphvizOption ) // open the .gv file using dot to get the preview
-    {	// running dot on its own just generates .gv output, doesn't display it
-        str *cmd = newstr("open ");
-        appendstr(cmd, base);
-        appendcstr(cmd, ".gv");
-        if( verboseOption ) fprintf(stderr, "|--");
-        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
-        system(cmd->s);
+        generated(filename, "", "dot file of the REED graph (use -o flag to see it, or REED -pdf flag or dot -Tpdf <file.gv> to convert to PDF)");
+        ifopenopenOption("a", filename);
     }
     if( JSONOption )
     {   str *cmd = newstr("dot -Tjson ");
@@ -652,6 +655,7 @@ void generateFiles(char *filename)
         if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".js", "JSON file of the REED graph");
+        ifopenopenOption("b", base->s);
     }
     if( generatePDFOption )
     {   str *cmd = newstr("dot -Tpdf ");
@@ -663,6 +667,7 @@ void generateFiles(char *filename)
         if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".pdf", "PDF file of the REED graph");
+        ifopenopenOption("c", base->s);
     }
     if( generateSVGOption )
     {   str *cmd = newstr("dot -Tsvg ");
@@ -674,11 +679,14 @@ void generateFiles(char *filename)
         if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".svg", "SVG file of the REED graph");
+        appendcstr(base, ".svg");
+        ifopenopenOption("d", base->s);
     }
 
     stopiferror();
 	if( latexOption )
-    {	fd = fopen(filename = newappendcstr(base, ".tex")->s, "w");
+    {	char *mainLatexFile;
+        fd = fopen(mainLatexFile = filename = newappendcstr(base, ".tex")->s, "w");
 		if( fd == NULL ) error("Can't open %s (tex/latex file) for writing", filename);
 		else
 		{	
@@ -710,6 +718,7 @@ void generateFiles(char *filename)
             fclose(fd);
             generated(filename, "", "Latex .aux file defining cross-references: short node name to node reference, and short name-is to full node name");
         }
+        ifopenopenOption("e", mainLatexFile);
 	}
 
     stopiferror();
@@ -728,6 +737,7 @@ void generateFiles(char *filename)
 			htmlnotes(fd, title, version, authors, date, abstract);
 			fclose(fd);
             generated(filename, "", "HTML REED file");
+            ifopenopenOption("f", filename);
 		}
 	}
 
@@ -740,6 +750,7 @@ void generateFiles(char *filename)
 			fclose(fd);
             generated(filename, "", "Full XML definition of the REED");
 		}
+        ifopenopenOption("g", filename);
 	}
 
     stopiferror();
@@ -751,6 +762,7 @@ void generateFiles(char *filename)
 			fclose(fd);
             generated(filename, "", "Mathematica definition of the REED graph");
 		}
+        ifopenopenOption("h", filename);
 	}
 }
 
