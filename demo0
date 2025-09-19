@@ -1,0 +1,3 @@
+echo empty file
+open tmp
+reed -v -go -watch tmp

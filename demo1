@@ -1,0 +1,3 @@
+echo Full POW reed
+open lib/pow-reed
+reed -v -go -watch lib/pow-reed

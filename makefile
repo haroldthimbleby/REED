@@ -1,4 +1,4 @@
-SOURCES = cascade.c main.c notes.c parse.c generate.c properties.c printerror.c hash.c html.c translate.c
+SOURCES = cascade.c main.c notes.c parse.c generate.c makefiles.c properties.c printerror.c hash.c html.c translate.c
 
 OBJECTS = $(SOURCES:.c=.o)
 

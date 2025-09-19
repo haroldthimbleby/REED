@@ -1,0 +1,3 @@
+echo Yellow pull of full HTML reed
+open lib/pow-reed
+reed -pull yellow -ho -watch lib/pow-reed

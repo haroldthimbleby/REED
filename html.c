@@ -68,6 +68,42 @@ void pullColorTitle(FILE *opfd, enum flagcolor pullStringEnum)
     fprintf(opfd, "</td></tr></table>\n");
 }
 
+void arrowTable(FILE *opfd, node *t, int allLinked)
+{int anyarrows = 0;
+    fprintf(opfd, "<table>\n<tr><td valign=\"top\">");
+    arrow *a = arrowList, *b = arrowList;
+    for( arrow *a = arrowList; a != NULL; a = a->next )
+        if( a->v == t->s )
+        {    if( !anyarrows ) fprintf(opfd, "<table>");
+            anyarrows = 1;
+            fprintf(opfd, "<tr><td>&larr;&nbsp;");
+            if( a->u->flag != noflag )
+            {    htmlflagcolor(opfd, a->u->flag, 0);
+                myfprintf(opfd, " ");
+            }
+            else myfprintf(opfd, "&nbsp;&nbsp;&nbsp;");
+            // maybe one day, don't put hrefs in if !pull and !allLinked (these nodes aren't in the diagram)
+            href(opfd, a->u->s, "</a></td></tr>");
+        }
+    if( anyarrows ) fprintf(opfd, "</table></td>\n");
+    anyarrows = 0;
+    for( arrow *b = arrowList; b != NULL; b = b->next )
+        if( b->u == t->s )
+        {    if( !anyarrows ) fprintf(opfd, "<td>&nbsp;&nbsp;&nbsp;</td><td valign=\"top\"><table>");
+            anyarrows = 1;
+            fprintf(opfd, "<tr><td>&rarr;&nbsp;");
+            if( a->v->flag != noflag )
+            {    htmlflagcolor(opfd, b->v->flag, 0);
+                myfprintf(opfd, " ");
+            }
+            else myfprintf(opfd, "&nbsp;&nbsp;&nbsp;");
+            href(opfd, b->v->s, "</a></td></tr>");
+        }
+    if( anyarrows ) fprintf(opfd, "</table></td>\n");
+    fprintf(opfd, "</tr>\n</table>\n");
+    fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n</div>\n");
+}
+
 void pullAcolor(FILE *opfd, enum flagcolor pullString)
 {   int count = 0;
     for( node *t = nodeList; t != NULL; t = t->next )
@@ -79,11 +115,12 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
             myfprintf(opfd, " %T",
                 t->s->is != NULL? t->s->is->s: t->s->s);
             if( t->s->group != NULL )
-                myfprintf(opfd, " &mdash; in group: %t ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
+                myfprintf(opfd, " <span style=\"font-weight:lighter;\"(in group: %t)</span> ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
             if( showIDsOption ) myfprintf(opfd, "%t ", t->s->s);
             if( t->s->flag == noflag ) fprintf(opfd, " (not highlighted)");
             myfprintf(opfd, "</h2>\n");
             HTMLtranslate(opfd, t->s->note->s);
+            arrowTable(opfd, t, 0);
             myfprintf(opfd, "</div>\n");
         }
     if( !count )
@@ -306,43 +343,13 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					t->s->is != NULL? t->s->is->s: t->s->s);
 				
 				if( t->s->group != NULL )
-					myfprintf(opfd, " &mdash; in group: %t ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
+					myfprintf(opfd, " <span style=\"font-weight:lighter;\">(group %t)</span> ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
 				if( showIDsOption ) myfprintf(opfd, "%t ", t->s->s);
 				myfprintf(opfd, "</h2>\n");
+
 				HTMLtranslate(opfd, t->s->note->s);
 				
-				int anyarrows = 0;
-				fprintf(opfd, "<table>\n<tr><td valign=\"top\">");
-				arrow *a = arrowList, *b = arrowList;
-				for( arrow *a = arrowList; a != NULL; a = a->next )
-					if( a->v == t->s )
-					{	if( !anyarrows ) fprintf(opfd, "<table>");
-						anyarrows = 1;
-						fprintf(opfd, "<tr><td>&larr;&nbsp;");
-						if( a->u->flag != noflag ) 
-						{	htmlflagcolor(opfd, a->u->flag, 0);
-							myfprintf(opfd, " ");
-						}
-						else myfprintf(opfd, "&nbsp;&nbsp;&nbsp;");
-						href(opfd, a->u->s, "</a></td></tr>");
-					}
-				if( anyarrows ) fprintf(opfd, "</table></td>\n");
-				anyarrows = 0;
-				for( arrow *b = arrowList; b != NULL; b = b->next )
-					if( b->u == t->s )
-					{	if( !anyarrows ) fprintf(opfd, "<td>&nbsp;&nbsp;&nbsp;</td><td valign=\"top\"><table>");
-						anyarrows = 1;
-						fprintf(opfd, "<tr><td>&rarr;&nbsp;");
-						if( a->v->flag != noflag ) 
-						{	htmlflagcolor(opfd, b->v->flag, 0);
-							myfprintf(opfd, " ");
-						}
-						else myfprintf(opfd, "&nbsp;&nbsp;&nbsp;");
-						href(opfd, b->v->s, "</a></td></tr>");
-					}
-				if( anyarrows ) fprintf(opfd, "</table></td>\n");
-				fprintf(opfd, "</tr>\n</table>\n");
-                fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n</div>\n");
+                arrowTable(opfd, t, 1);
 			}
 		}
 	}

@@ -199,9 +199,19 @@ void printColor(FILE *opfd, char *scheme, int index, int c)
 	// fprintf(stderr, "/%s%d/%d;\n", scheme, index < 3? 3: index > 11? 11: index, c);
 }
 
+int auxpullnode(str *n)
+{   if( n == NULL ) return 0;
+    return n->flag == pullString || (n->flag == noflag && pullString == gray);
+}
+
 int pullnode(str *n) // if -pull used, return true if color matches
 {   if( pullString == noflag ) return 1;
-    if( n->flag == pullString || (n->flag == noflag && pullString == gray) ) return 1;
+    if( auxpullnode(n) ) return 1;
+    return 0;
+    // if this node is on either end of an arrow ending in this node the pull it
+    for( arrow *t = arrowList; t != NULL; t = t->next )
+        if( auxpullnode(t->u) && auxpullnode(t->v) )
+            return 1;
     return 0;
 }
 
@@ -274,7 +284,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			{	enum flagcolor fc = t->s->flag;
 				char *color = flagcolor(fc), *edgecolor = color, *fontcolor = "black";
 				if( fc == white ) edgecolor = "black";
-				if( fc == red || fc == blue || fc == black ) fontcolor = "white";
+				if( fc == red || fc == blue || fc == black || fc == green ) fontcolor = "white";
 				myfprintf(opfd, "subgraph \"clusterflag%d\" { \"%s\"; color=%s; bgcolor=%s; shape=circle; label=\"Flagged %s\"; labelloc=\"b\"; fontcolor=\"%s\"; fontsize=12; fontname=\"Helvetica\"; penwidth=2; };\n", flagclustern++, t->s->s, edgecolor, color, color, fontcolor);
 			}
 	}
@@ -324,7 +334,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 	
 	fprintf(opfd, "\n");
 	for( arrow *t = arrowList; t != NULL; t = t->next )
-	{	if( pullnode(t->u) && pullnode(t->v) && t->u != NULL && t->v != NULL && (t->u->isgroup || t->v->isgroup) )
+	{	if( (t->u != NULL && pullnode(t->u)) && (t->v != NULL && pullnode(t->v)) && (t->u->isgroup || t->v->isgroup) )
 		{	myfprintf(opfd, "  \"%S\"->\"%S\" [",
 				t->u->exampleGroupMember == NULL? t->u->s: t->u->exampleGroupMember->s,
 				t->v->exampleGroupMember == NULL? t->v->s: t->v->exampleGroupMember->s);
@@ -530,35 +540,9 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     myfprintf(opfd, "};\"],\"Input\"]}\n]\n");
 }
 
-void generated(char *filename, char *suffix, char *reason)
-{   if( verboseOption ) fprintf(stderr, "| ** ");
-    fprintf(stderr, "Generated %s%s   - %s\n", filename, suffix, reason);
-}
-
-void stopiferror()
-{   if( errcount > 0 )
-    {   nolineerror("Stopped due to error%s", errcount>1? "s": "");
-        exit(1);
-    }
-}
-
-void ifopenopenOption(char *what, char *filename)
-{
-    if( openOption ) // open the .gv file using dot to get the preview
-    {    // running dot on its own just generates .gv output, doesn't display it
-        str *cmd = newstr("open ");
-        appendcstr(cmd, filename);
-        if( verboseOption ) fprintf(stderr, "|--");
-        if( 1 || verboseOption ) fprintf(stderr, "[debug %s] System:  %s\n", what, cmd->s);
-        system(cmd->s);
-    }
-}
-
 void generateFiles(char *filename)
-{	FILE *fd = NULL;
-
-    str *base = basename(filename);
-	// printf("Styles are:\n");
+{
+    // printf("Styles are:\n");
 	// for( node *u = stylelist; u != NULL; u = u->next )
 	//	printf("  %s = %s\n", u->s->style->s, u->s->s);
 
@@ -633,137 +617,7 @@ void generateFiles(char *filename)
             }
     } while( swapped );
 
-    if( graphvizOption ) // also true if a .gv file is needed for PDF, JSON, etc
-    {	// try: $ dot -Tps graph1.gv -o graph1.ps
-        fd = fopen(filename = newappendcstr(base, ".gv")->s, "w");
-        if( fd == NULL )
-        {   error("Can't open %s (graphviz file) for writing", filename);
-            exit(1);
-        }
-        dot(fd, title, version, date, direction);
-		fclose(fd);
-        generated(filename, "", "dot file of the REED graph (use -o flag to see it, or REED -pdf flag or dot -Tpdf <file.gv> to convert to PDF)");
-        ifopenopenOption("a", filename);
-    }
-    if( JSONOption )
-    {   str *cmd = newstr("dot -Tjson ");
-        appendstr(cmd, base);
-        appendcstr(cmd, ".gv > ");
-        appendstr(cmd, base);
-        appendcstr(cmd, ".js");
-        if( verboseOption ) fprintf(stderr, "|--");
-        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
-        system(cmd->s);
-        generated(base->s, ".js", "JSON file of the REED graph");
-        ifopenopenOption("b", base->s);
-    }
-    if( generatePDFOption )
-    {   str *cmd = newstr("dot -Tpdf ");
-        appendstr(cmd, base);
-        appendcstr(cmd, ".gv > ");
-        appendstr(cmd, base);
-        appendcstr(cmd, ".pdf");
-        if( verboseOption ) fprintf(stderr, "|--");
-        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
-        system(cmd->s);
-        generated(base->s, ".pdf", "PDF file of the REED graph");
-        ifopenopenOption("c", base->s);
-    }
-    if( generateSVGOption )
-    {   str *cmd = newstr("dot -Tsvg ");
-        appendstr(cmd, base);
-        appendcstr(cmd, ".gv > ");
-        appendstr(cmd, base);
-        appendcstr(cmd, ".svg");
-        if( verboseOption ) fprintf(stderr, "|--");
-        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
-        system(cmd->s);
-        generated(base->s, ".svg", "SVG file of the REED graph");
-        appendcstr(base, ".svg");
-        ifopenopenOption("d", base->s);
-    }
-
-    stopiferror();
-	if( latexOption )
-    {	char *mainLatexFile;
-        fd = fopen(mainLatexFile = filename = newappendcstr(base, ".tex")->s, "w");
-		if( fd == NULL ) error("Can't open %s (tex/latex file) for writing", filename);
-		else
-		{	
-			if( !*title || authors == NULL || !*date || !*version  ) 
-			{	myfprintf(stderr, "Warning: Missing details needed for the Latex file (%s)\n", filename);
-				if( authors == NULL ) fprintf(stderr, "         - No author(s) provided\n");
-				if( !*version ) fprintf(stderr, "         - No version provided\n");
-				if( !*title ) fprintf(stderr, "         - No title provided\n");
-				if( !*date ) fprintf(stderr, "         - No date provided\n");
-			}
-			notes(fd, title, version, authors, date, abstract);
-			fclose(fd);
-            generated(filename, "", "Latex REED file");
-		}
-        fd = fopen(filename = newappendcstr(base, "-color-legend.tex")->s, "w");
-        if( fd == NULL ) error("Can't open %s (tex/latex highlighting legend file) for writing", filename);
-        else
-        {
-            colorkey(fd, "", "");
-            fclose(fd);
-            generated(filename, "", "Latex file explaining colour highlighting");
-        }
-
-        fd = fopen(filename = newappendcstr(base, "-xrefs.aux")->s, "w");
-        if( fd == NULL ) error("Can't open %s (tex/latex cross reference file) for writing", filename);
-        else
-        {
-            latexxrefs(fd);
-            fclose(fd);
-            generated(filename, "", "Latex .aux file defining cross-references: short node name to node reference, and short name-is to full node name");
-        }
-        ifopenopenOption("e", mainLatexFile);
-	}
-
-    stopiferror();
-	if( htmlOption )
-    {	fd = fopen(filename = newappendcstr(base, ".html")->s, "w");
-		if( fd == NULL ) error("Can't open %s (HTML file) for writing", filename);
-		else
-		{	
-			if( !*title || authors == NULL || !*date || !*version  ) 
-			{	myfprintf(stderr, "Warning: Missing details needed for the HTML file (%s)\n", filename);
-				if( authors == NULL ) fprintf(stderr, "         - No author(s) provided\n");
-				if( !*version ) fprintf(stderr, "         - No version provided\n");
-				if( !*title ) fprintf(stderr, "         - No title provided\n");
-				if( !*date ) fprintf(stderr, "         - No date provided\n");
-			}
-			htmlnotes(fd, title, version, authors, date, abstract);
-			fclose(fd);
-            generated(filename, "", "HTML REED file");
-            ifopenopenOption("f", filename);
-		}
-	}
-
-    stopiferror();
-	if( xmlOption )
-    {	fd = fopen(filename = newappendcstr(base, ".xml")->s, "w");
-		if( fd == NULL ) error("Can't open %s (XML file) for writing", filename);
-		else
-		{	xml(fd);
-			fclose(fd);
-            generated(filename, "", "Full XML definition of the REED");
-		}
-        ifopenopenOption("g", filename);
-	}
-
-    stopiferror();
-    if( mathematicaOption )
-    {	fd = fopen(filename = newappendcstr(base, ".nb")->s, "w");
-		if( fd == NULL ) error("Can't open %s (mathematica file) for writing", filename);
-		else
-		{	mathematica(fd, title, version, authors, date, abstract);
-			fclose(fd);
-            generated(filename, "", "Mathematica definition of the REED graph");
-		}
-        ifopenopenOption("h", filename);
-	}
+    makefiles(filename);
 }
 
 extern int flagsusedaftercascades[];

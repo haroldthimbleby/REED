@@ -67,7 +67,7 @@ typedef struct
     int needGraphViz;
 } structOption;
 extern int verboseOption, graphvizOption, openOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption, IDsOption,
-	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption;
+	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption, goOption, hoOption;
 
 extern void generateFiles(char *filename);
 
@@ -121,3 +121,5 @@ extern int errcount;
 extern void checkNumbering();
 extern void listColorsUsed();
 extern void HTMLtranslate(FILE *opfd, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
+extern void makefiles(char *filename);
+extern void stopiferror();

@@ -355,7 +355,7 @@ int rankx = 1;
 
 void newnode(str **u)
 {	if( (*u)->nodeversion == undefinedVersion ) 
-		(*u)->nodeversion = version;
+		(*u)->nodeversion = version; // update version to be latest (in file order)
 	for( node *t = nodeList; t != NULL; t = t->next )
 		if( !strcmp(t->s->s, (*u)->s) )
     	{ //fprintf(stderr, "existing node %s -- ", u->s);
@@ -718,7 +718,7 @@ void summarizeMissingFlagDefinitions()
 
 int checkOverride(char *e)
 {	if( overrideCounter >= 1 )
-	{	error("You cannot override %s", e);
+	{	error("You cannot override %s (unless you use the override command)", e);
 		return 1;
 	}
 	return 0;
@@ -806,7 +806,7 @@ int parse(char *skip, char *filename, char *bp)
 						if( verboseOption ) fprintf(stderr, "   Using version '%s'\n", lex2->s);
 					}
 					appendVersions(version = lex2->s);
-					//fprintf(stderr, "B skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);					
+					//fprintf(stderr, "B skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);
 				}
 				if( lex1->l == ABSTRACT ) 
 				{	if( dontOverride() && *abstract ) error("Multiple abstracts");
