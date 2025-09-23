@@ -438,7 +438,6 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     if( *version ) myfprintf(opfd, "Cell[BoxData[\"version=\\\"%m\\\";\"],\"Input\"],\n", version);
     if( *date ) myfprintf(opfd, "Cell[BoxData[\"date=\\\"%m\\\";\"],\"Input\"],\n", date);
 
-
 	myfprintf(opfd, "Cell[BoxData[\"edges={");
 
 	char *commarise = "", *ccommarise = "";
@@ -477,9 +476,23 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 			commarise = ",\n";
 		}
 
-	myfprintf(opfd, "};\"],\"Input\"],\n");
-	
-	myfprintf(opfd, "Cell[BoxData[\"communities={");
+	myfprintf(opfd, "};\"],\"Input\"],\nCell[BoxData[\"keywords={\n");
+    commarise = "";
+    for( node *t = nodeList; t != NULL; t = t->next )
+        if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
+        {   myfprintf(opfd, "%s   \\\"%m\\\"->{", commarise, t->s->s);
+            char *sep = "";
+            if( t->s->keywords != NULL )
+            {
+                for( arrow *tt = t->s->keywords; tt != NULL; tt = tt->next )
+                {   myfprintf(opfd, "%s\\\"%s\\\"", sep, tt->u->s);
+                    sep = ",\n";
+                }
+            }
+            commarise = "},\n";
+        }
+
+	myfprintf(opfd, "}\n};\"],\"Input\"],Cell[BoxData[\"communities={");
 	if(1 )
 	{ccommarise = "";
 	for( int c = 1; c <= numberOfComponents; c++ )
@@ -537,9 +550,14 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
                 }
             myfprintf(opfd, "\\\"}");
         }
-    myfprintf(opfd, "};\"],\"Input\"]}\n]\n");
-}
 
+    // myfprintf(opfd, "Cell[BoxData[\"title=\\\"%m\\\";\"],\"Input\"],\n", title);
+
+     myfprintf(opfd, "};\"],\"Input\"],\nCell[BoxData[\"Print[Style[\\\"Defines\\\", Bold],\\\"\\\\ntitle=\\\", title, \\\"\\\\nauthors=\\\", authors, \\\"\\\\nversion=\\\", version, \\\"\\\\ndate=\\\", date, \\\"\\\\nand: edges, groups, communities, keywords, vertexNames\\\"]\"],\"Input\"]\n}\n]\n");
+}
+/*  ]
+
+ */
 void generateFiles(char *filename)
 {
     // printf("Styles are:\n");
