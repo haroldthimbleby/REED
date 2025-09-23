@@ -97,6 +97,8 @@ void findComponents() // weakly connected components
     {   for( node *n = nodeList; n != NULL; n = n->next )
         {   mypadstring(stderr, n->s->s, max);
             if( n->s->is != NULL ) myfprintf(stderr, " is \"%t\"", n->s->is->s);
+            if( n->s->nodeversion != NULL && !strcmp(n->s->nodeversion, undefinedVersion) ) myfprintf(stderr, " version: \"%t\"", n->s->is->nodeversion);
+
             fprintf(stderr, "\n");
         }
     }
