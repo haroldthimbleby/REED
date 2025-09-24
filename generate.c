@@ -204,8 +204,9 @@ int auxpullnode(str *n)
     return n->flag == pullString || (n->flag == noflag && pullString == gray);
 }
 
-int pullnode(str *n) // if -pull used, return true if color matches
-{   if( pullString == noflag ) return 1;
+int pullnode(str *n) // if -pull used, return true if color or keywords match
+{   if( !n->keywordsOK ) return 0;
+    if( pullString == noflag ) return 1;
     if( auxpullnode(n) ) return 1;
     return 0;
     // if this node is on either end of an arrow ending in this node the pull it

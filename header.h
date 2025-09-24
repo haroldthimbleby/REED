@@ -22,7 +22,7 @@ enum flagcolor pullString;
 
 typedef enum {
             DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK,
-			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT,
+			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
 			ID,// assumes the string s is initialised
             TAGS, LATEXDEFINITIONS, HTMLDEFINITIONS
@@ -39,6 +39,8 @@ typedef struct tmpstr {
 	int component;
 	enum flagcolor flag, originalflag;
 	char *nodeversion, *noderef;
+    struct tmparrow *keywords;
+    int keywordsOK;
 } str;
 
 extern void colorkey(FILE *opfd, char *heading, char *vskip);
@@ -67,11 +69,11 @@ typedef struct
     int needGraphViz;
 } structOption;
 extern int verboseOption, graphvizOption, openOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption, IDsOption,
-	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption, goOption, hoOption;
+	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption, goOption, hoOption, keywordsOption;
 
 extern void generateFiles(char *filename);
 
-typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; int force; int doublearrow; struct tmparrow *next; 
+typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct tmparrow *keywords; int force; int doublearrow; struct tmparrow *next;
 		// flags for connected components analysis
 		int expanded, component;
 		enum flagcolor flag;
@@ -123,3 +125,13 @@ extern void listColorsUsed();
 extern void HTMLtranslate(FILE *opfd, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
 extern void makefiles(char *filename);
 extern void stopiferror();
+extern void addkeyword(str *keyword);
+extern void summarisekeywords(FILE *opfd);
+extern void HTMLkeywords(FILE *opfd, arrow *keywords);
+extern void summariseLaTeXkeywords(FILE *opfd);
+extern int isakeyword(char *keyword);
+extern void pullkeywords(char *keyword);
+extern int pullnode(str *n);
+extern int ispullingkeywords();
+extern void htmlsaypullingkeyword(FILE *opfd);
+extern void sortkeywords(arrow **keywordlist);

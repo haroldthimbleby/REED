@@ -157,7 +157,8 @@ struct { lexval l; char *symbol; } lexes[] =
     { LATEXDEFINITIONS, "<latexdefinitions>"},
     { HTMLDEFINITIONS, "<htmldefinitions>"},
     { CHECK, "<check>"},
-    { TRANSARROW, "=>"}
+    { TRANSARROW, "=>"},
+    { KEYWORDS, "<keywords>"}
 };
 
 str *currentlexstr;
@@ -234,6 +235,7 @@ lexval readlex(str **lexstr)
                     if( !strcmp("latexdefinitions", (*lexstr)->s) ) return LATEXDEFINITIONS;
                     if( !strcmp("htmldefinitions", (*lexstr)->s) ) return HTMLDEFINITIONS;
                     if( !strcmp("check", (*lexstr)->s) ) return CHECK;
+                    if( !strcmp("keywords", (*lexstr)->s) ) return KEYWORDS;
                     // if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n");
 					return ID;
 				}
@@ -579,7 +581,7 @@ void rows()
 	//printf(" - ROWS\n");
 }
 
-arrow *parsenodelist(int makenodes, int makearrows)
+arrow *parsenodelist(int debug, int makenodes, int makearrows)
 {	//fprintf(stderr, "parsenodelist()\n");
 	if( lex1->l == ID ) // we have a single node or arrow
 	{	arrow *t = NULL;
@@ -593,6 +595,8 @@ arrow *parsenodelist(int makenodes, int makearrows)
 		}
 		else
 		{	// single node
+            if( debug )
+                fprintf(stderr, "single node... %s\n", lex1->s);
 			if( makenodes && lex1->l != HIGHLIGHT )
                 newnode(&lex1);
 			t = (arrow*) malloc(sizeof(arrow));
@@ -607,7 +611,7 @@ arrow *parsenodelist(int makenodes, int makearrows)
 	if( lex1->l == LBRA ) // we are expecting a list of nodes and/or arrows
 	{	getlex();
 		//fprintf(stderr, "list of nodes...\n");
-		arrow *t = NULL;;
+		arrow *t = NULL;
 		while( lex1->l == ID || lex1->l == HIGHLIGHT )
 		{	if( lex2->l == LARROW || lex2->l == RARROW || lex2->l == DOUBLEARROW )
 			{	// single row of arrows in the list
@@ -759,77 +763,77 @@ int parse(char *skip, char *filename, char *bp)
 
 	int makenewstyle = 0;
 	
-	arrow *nl = NULL;
+	arrow *nl = NULL, *keywordlist = NULL;
 
 	while( lex1->l != EndOfFile )
-	{	if( 0 ) printf(":: %s :: %s :: %s\n", lexvalue(lex1), lexvalue(lex2), lexvalue(lex3));
-		if( overrideCounter > 0 ) overrideCounter--;
-		switch( lex1->l )
-		{	case OVERRIDE:
-				if( checkOverride("override") ) break;
-				overrideCounter = 2; // so overrideCounter should be =1 next time the switch is called
-				break;
-			
-			case TITLE: case AUTHOR: case DATE: case VERSION: case ABSTRACT: case DIRECTION:
-				if( lex2->l != ID )
-					fprintf(stderr, "%s should be followed by a string but is followed by reserved word %s, which will be treated as a string\n", lex1->s, lexvalue(lex2));
-				if( lex1->l == TITLE )
-				{	if( dontOverride() && *title ) error("Multiple titles"); 
-					title = lex2->s;
-					if( verboseOption ) fprintf(stderr, "|    Title '%s'\n", title);
-				}
-				if( lex1->l == AUTHOR ) 
-				{	if( !newauthor(lex2->s) )
-						error("Repeated author name in document author listings");
-				}
-				if( lex1->l == DATE ) 
-				{	if( dontOverride() && *date ) error("Multiple dates");
-					date = lex2->s;
-				}
-				if( lex1->l == VERSION ) 
-				{	//fprintf(stderr, "A skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);
+    {	if( 0 ) printf(":: %s :: %s :: %s\n", lexvalue(lex1), lexvalue(lex2), lexvalue(lex3));
+        if( overrideCounter > 0 ) overrideCounter--;
+        switch( lex1->l )
+        {	case OVERRIDE:
+                if( checkOverride("override") ) break;
+                overrideCounter = 2; // so overrideCounter should be =1 next time the switch is called
+                break;
+
+            case TITLE: case AUTHOR: case DATE: case VERSION: case ABSTRACT: case DIRECTION:
+                if( lex2->l != ID )
+                    fprintf(stderr, "%s should be followed by a string but is followed by reserved word %s, which will be treated as a string\n", lex1->s, lexvalue(lex2));
+                if( lex1->l == TITLE )
+                {	if( dontOverride() && *title ) error("Multiple titles");
+                    title = lex2->s;
+                    if( verboseOption ) fprintf(stderr, "|    Title '%s'\n", title);
+                }
+                if( lex1->l == AUTHOR )
+                {	if( !newauthor(lex2->s) )
+                    error("Repeated author name in document author listings");
+                }
+                if( lex1->l == DATE )
+                {	if( dontOverride() && *date ) error("Multiple dates");
+                    date = lex2->s;
+                }
+                if( lex1->l == VERSION )
+                {	//fprintf(stderr, "A skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);
                     if( dontOverride() && *version ) { error("Multiple versions need 'override' to be allowed"); break; }
-					if( verboseOption ) fprintf(stderr, "|    File %s defines version '%s'\n", filename, lex2->s);
+                    if( verboseOption ) fprintf(stderr, "|    File %s defines version '%s'\n", filename, lex2->s);
                     if( showVersionsOption || verboseOption )
                     {   if( verboseOption ) fprintf(stderr, "| ** ");
                         fprintf(stderr, "Defines version '%s'\n", lex2->s);
                     }
                     if( skip != NULL ) // trace version setting
-					{	if( skipnexttime )
-						{	if( verboseOption ) fprintf(stderr, "   Skipping version '%s' and after\n", lex2->s);
-							return 0;
-						}
-						if( !strcmp(lex2->s, skip) ) // then return 0 next time
-						{	skipnexttime = 1;
-							if( verboseOption ) fprintf(stderr, "   Using version '%s'\n", lex2->s);
-						}
-						if( verboseOption ) fprintf(stderr, "   Using version '%s'\n", lex2->s);
-					}
-					appendVersions(version = lex2->s);
-					//fprintf(stderr, "B skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);
-				}
-				if( lex1->l == ABSTRACT ) 
-				{	if( dontOverride() && *abstract ) error("Multiple abstracts");
-					abstract = lex2->s;
-				}
-				if( lex1->l == DIRECTION ) 
-				{	if( dontOverride() && *direction ) 
-					{	fprintf(stderr, strcmp(direction, lex2->s)? 
-							"Warning: Too many drawing directions, %s, %s etc. (%s will be used)":
-							"Warning: Repeated drawing direction, %s", direction, lex2->s, lex2->s);
-						fprintf(stderr, "\n");
-					}
-					char *valid[] = {"BT", "TB", "LR", "RL", (char*) 0};
-					int ok = 0;
-					direction = lex2->s;
-					for( int t = 0; valid[t]; t++ )
-						if( !strcasecmp(direction, valid[t]) )
-							ok = 1;
-					if( !ok )
-						error("invalid direction '%s'; possible options are BT, TB, LR, RL (in upper or lower case)", direction);
-				}
-				getlex();
-				break;
+                    {	if( skipnexttime )
+                    {	if( verboseOption ) fprintf(stderr, "   Skipping version '%s' and after\n", lex2->s);
+                        return 0;
+                    }
+                        if( !strcmp(lex2->s, skip) ) // then return 0 next time
+                        {	skipnexttime = 1;
+                            if( verboseOption ) fprintf(stderr, "   Using version '%s'\n", lex2->s);
+                        }
+                        if( verboseOption ) fprintf(stderr, "   Using version '%s'\n", lex2->s);
+                    }
+                    appendVersions(version = lex2->s);
+                    //fprintf(stderr, "B skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);
+                }
+                if( lex1->l == ABSTRACT )
+                {	if( dontOverride() && *abstract ) error("Multiple abstracts");
+                    abstract = lex2->s;
+                }
+                if( lex1->l == DIRECTION )
+                {	if( dontOverride() && *direction )
+                {	fprintf(stderr, strcmp(direction, lex2->s)?
+                            "Warning: Too many drawing directions, %s, %s etc. (%s will be used)":
+                            "Warning: Repeated drawing direction, %s", direction, lex2->s, lex2->s);
+                    fprintf(stderr, "\n");
+                }
+                    char *valid[] = {"BT", "TB", "LR", "RL", (char*) 0};
+                    int ok = 0;
+                    direction = lex2->s;
+                    for( int t = 0; valid[t]; t++ )
+                        if( !strcasecmp(direction, valid[t]) )
+                            ok = 1;
+                    if( !ok )
+                        error("invalid direction '%s'; possible options are BT, TB, LR, RL (in upper or lower case)", direction);
+                }
+                getlex();
+                break;
 
             case LATEXDEFINITIONS:
                 if( lex2->l != ID )
@@ -860,103 +864,116 @@ int parse(char *skip, char *filename, char *bp)
                 startTag = setTag(lex1->s);
                 endTag = setTag(lex2->s);
                 if( verboseOption )
-                   fprintf(stderr, "|--Tags set to:\n|--   %s\n|--   %s\n", startTag.tagString, endTag.tagString);
+                    fprintf(stderr, "|--Tags set to:\n|--   %s\n|--   %s\n", startTag.tagString, endTag.tagString);
                 getlex();
                 break;
 
-			case REF:
-				if( checkOverride("ref") ) break;
-				getlex();
-				str *thenodetoref = lex1;
-				if( thenodetoref->l != ID ) { error("Expected a node after 'ref'"); getlex(); break; }
-				if( lex2->l != IS ) { error("Expected node then 'is' after 'ref %s'", thenodetoref->s); getlex(); break; }
-				if( lex3->l != ID ) { error("Expected a reference after 'ref %s is'", thenodetoref->s); getlex(); break; }
-				//fprintf(stderr, "!! setting ref for node %s to be '%s'\n", thenodetoref->s, lex3->s);
-				thenodetoref->noderef = lex3->s;
-				getlex();
-				getlex();
-				break;
+            case REF:
+                if( checkOverride("ref") ) break;
+                getlex();
+                str *thenodetoref = lex1;
+                if( thenodetoref->l != ID ) { error("Expected a node after 'ref'"); getlex(); break; }
+                if( lex2->l != IS ) { error("Expected node then 'is' after 'ref %s'", thenodetoref->s); getlex(); break; }
+                if( lex3->l != ID ) { error("Expected a reference after 'ref %s is'", thenodetoref->s); getlex(); break; }
+                //fprintf(stderr, "!! setting ref for node %s to be '%s'\n", thenodetoref->s, lex3->s);
+                thenodetoref->noderef = lex3->s;
+                getlex();
+                getlex();
+                break;
 
-			case HIGHLIGHT:  // highlight node [cascade] [is <color>]
-						     // highlight <color> [cascade] is <description> .... oops this means node names can't be colors :-(
-				if( checkOverride("highlight") ) break;
-				getlex();
-				str *thenodetoflag = lex1;
-				int cascadeflag = 0;
-				if( !strcmp(lex2->s, "cascade") )
-				{	cascadeflag = 1;
-					getlex();
-				}
-				if( iscolor(thenodetoflag->s) != noflag )
-				{	
-					if( lex2->l != IS ) error("Expected 'is' after highlight <color> ...");
-					else if( lex3->l != ID ) error("Expected string after highlight <color> is ...");
-					defineflag(thenodetoflag->s, lex3->s, cascadeflag);
-					getlex();
-					getlex();
-					break;
-				}
-				
-				if( thenodetoflag->l != ID ) { error("Expected node after 'highlight'"); getlex(); break; }
-				newnode(&thenodetoflag);
-				enum flagcolor previousFlag = thenodetoflag->flag; 
-				thenodetoflag->flag = red; // default flag color if none is specified
-				enum flagcolor fc;
-				thenodetoflag->cascade = cascadeflag;
-				if( lex2->l == IS ) // highlight <node> is form ; now read the color
-				{	if( lex3->l != ID ) error("Expected a color for highlight <node> is <color>");
-					if( (fc = iscolor(lex3->s)) != noflag )
-					{	thenodetoflag->flag = fc;
-						flagsused[thenodetoflag->flag]++;
-					}
-					else
-					    error("Expected blue, white, red, black, yellow, or green highlight colour, but got '%s' instead", lex3->s); 
-					getlex();
-					getlex();
-				}
-				else
-					flagsused[thenodetoflag->flag]++;
-				if( previousFlag != noflag )
-				{	if( fc != previousFlag )
-						error("Highlighting %s to %s when it was previously highlighted %s",
-							thenodetoflag->s, flagcolor(fc), flagcolor(previousFlag));
-					else
-						error("Highlighting %s to %s again",
-							thenodetoflag->s, flagcolor(fc));
-				}
-				break;
+            case HIGHLIGHT:  // highlight node [cascade] [is <color>]
+                // highlight <color> [cascade] is <description> .... oops this means node names can't be colors :-(
+                if( checkOverride("highlight") ) break;
+                getlex();
+                str *thenodetoflag = lex1;
+                int cascadeflag = 0;
+                if( !strcmp(lex2->s, "cascade") )
+                {	cascadeflag = 1;
+                    getlex();
+                }
+                if( iscolor(thenodetoflag->s) != noflag )
+                {
+                    if( lex2->l != IS ) error("Expected 'is' after highlight <color> ...");
+                    else if( lex3->l != ID ) error("Expected string after highlight <color> is ...");
+                    defineflag(thenodetoflag->s, lex3->s, cascadeflag);
+                    getlex();
+                    getlex();
+                    break;
+                }
 
-			case GROUP:
-				if( checkOverride("group") ) break;
-				getlex();
-				//fprintf(stderr, "got a group ...\n");
-				nl = parsenodelist(1, 0);
-				if( nl == NULL ) error("Expected a group list after 'group'");
-				if( lex1->l != IS ) error("Expected 'is' after group");
-				getlex();
-				if( lex1->l != ID ) error("Expected a group name");
-				newnode(&lex1);
-				lex1->isgroup = 1;
-				while( nl != NULL )
-				{	//fprintf(stderr, "fixing group for %s at %ld to be %s \n", nl->s->s, (long) nl->s, lex1->s);
-					if( nl->v != NULL )
-						error("putting an arrow u->v in a group should be done by putting both nodes u and v separately in the group");
-					if( nl->u->group != NULL ) 
-					{	if( nl->u->group == lex1 )
-							error("%s is being put in group %s again", nl->u->s, nl->u->group->s);
-						else
-							error("%s in group %s is being changed to group %s", nl->u->s, nl->u->group->s, lex1->s);
-					}
-					nl->u->group = lex1;
-					nl = nl->next;
-				}
-				break;
+                if( thenodetoflag->l != ID ) { error("Expected node after 'highlight'"); getlex(); break; }
+                newnode(&thenodetoflag);
+                enum flagcolor previousFlag = thenodetoflag->flag;
+                thenodetoflag->flag = red; // default flag color if none is specified
+                enum flagcolor fc;
+                thenodetoflag->cascade = cascadeflag;
+                if( lex2->l == IS ) // highlight <node> is form ; now read the color
+                {	if( lex3->l != ID ) error("Expected a color for highlight <node> is <color>");
+                    if( (fc = iscolor(lex3->s)) != noflag )
+                    {	thenodetoflag->flag = fc;
+                        flagsused[thenodetoflag->flag]++;
+                    }
+                    else
+                        error("Expected blue, white, red, black, yellow, or green highlight colour, but got '%s' instead", lex3->s);
+                    getlex();
+                    getlex();
+                }
+                else
+                    flagsused[thenodetoflag->flag]++;
+                if( previousFlag != noflag )
+                {	if( fc != previousFlag )
+                    error("Highlighting %s to %s when it was previously highlighted %s",
+                          thenodetoflag->s, flagcolor(fc), flagcolor(previousFlag));
+                else
+                    error("Highlighting %s to %s again",
+                          thenodetoflag->s, flagcolor(fc));
+                }
+                break;
+
+            case GROUP:
+                if( checkOverride("group") ) break;
+                getlex();
+                //fprintf(stderr, "got a group ...\n");
+                nl = parsenodelist(0, 1, 0);
+                if( nl == NULL ) error("Expected a group list after 'group'");
+                if( lex1->l != IS ) error("Expected 'is' after group");
+                getlex();
+                if( lex1->l != ID ) error("Expected a group name");
+                newnode(&lex1);
+                lex1->isgroup = 1;
+                while( nl != NULL )
+                {	//fprintf(stderr, "fixing group for %s at %ld to be %s \n", nl->s->s, (long) nl->s, lex1->s);
+                    if( nl->v != NULL )
+                        error("putting an arrow u->v in a group should be done by putting both nodes u and v separately in the group");
+                    if( nl->u->group != NULL )
+                    {	if( nl->u->group == lex1 )
+                        error("%s is being put in group %s again", nl->u->s, nl->u->group->s);
+                    else
+                        error("%s in group %s is being changed to group %s", nl->u->s, nl->u->group->s, lex1->s);
+                    }
+                    nl->u->group = lex1;
+                    nl = nl->next;
+                }
+                break;
+
+            case KEYWORDS:
+                 getlex();
+                 keywordlist = parsenodelist(0, 0, 0); // don't make these as nodes in the Dot graph
+                 if( keywordlist == NULL ) error("Expected at least one keyword or keyword list after 'keywords'");
+                 for( arrow *t = keywordlist; t != NULL; t = t->next )
+                 {    if( t->v != NULL )
+                         error("putting an arrow u->v keyword list doesn't make sense!");
+                      addkeyword(t->u);
+                 }
+                 if( lex1->l != NOTE )
+                    error("keywords must be followed by a note");
+                sortkeywords(&keywordlist);
 
             case NOTE:  // EITHER note [author string [;]] idlist string
-                        // OR     note idlist [author string [;]] is string string
+                // OR     note idlist [author string [;]] is string string
                 if( checkOverride("note") ) break;
                 getlex();
-                nl = parsenodelist(1, 1);
+                nl = parsenodelist(0, 1, 1);
                 if( nl == NULL ) error("Expected a node or arrow after 'note'");
                 int isnode = nl->v == NULL;
                 char *sort = isnode? "node": "arrow";
@@ -976,11 +993,12 @@ int parse(char *skip, char *filename, char *bp)
                     if( isnode )
                     {    nl->u->is = lex1;
                         if( nl->u->note != NULL ) error("Defining another note for %s", nl->u->s);
-                        nl->u->note = lex2;
+                        //nl->u->note = lex2;
+                        defineNodeNote(nl, lex2, &keywordlist);
                     }
                     else
                     {    //printf("assigning %s\n", lex2->s);
-                        defineArrowNote(nl->u, nl->v, lex2, lex1);
+                        defineArrowNote(nl->u, nl->v, lex2, lex1, &keywordlist);
                     }
                     getlex();
                     if( lex1->l == SEMI )
@@ -991,7 +1009,7 @@ int parse(char *skip, char *filename, char *bp)
                 char *noteauthor = (char*) NULL;
                 if( lex1->l == AUTHOR )
                 {    if( lex2->l != ID )
-                        error("%s must be followed by a string", lex1->s);
+                    error("%s must be followed by a string", lex1->s);
                     if( newauthor(lex2->s) ) // try author in main document author list
                         error("Author of note, '%s', is not mentioned as a document author", lex2->s);
                     noteauthor = lex2->s;
@@ -1003,9 +1021,9 @@ int parse(char *skip, char *filename, char *bp)
 
                 if( lex1->l != ID ) error("Expected note text but got %s", lex1->s);
                 else if( isnode )
-                    defineNodeNote(nl, lex1);
+                   defineNodeNote(nl, lex1, &keywordlist);
                 else // void defineArrowNote(str *u, str *v, str *theNote, str *theIs)
-                    defineArrowNote(nl->u, nl->v, lex1, NULL);
+                    defineArrowNote(nl->u, nl->v, lex1, NULL, &keywordlist);
                 break;
 
 			case NEW:
@@ -1016,7 +1034,7 @@ int parse(char *skip, char *filename, char *bp)
 				if( checkOverride("style") ) break;
 				getlex();
 				//fprintf(stderr, "got a style ...\n");
-				nl = parsenodelist(!makenewstyle, 0);
+				nl = parsenodelist(0, !makenewstyle, 0);
 				if( nl == NULL ) error("Expected a list after 'style'");
 				if( lex1->l != IS ) error("Expected 'is' after style");
 				getlex();

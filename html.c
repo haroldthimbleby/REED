@@ -74,7 +74,7 @@ void arrowTable(FILE *opfd, node *t, int allLinked)
     arrow *a = arrowList, *b = arrowList;
     for( arrow *a = arrowList; a != NULL; a = a->next )
         if( a->v == t->s )
-        {    if( !anyarrows ) fprintf(opfd, "<table>");
+        {   if( !anyarrows ) fprintf(opfd, "<table>");
             anyarrows = 1;
             fprintf(opfd, "<tr><td>&larr;&nbsp;");
             if( a->u->flag != noflag )
@@ -104,6 +104,18 @@ void arrowTable(FILE *opfd, node *t, int allLinked)
     fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n</div>\n");
 }
 
+void HTMLkeywords(FILE *opfd, arrow *keywords)
+{   if( keywords != NULL )
+    {   char *sep = "";
+        fprintf(opfd, "<h3>Keyphrase%s: ", keywords->next == NULL? "": "s");
+        for( arrow *t = keywords; t != NULL; t = t->next )
+        {   myfprintf(opfd, "%s%s", sep, t->u->s);
+            sep = "; ";
+        }
+        fprintf(opfd, ".</h3>\n");
+    }
+}
+
 void pullAcolor(FILE *opfd, enum flagcolor pullString)
 {   int count = 0;
     for( node *t = nodeList; t != NULL; t = t->next )
@@ -115,10 +127,11 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
             myfprintf(opfd, " %T",
                 t->s->is != NULL? t->s->is->s: t->s->s);
             if( t->s->group != NULL )
-                myfprintf(opfd, " <span style=\"font-weight:lighter;\"(in group: %t)</span> ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
+                myfprintf(opfd, " <span style=\"font-weight:lighter;\"(group: %t)</span> ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
             if( showIDsOption ) myfprintf(opfd, "%t ", t->s->s);
             if( t->s->flag == noflag ) fprintf(opfd, " (not highlighted)");
             myfprintf(opfd, "</h2>\n");
+            HTMLkeywords(opfd, t->s->keywords);
             HTMLtranslate(opfd, t->s->note->s);
             arrowTable(opfd, t, 0);
             myfprintf(opfd, "</div>\n");
@@ -195,14 +208,21 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		authors = authors->next;
 	}
 
-	fprintf(opfd, "</h2>\n<h3>%s</h3></center>\n", date);
+	fprintf(opfd, "</h2>\n<h3>%s</h3>", date);
+    if( ispullingkeywords() )
+    {
+        htmlsaypullingkeyword(opfd);
+    }
+        else
+            summarisekeywords(opfd);
+    fprintf(opfd, "</center>\n");
 
 	if( *abstract ) // && pullString == noflag )
 	{	fprintf(opfd, "<a name=\"REEDabstract\"/><blockquote><div class=\"shadedBox\">");
 		HTMLtranslate(opfd, abstract);
 		fprintf(opfd, "</div></blockquote>\n");
 	}
-		
+
 	// sort notes into order using bubble sort
 	int swapped = 0;
 	do
@@ -320,7 +340,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		for( component = 1; component <= numberOfComponents; component++ )
 		{	anynotes = 0; // per component...
 		for( node *t = nodeList; t != NULL; t = t->next )
-			if( t->s->note != NULL && t->s->component == component ) 
+			if( t->s->note != NULL && t->s->component == component && pullnode(t->s) )
             {	if( pullString != noflag && pullString != t->s->flag ) continue; //
                 if( !anynotes )
 				{	myfprintf(opfd, "<h1 style='text-decoration: underline'><a name=\"component%d-narrative\">Node narrative evidence", component);
@@ -343,10 +363,11 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					t->s->is != NULL? t->s->is->s: t->s->s);
 				
 				if( t->s->group != NULL )
-					myfprintf(opfd, " <span style=\"font-weight:lighter;\">(group %t)</span> ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
+					myfprintf(opfd, " <span style=\"font-weight:lighter;\">(group: %t)</span> ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
 				if( showIDsOption ) myfprintf(opfd, "%t ", t->s->s);
 				myfprintf(opfd, "</h2>\n");
 
+                HTMLkeywords(opfd, t->s->keywords);
 				HTMLtranslate(opfd, t->s->note->s);
 				
                 arrowTable(opfd, t, 1);
@@ -378,10 +399,15 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 				//fprintf(stderr, "\n");
 				//break;
 			}
-	} while( swapped );	
+	} while( swapped );
 
 	for( arrow *t = noteArrowList; t != NULL; t = t->next )
-	{ 	if( !arrownotes )
+    {   //fprintf(opfd, "[ %s -> %s ]\n", t->u->is->s, t->v->is->s);
+        //if( pullnode(t->u) ) myfprintf(stderr, "%t ->\n", t->u->s);
+        //if( pullnode(t->v) ) myfprintf(stderr, "<- %t\n", t->v->s);
+
+        if( !pullnode(t->u) && !pullnode(t->v) ) continue;
+        if( !arrownotes )
 			myfprintf(opfd, "<h1 style='text-decoration: underline'>Arrow narrative evidence</h1>\n");
 		arrownotes = 1;
 		myfprintf(opfd, "<div class=\"shadedBox\"><h2>Arrow ");
@@ -394,6 +420,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		//myfprintf(opfd, "</td></tr>\n<tr><td>&rarr;</td><td>");
 		href(opfd, t->v->s, "</td></tr>\n</table><p/>");//printrank(opfd, t->v, t->v->nodeversion); 
 		//myfprintf(opfd, " %t</td></tr>\n</table><p/>", t->v->is != NULL? t->v->is->s: t->v->s);
+        HTMLkeywords(opfd, t->keywords);
 		HTMLtranslate(opfd, t->arrownote->s);
         fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n");
         fprintf(opfd, "</div>\n");

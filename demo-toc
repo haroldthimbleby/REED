@@ -1,0 +1,94 @@
+title "Theory of Change insights\nfrom the PoW case study"
+direction BT
+date "20 September 2025"
+
+e -> disciplinary <- a1
+t -> disciplinary
+d2 <- disciplinary -> d1
+	
+e -> t
+a1 -> t
+a2 -> b
+a3 -> b
+etc ->b
+
+c->disciplinary
+
+audit->d1
+audit->d2
+t->audit
+d1->d2
+style d1->d2 is "minlen=3"
+c->audit
+
+t -> c
+b -> w
+t -> b
+
+c -> d1
+c -> w
+w -> d1
+w -> d2
+
+d1 -> io1
+d1 -> io2
+
+d2 -> io1
+d2 -> io2
+
+io1 -> o1
+io2 -> o1
+
+io1 -> io2
+
+barriermanagement -> w
+barriermanagement -> management -> "Staff satisfaction"
+management -> d2
+management -> io2
+management -> o1
+t-> barriermanagement
+
+rows TOC (
+	"Inputs" (e a1 a2 a3 etc au)
+	"Activities needed" (t b)
+	"Barriers to overcome" (c barriermanagement)
+	"Tangible objectives" (audit disciplinary w management)
+	"Direct benefits" (d1 d2)
+	"Consequential benefits" (io1 io2)
+	"End benefits" (o1 invis "Staff satisfaction")
+)
+
+style invis is "style=invis"
+note e is "Qualified\ntrainers" "..."
+note a1 is "Hospital computer\noperators" "...."
+note a2 is "Point of care\nequipment" "...."
+note a3 is "Databases" "...."
+note etc is "Other equipment,\nIT, middleware, etc" "..."
+note b is "Better\nprocurement" "..."
+note t is "Better\ntraining" "..."
+note management is "Better\nIT management" "..."
+note disciplinary is "IT competence and awareness\n in disciplinary processes" "..."
+note c is "Assumption IT is reliable" "..."
+note barriermanagement is "Under-skilled IT management\nUnder-skilled IT tech & support  " "..."
+
+note d1 is "Fewer\ndisciplinaries" "..."
+note d2 is "Less\nlitigation" "..."
+note io1 is "More staff\navailable" "..."
+note io2 is "Significant\nsavings" "..."
+note w is "Reliable IT\nwith effective IT warranties" "..."
+note o1 is "Better patient care" "..."
+note audit is "Testing\nand audit culture" "..."
+
+# new addition for auditing
+
+note au is "External\noversight" "..."
+
+au -> audit
+au -> w
+au -> b
+
+o1 <-> "Staff satisfaction"
+style o1 <-> "Staff satisfaction" is "minlen=3"
+io1 -> "Staff satisfaction"
+d1 -> "Staff satisfaction"
+d2 -> "Staff satisfaction"

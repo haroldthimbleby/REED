@@ -38,6 +38,7 @@ str *newstr(char *s)
 	new->nodeversion = undefinedVersion;
 	new->noderef = "";
 	new->component = 0;
+    new->keywordsOK = 1;
 	strcpy(new->s, s);
 	return new;
 } 
@@ -117,7 +118,8 @@ int basenameOption = 0,
     pullPlusOption = 0,
     goOption = 0,
     hoOption = 0,
-    pullOption = 0;
+    pullOption = 0,
+    keywordsOption = 0;
 
 char *outputbasename = ""; // no basename is zero length string
 
@@ -152,12 +154,14 @@ structOption options[] =
     {"-ids", "show full names & ids", &IDsOption, 0},
     {"-insert", "<text> insert this text to process before next file", &handleInsert, 0},
     {"-json", "generate a JSON .js file*- generated from the .gv file, so contains everything", &JSONOption, 1},
-	{"-l", "generate a Latex REED file*- also generates some useful Latex definition files", &latexOption, 0},
+    {"-keywords", "list all keywords used", &keywordsOption, 0},
+    {"-l", "generate a Latex REED file*- also generates some useful Latex definition files", &latexOption, 0},
     {"-m", "generate a Mathematica .nb file*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
     {"-n", "show node IDs in graph drawing", &showIDsOption, 1},
     {"-o", "open generated files automatically", &openOption, 1},
     {"-pdf", "generate a .pdf file*- representing the REED graph", &generatePDFOption, 1},
     {"-pull", "<color> restrict generated files to just this color", &matchedpullOption, 1},
+    {"-pull", "<keyword> restrict generated files to notes with this keyword", &matchedpullOption, 1},
     {"-pull+", "<color> does -pull and also explains this color on standard output", &matchedpullPlusOption, 1},
     {"-raw", "start in raw mode (skipping text until a start tag)*- only use -raw with -tags flag", &rawOption, 0},
     {"-rules", "summarise HTML <-> Latex rules", &showRulesOption, 0},
@@ -212,6 +216,8 @@ char *skipversion(char *name, char *value)
 		return value;
 	return NULL;
 }
+
+char *keywordtopull = NULL, *whichPull = NULL;
 
 int main(int argc, char *argv[])
 {	int opened = 0;
@@ -306,16 +312,18 @@ int main(int argc, char *argv[])
                 i += 1;
             }
             if( matchedpullOption || matchedpullPlusOption )
-            {   char *whichPull = matchedpullPlusOption? "pull+": "pull";
-                if( pullString != noflag )
-                   nolineerror("Can only -%s one color", whichPull);
+            {   whichPull = matchedpullPlusOption? "pull+": "pull";
                 pullOption |= matchedpullOption;
                 pullPlusOption |= matchedpullPlusOption;
                 matchedpullOption = matchedpullPlusOption = 0;
                 if( i+1 >= argc || iscolor(argv[i+1]) == noflag ) // can't use error() as there is no lineno yet
-                {   nolineerror("-%s must be followed by highlight colors to pull", whichPull);
-                    exit(1);
+                {   // -pull <not a color>, so see if it is a keyword
+                    keywordtopull = argv[i+1];
+                    i += 1;
+                    continue;
                 }
+                if( pullString != noflag )
+                   nolineerror("Can only -%s one color", whichPull);
                 pullString = iscolor(argv[i+1]);
                 if( verboseOption ) fprintf(stderr, "|-- -%s %s\n", whichPull, flagcolor(pullString));
                 fprintf(stderr, "Warning: -%s for -l has not been implemented yet\n", whichPull);
@@ -380,9 +388,18 @@ int main(int argc, char *argv[])
     findComponents(); // find components before generating HTML, Latex, etc
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
     {   if( !setSomeInterestingOption ) graphvizOption = 1; // effectively set -g if nothing else
+
+        if( keywordtopull )
+        {   if( !isakeyword(keywordtopull) )
+                nolineerror("-%s must be followed by highlight colors or keywords to pull", whichPull);
+            else pullkeywords(keywordtopull);
+        }
+
         generateFiles(*outputbasename? outputbasename: processedFileName); // processFileName is the last file named
         if( colorsOption || colorsPlusOption )
             listColorsUsed();
+        if( keywordsOption )
+            summarisekeywords(stderr);
     }
     else
     if( !syntaxOption && !showRulesOption && !opened )

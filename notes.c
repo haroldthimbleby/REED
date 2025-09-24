@@ -141,6 +141,18 @@ void colorkey(FILE *opfd, char *heading, char *vskip)
 			myfprintf(opfd, "%s \\end{tabular}\n%s\n", hbar, vskip);
 }
 
+void LaTeXkeywords(FILE *opfd, arrow *keywords)
+{   if( keywords != NULL )
+    {   char *sep = "";
+        fprintf(opfd, "\\textcolor{blue}{\\sf\\textbf{Keyphrase%s:} ", keywords->next == NULL? "": "s");
+        for( arrow *t = keywords; t != NULL; t = t->next )
+        {   myfprintf(opfd, "%s%s", sep, t->u->s);
+            sep = "; ";
+        }
+        fprintf(opfd, ".}\n\\vskip 1ex\n");
+    }
+}
+
 // generate the narrative .tex (latex) file
 void notes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract)
 { 	// note use of %t in myfprintf instead of %s in fprintf - this makes %s latex-safe
@@ -177,8 +189,9 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 
 	if( *abstract )
 	{	myfprintf(opfd, "\n\\begin{abstract}\n");
+        summariseLaTeXkeywords(opfd);
 		LaTeXtranslate(opfd, version, abstract, NULL);
-		myfprintf(opfd, "\n\\end{abstract}\n");
+        myfprintf(opfd, "\n\\end{abstract}\n");
 	}	
 	// sort notes into order using bubble sort
 	int swapped = 0;
@@ -310,6 +323,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
                     if( showIDsOption ) myfprintf(opfd, "\\fbox{%t} ", t->s->s);
                     //if( *version ) myfprintf(opfd, " (%t)", version);
                     myfprintf(opfd, "}}\n");
+                    LaTeXkeywords(opfd, t->s->keywords);
                     LaTeXtranslate(opfd, version, t->s->note->s, t->s);
 
                     int anyarrows = 0;
@@ -368,6 +382,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 		printrank(opfd, t->v, t->v->nodeversion); 
 		myfprintf(opfd, " \\hyperlink{%s}{%t}", t->v->s, t->v->is != NULL? t->v->is->s: t->v->s);
 		myfprintf(opfd, "}\n");
+        LaTeXkeywords(opfd, t->keywords);
 		LaTeXtranslate(opfd, t->u->nodeversion, t->arrownote->s, t->u);
 	}
 
@@ -389,7 +404,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 	fprintf(opfd, "\n\n\\end{document}\n");
 }
 
-void defineArrowNote(str *u, str *v, str *theNote, str *theIs)
+void defineArrowNote(str *u, str *v, str *theNote, str *theIs, arrow **keywordlist)
 {	//fprintf(stderr, "defineArrowNote: label=%s a->arrownote->s = %s\n", theIs == NULL? "NULL": theIs->s, theNote->s);
 
 	for( arrow *t = noteArrowList; t != NULL; t = t->next )
@@ -399,13 +414,17 @@ void defineArrowNote(str *u, str *v, str *theNote, str *theIs)
 	arrow *a = (arrow*) malloc(sizeof(arrow));
 	a->next = noteArrowList;
 	a->arrownote = theNote;
+    a->keywords = *keywordlist;
+    *keywordlist = NULL;
 	a->arrowis = theIs;
 	a->u = u;
 	a->v = v;
 	noteArrowList = a;
 }
 
-void defineNodeNote(arrow *nl, str *theNote)
+void defineNodeNote(arrow *nl, str *theNote, arrow **keywordlist)
 {	if( nl->u->note != NULL ) error("Defining another note for %s", nl->u->s);
+    nl->u->keywords = *keywordlist;
+    *keywordlist = NULL;
 	nl->u->note = theNote;
 }
