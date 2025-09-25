@@ -90,9 +90,33 @@ void summariseLaTeXkeywords(FILE *opfd)
     }
 }
 
+int suffix(char *s, char *pattern)
+{    while( *s )
+        {   if( !strcmp(s, pattern) )
+            {//fprintf(stderr, "%s==%s\n", s, pattern);
+               return 0;
+            }
+            s++;
+        }
+//fprintf(stderr, "%s<>%s\n", s, pattern);
+    return 1;
+}
+
+int keywordcmp(char *keyword, char *pattern)
+{   if( !strcmp(pattern, "...") || !strcmp(pattern, "") )
+        fprintf(stderr, "Warning: keyword '%s' will match everything\n", pattern);
+    if( suffix(keyword, "...") )
+   {   int leng = strlen(pattern)-3;
+       if( !strncmp(keyword, pattern, leng) )
+            return 0;
+       return 1;
+   }
+    return strcmp(keyword, pattern);
+}
+
 int isakeyword(char *keyword)
 {   for( struct list *t = keywords; t != NULL; t = t->next )
-        if( !strcmp(t->keyword->s, keyword) )
+        if( !keywordcmp(t->keyword->s, keyword) )
             return 1;
     return 0;
 }
@@ -116,7 +140,7 @@ void pullkeywords(char *keyword)
         t->s->keywordsOK = 0;
         for( arrow *tt = t->s->keywords; tt != NULL; tt = tt->next )
         {   //fprintf(stderr, "%s: compare %s with %s\n", t->s->s, keyword, tt->u->s);
-            if( !strcmp(keyword, tt->u->s) )
+            if( !keywordcmp(tt->u->s, keyword) )
             {   t->s->keywordsOK = 1;
                 break;
             }

@@ -404,6 +404,24 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 	fprintf(opfd, "\n\n\\end{document}\n");
 }
 
+// collapse white space containing newlines to just the newlines
+str *collapseblanks(str *s)
+{   char *p = s->s, *skip = s->s;
+    while(1)
+    {   int blanks = 0, newlines = 0;
+        while( *skip == ' ' || *skip == '\t' || *skip == '\n' )
+        {   if( *skip == '\n' ) newlines++; else blanks++;
+            skip++;
+        }
+        if( newlines )
+            while( newlines-- )
+                *p++ = '\n';
+        else if( blanks ) *p++ = ' ';
+        if( !(*p++ = *skip++) ) break;
+    }
+    return s;
+}
+
 void defineArrowNote(str *u, str *v, str *theNote, str *theIs, arrow **keywordlist)
 {	//fprintf(stderr, "defineArrowNote: label=%s a->arrownote->s = %s\n", theIs == NULL? "NULL": theIs->s, theNote->s);
 
@@ -413,7 +431,7 @@ void defineArrowNote(str *u, str *v, str *theNote, str *theIs, arrow **keywordli
 
 	arrow *a = (arrow*) malloc(sizeof(arrow));
 	a->next = noteArrowList;
-	a->arrownote = theNote;
+	a->arrownote = collapseblanks(theNote);
     a->keywords = *keywordlist;
     *keywordlist = NULL;
 	a->arrowis = theIs;
@@ -426,5 +444,5 @@ void defineNodeNote(arrow *nl, str *theNote, arrow **keywordlist)
 {	if( nl->u->note != NULL ) error("Defining another note for %s", nl->u->s);
     nl->u->keywords = *keywordlist;
     *keywordlist = NULL;
-	nl->u->note = theNote;
+	nl->u->note = collapseblanks(theNote);
 }

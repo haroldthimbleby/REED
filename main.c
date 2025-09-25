@@ -161,7 +161,7 @@ structOption options[] =
     {"-o", "open generated files automatically", &openOption, 1},
     {"-pdf", "generate a .pdf file*- representing the REED graph", &generatePDFOption, 1},
     {"-pull", "<color> restrict generated files to just this color", &matchedpullOption, 1},
-    {"-pull", "<keyword> restrict generated files to notes with this keyword", &matchedpullOption, 1},
+    {"-pull", "<keyword> restrict generated files to notes with this keyword*-Abbreviate with ... (so xyz... matches any keyphrases starting xyz)", &matchedpullOption, 1},
     {"-pull+", "<color> does -pull and also explains this color on standard output", &matchedpullPlusOption, 1},
     {"-raw", "start in raw mode (skipping text until a start tag)*- only use -raw with -tags flag", &rawOption, 0},
     {"-rules", "summarise HTML <-> Latex rules", &showRulesOption, 0},
