@@ -1,0 +1,50 @@
+# illustrate cycles for the REED paper....
+
+# empty file
+
+rows ( (1 pn p x u m j a1x a2x) (2 nq q y v n i k b1x) (w o) )
+
+style (1 2) is "fontname=\"Helvetica\",color=\"firebrick1\",style=\"filled\",fillcolor=\"firebrick1\""
+
+pn <-> nq
+pn is a
+nq is b
+
+1 -> 2 -> 1
+
+p -> q
+
+x -> y <- x
+
+u -> v -> w
+m -> n -> o
+
+i <- j -> k
+
+a1x -> b1x <- a2x
+
+p is a
+q is b
+
+1 is "a"
+2 is "b"
+
+x is "a"
+y is "b"
+
+u is "a1"
+v is "b"
+w is "a2"
+
+m is b1
+n is a
+o is b2
+
+j is "a"
+i is "b1"
+k is "b2"
+
+a1x is a1
+a2x is a2
+b1x is b
+
