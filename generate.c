@@ -328,7 +328,8 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			if( !rowsTOCstyled && t->s->flag != noflag ) // put last, flag style overrides other styles
 			{	if( t->s->flag == white ) myfprintf(opfd, "color=black;");
 				myfprintf(opfd, flagstyle, flagcolor(t->s->flag)); 
-				if( t->s->flag == blue || t->s->flag == red || t->s->flag == black ) myfprintf(opfd, "fontcolor=white;");
+				if( t->s->flag == blue || t->s->flag == red || t->s->flag == black )
+                    myfprintf(opfd, "fontcolor=white;");
 			}
 			fprintf(opfd, "];\n");
 		}
@@ -477,7 +478,7 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 			commarise = ",\n";
 		}
 
-	myfprintf(opfd, "};\"],\"Input\"],\nCell[BoxData[\"keywords={\n");
+    myfprintf(opfd, "};\"],\"Input\"],\nCell[BoxData[\"keywords={\n");
     commarise = "";
     for( node *t = nodeList; t != NULL; t = t->next )
         if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
@@ -485,15 +486,30 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
             char *sep = "";
             if( t->s->keywords != NULL )
             {
-                for( arrow *tt = t->s->keywords; tt != NULL; tt = tt->next )
-                {   myfprintf(opfd, "%s\\\"%s\\\"", sep, tt->u->s);
+                for( struct keywordlist *tt = t->s->keywords; tt != NULL; tt = tt->next )
+                {   myfprintf(opfd, "%s\\\"%s\\\"", sep, tt->keyword->s);
                     sep = ",\n";
                 }
             }
             commarise = "},\n";
         }
 
-	myfprintf(opfd, "}\n};\"],\"Input\"],Cell[BoxData[\"communities={");
+    myfprintf(opfd, "}};\"],\"Input\"],\nCell[BoxData[\"notes={\n");
+    commarise = "";
+    for( node *t = nodeList; t != NULL; t = t->next )
+        if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
+        {   myfprintf(opfd, "%s   \\\"%m\\\"->\\\"%m\\\"", commarise, t->s->s, t->s->note != NULL? t->s->note->s: "");
+            commarise = ",\n";
+        }
+
+    myfprintf(opfd, "\n};\"],\"Input\"],\nCell[BoxData[\"highlights={\n");
+    commarise = "";
+    for( node *t = nodeList; t != NULL; t = t->next )
+    {   myfprintf(opfd, "%s\\\"%s\\\"->\\\"%s\\\"", commarise, t->s->s,  flagcolor(t->s->flag));
+        commarise = ",\n";
+    }
+
+    myfprintf(opfd,"};\"],\"Input\"],Cell[BoxData[\"communities={");
 	if(1 )
 	{ccommarise = "";
 	for( int c = 1; c <= numberOfComponents; c++ )
@@ -554,11 +570,9 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 
     // myfprintf(opfd, "Cell[BoxData[\"title=\\\"%m\\\";\"],\"Input\"],\n", title);
 
-     myfprintf(opfd, "};\"],\"Input\"],\nCell[BoxData[\"Print[Style[\\\"Defines\\\", Bold],\\\"\\\\ntitle=\\\", title, \\\"\\\\nauthors=\\\", authors, \\\"\\\\nversion=\\\", version, \\\"\\\\ndate=\\\", date, \\\"\\\\nand: edges, groups, communities, keywords, vertexNames\\\"]\"],\"Input\"]\n}\n]\n");
+     myfprintf(opfd, "};\"],\"Input\"],\nCell[BoxData[\"Print[Style[\\\"Defines\\\", Bold],\\\"\\\\ntitle=\\\", title, \\\"\\\\nauthors=\\\", authors, \\\"\\\\nversion=\\\", version, \\\"\\\\ndate=\\\", date, \\\"\\\\nand: communities, edges, groups, highlights, keywords, notes, vertexNames\\\"]\"],\"Input\"]\n}\n]\n");
 }
-/*  ]
 
- */
 void generateFiles(char *filename)
 {
     // printf("Styles are:\n");
@@ -609,8 +623,8 @@ void generateFiles(char *filename)
 			}
 			
 	cascade();
-    checkAllRtrans();
-	summarizeMissingFlagDefinitions();
+    summarizeMissingFlagDefinitions();
+    sortkeywords(&allkeywords);
 
     if( 0 )
 		for( node *t = nodeList; t != NULL; t = t->next )
@@ -635,7 +649,6 @@ void generateFiles(char *filename)
                 swapped = 1;
             }
     } while( swapped );
-
     makefiles(filename);
 }
 
@@ -656,7 +669,7 @@ void listColorsUsed() // list highlighting colors used to stdout
     {   for( int i = 1; i < 8; i++ ) // gets them in alphabetical order
             if( strlen(flagdefinitions[i]) != 0 )
             {   fprintf(stdout, "\n%s: ", flagcolor(i));
-                HTMLtranslate(stdout, flagdefinitions[i]);
+                HTMLtranslate(stdout, NULL, flagdefinitions[i]);
                 fprintf(stdout, "\n");
             }
     }

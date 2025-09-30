@@ -141,12 +141,12 @@ void colorkey(FILE *opfd, char *heading, char *vskip)
 			myfprintf(opfd, "%s \\end{tabular}\n%s\n", hbar, vskip);
 }
 
-void LaTeXkeywords(FILE *opfd, arrow *keywords)
+void LaTeXkeywords(FILE *opfd, struct keywordlist *keywords)
 {   if( keywords != NULL )
     {   char *sep = "";
         fprintf(opfd, "\\textcolor{blue}{\\sf\\textbf{Keyphrase%s:} ", keywords->next == NULL? "": "s");
-        for( arrow *t = keywords; t != NULL; t = t->next )
-        {   myfprintf(opfd, "%s%s", sep, t->u->s);
+        for( struct keywordlist *t = keywords; t != NULL; t = t->next )
+        {   myfprintf(opfd, "%s%s", sep, t->keyword->s);
             sep = "; ";
         }
         fprintf(opfd, ".}\n\\vskip 1ex\n");
@@ -186,6 +186,8 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 \\hskip -.6pt\\raise .9ex\\hbox{\\fbox{\\color{#1}\\hbox{\\vrule width .5ex height 1ex depth 0ex}}}%%\n\
 \\hskip -.6pt\\raise 1ex\\hbox{\\fbox{\\color{#1}\\hbox{\\vrule width .7ex height 1ex depth 0ex}}}}%%\n\
 }");
+
+    fprintf(opfd, "\\setlength{\\fboxsep}{1.5pt}\n"); // for from: to: here: annotations
 
 	if( *abstract )
 	{	myfprintf(opfd, "\n\\begin{abstract}\n");
@@ -422,7 +424,7 @@ str *collapseblanks(str *s)
     return s;
 }
 
-void defineArrowNote(str *u, str *v, str *theNote, str *theIs, arrow **keywordlist)
+void defineArrowNote(str *u, str *v, str *theNote, str *theIs, struct keywordlist **keywordlist)
 {	//fprintf(stderr, "defineArrowNote: label=%s a->arrownote->s = %s\n", theIs == NULL? "NULL": theIs->s, theNote->s);
 
 	for( arrow *t = noteArrowList; t != NULL; t = t->next )
@@ -440,7 +442,7 @@ void defineArrowNote(str *u, str *v, str *theNote, str *theIs, arrow **keywordli
 	noteArrowList = a;
 }
 
-void defineNodeNote(arrow *nl, str *theNote, arrow **keywordlist)
+void defineNodeNote(arrow *nl, str *theNote, struct keywordlist **keywordlist)
 {	if( nl->u->note != NULL ) error("Defining another note for %s", nl->u->s);
     nl->u->keywords = *keywordlist;
     *keywordlist = NULL;

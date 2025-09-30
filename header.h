@@ -39,7 +39,7 @@ typedef struct tmpstr {
 	int component;
 	enum flagcolor flag, originalflag;
 	char *nodeversion, *noderef;
-    struct tmparrow *keywords;
+    struct keywordlist *keywords;
     int keywordsOK;
 } str;
 
@@ -73,7 +73,7 @@ extern int verboseOption, graphvizOption, openOption, showIDsOption, optionsOpti
 
 extern void generateFiles(char *filename);
 
-typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct tmparrow *keywords; int force; int doublearrow; struct tmparrow *next;
+typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct keywordlist *keywords; int force; int doublearrow; struct tmparrow *next;
 		// flags for connected components analysis
 		int expanded, component;
 		enum flagcolor flag;
@@ -103,7 +103,7 @@ extern int flagcascade[];
 
 extern char *version;
 
-extern void saveCheckRtrans(str *u, str *v);
+extern void saveCheckRtrans(str *claims, str *u, str *v);
 extern void checkAllRtrans();
 extern void findComponents();
 extern void explainTranslationRules();
@@ -122,16 +122,29 @@ extern void checkIS();
 extern int errcount;
 extern void checkNumbering();
 extern void listColorsUsed();
-extern void HTMLtranslate(FILE *opfd, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
+extern void HTMLtranslate(FILE *opfd, str *context, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
 extern void makefiles(char *filename);
 extern void stopiferror();
 extern void addkeyword(str *keyword);
 extern void summarisekeywords(FILE *opfd);
-extern void HTMLkeywords(FILE *opfd, arrow *keywords);
+extern void HTMLkeywords(FILE *opfd, struct keywordlist *keywords);
 extern void summariseLaTeXkeywords(FILE *opfd);
 extern int isakeyword(char *keyword);
 extern void pullkeywords(char *keyword);
 extern int pullnode(str *n);
 extern int ispullingkeywords();
 extern void htmlsaypullingkeyword(FILE *opfd);
-extern void sortkeywords(arrow **keywordlist);
+extern void href(FILE *opfd, int html, str *here, char *id, char *close);
+extern int checkOneRtrans(str *u, str *v);
+
+struct keywordlist {
+    str *keyword;
+    int xkey, ykey;
+    struct keywordlist *next;
+};
+
+extern void sortkeywords(struct keywordlist **keywordlist);
+extern struct keywordlist *allkeywords;
+extern void linkkeyword(FILE *opfd, struct keywordlist *t, char *debug);
+extern void noteaddkeywordtolist(str *keyword, struct keywordlist **keywords);
+

@@ -8,7 +8,7 @@ extern int needArrowSwap(arrow *u, arrow *v);
 extern int versionCount; 
 extern str *listOfVersions;
 extern void HTMLprintfiledata(FILE *opfd);
-extern void HTMLtranslate(FILE *opfd, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
+extern void HTMLtranslate(FILE *opfd, str *context, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
 
 char *css = ".showCells { border:1px solid; border-collapse:collapse; }\n\
 .showCells td  { border:1px solid; padding: 8px;  border-collapse:collapse; margin:0; }\n\
@@ -27,23 +27,103 @@ h3 { font-size: 90%; }\n\
           background-color: white;\n\
     }\n";
 
-void href(FILE *opfd, char *id, char *close)
+void directHref(FILE *opfd, int html, str *here, str *linksto, char *close)
+{
+    version = linksto->nodeversion;
+    if( html )
+        fprintf(opfd, "<a href=\"#%s\">", linksto->s);
+    else
+        myfprintf(opfd, "\\hyperlink{%s}{", linksto->s);
+    if( showIDsOption ) myfprintf(opfd, "(%t) ", linksto->s);
+    //myfprintf(opfd, html? "%s%s%d.%d %s": "{{%t%s%d.%d} %t",
+      myfprintf(opfd,"%s%s%d.%d %s",
+              *version? version: "", *version? "-": "",
+                linksto->rankx, linksto->ranky, linksto->is == NULL? linksto->s: linksto->is->s);
+    if( html )
+        fprintf(opfd, "</a>%s", close);
+    else
+        fprintf(opfd, "%s", "}");
+}
+
+void href(FILE *opfd, int html, str *here, char *id, char *close)
 {	//fprintf(stderr, "Got '%s' at offset %d\n", &s[2], id);
+
+    // id may be in form
+    // from: id
+    // to: id
+    // here: id
+    // and embedded in blanks
+    int from = 0, to = 0, this = 0, change = 1;
+
+    //fprintf(stderr, "'%s'->",id);
+    while( change )
+    {   change = 0;
+        while( *id == ' ' || *id == '\n' || *id == '\t' )
+            id++;
+        if( !strncmp(id, "from:", 5) ) { change = from = 1; id += 5; }
+        if( !strncmp(id, "to:", 3) ) { change = to = 1; id += 3; }
+        if( !strncmp(id, "here:", 5) ) { change = this = 1; id += 5; }
+    }
+
 	int found = 0;
-	for( node *t = nodeList; t != NULL; t = t->next )
+    node *t;
+	for( t = nodeList; t != NULL; t = t->next )
 		if( !strcmp(t->s->s, id) )
 		{	version = t->s->nodeversion;
-			fprintf(opfd, "<a href=\"#%s\">", t->s->s);
-			if( showIDsOption ) myfprintf(opfd, "(%t) ", t->s->s);
-			fprintf(opfd, "%s%s%d.%d %s%s",
-				*version? version: "", *version? "-": "",
-				t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s, close);
-			found = 1;
-			break;
+            if( html )
+            {   char *sp = "";
+                fprintf(opfd, "<a href=\"#%s\">", t->s->s);
+                if( from || to || this )
+                {   fprintf(opfd, "<span style=\"border-style:solid;border-width:thin;font-family:sans-serif;\">");
+                    if( from ) { fprintf(opfd, "FROM"); sp = " "; }
+                    if( to ) { fprintf(opfd, "%sTO", sp); sp = " "; }
+                    if( this ) fprintf(opfd, "%sHERE", sp);
+                    fprintf(opfd, "</span> ");
+                }
+            }
+            else{
+                char *sp = "";
+                myfprintf(opfd, "\\hyperlink{%s}{", t->s->s);
+                if( from || to || this )
+                {   fprintf(opfd, "\\raise 1pt \\hbox{\\fbox{\\sf\\tiny ");
+                    if( from ) { fprintf(opfd, "FROM"); sp = " "; }
+                    if( to ) { fprintf(opfd, "%sTO", sp); sp = " "; }
+                    if( this ) fprintf(opfd, "%sHERE", sp);
+                    fprintf(opfd, "}} ");
+                }
+            }
+            if( showIDsOption ) myfprintf(opfd, "(%t) ", t->s->s);
+            //myfprintf(opfd, html? "%s%s%d.%d %s": "{{%t%s%d.%d} %t",
+              myfprintf(opfd,"%s%s%d.%d %s",
+                      *version? version: "", *version? "-": "",
+                        t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s);
+            if( html )
+                fprintf(opfd, "</a>%s", close);
+            else
+                fprintf(opfd, "%s", "}");
+            found = 1;
+            if( to ) saveCheckRtrans(here, here, t->s);
+            if( from ) saveCheckRtrans(here, t->s, here);
+            if( this && t->s != here )
+            {   nolineerror("** Failed [[[here: %s]]] is not in node %s%s%N%s\n", here->s,
+                            here->is != NULL? " (": "",
+                            here->is != NULL? here->is->s: "",
+                            here->is != NULL? ")": "");
+            }
+            break;
 		}
 	//fprintf(stderr, "Got '%s' at offset %d - found = %d\n", &s[2], offset, found); fflush(stderr);
 	if( !found )
-		nolineerror("no matching node found for '%s'", id);
+		nolineerror("No matching node found for cross-reference to '%s'", id);
+    else
+    if( !to && !from && !this ) // no from:/to:/here: label
+    {   if( t->s == here )
+            fprintf(stderr, "[[[%s]]] in node %s would be better as [[[here: %s]]]\n", id, here->s, id);
+        else
+        {   if( checkOneRtrans(here, t->s) ) fprintf(stderr, "[[[%s]]] in node %s would be better as [[[to: %s]]]\n", id, here->s, id);
+            if( checkOneRtrans(t->s, here) ) fprintf(stderr, "[[[%s]]] in node %s would be better as [[[from: %s]]]\n", id, here->s, id);
+        }
+    }
 }
 
 /* ⚐	9872		WHITE FLAG
@@ -64,7 +144,7 @@ void pullColorTitle(FILE *opfd, enum flagcolor pullStringEnum)
     fprintf(opfd, " highlighting");
     if( pullString == gray ) fprintf(opfd, " or not hightlighted");
     fprintf(opfd, "</h1></td></tr><tr><td>");
-    HTMLtranslate(opfd, flagdefinitions[pullStringEnum]);
+    HTMLtranslate(opfd, NULL, flagdefinitions[pullStringEnum]);
     fprintf(opfd, "</td></tr></table>\n");
 }
 
@@ -78,12 +158,12 @@ void arrowTable(FILE *opfd, node *t, int allLinked)
             anyarrows = 1;
             fprintf(opfd, "<tr><td>&larr;&nbsp;");
             if( a->u->flag != noflag )
-            {    htmlflagcolor(opfd, a->u->flag, 0);
+            {   htmlflagcolor(opfd, a->u->flag, 0);
                 myfprintf(opfd, " ");
             }
             else myfprintf(opfd, "&nbsp;&nbsp;&nbsp;");
             // maybe one day, don't put hrefs in if !pull and !allLinked (these nodes aren't in the diagram)
-            href(opfd, a->u->s, "</a></td></tr>");
+            directHref(opfd, 1, a->v, a->u, "</td></tr>");
         }
     if( anyarrows ) fprintf(opfd, "</table></td>\n");
     anyarrows = 0;
@@ -93,23 +173,25 @@ void arrowTable(FILE *opfd, node *t, int allLinked)
             anyarrows = 1;
             fprintf(opfd, "<tr><td>&rarr;&nbsp;");
             if( a->v->flag != noflag )
-            {    htmlflagcolor(opfd, b->v->flag, 0);
+            {   htmlflagcolor(opfd, b->v->flag, 0);
                 myfprintf(opfd, " ");
             }
             else myfprintf(opfd, "&nbsp;&nbsp;&nbsp;");
-            href(opfd, b->v->s, "</a></td></tr>");
+            directHref(opfd, 1, b->u, b->v, "</td></tr>");
         }
     if( anyarrows ) fprintf(opfd, "</table></td>\n");
     fprintf(opfd, "</tr>\n</table>\n");
     fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n</div>\n");
 }
 
-void HTMLkeywords(FILE *opfd, arrow *keywords)
+void HTMLkeywords(FILE *opfd, struct keywordlist *keywords)
 {   if( keywords != NULL )
     {   char *sep = "";
         fprintf(opfd, "<h3>Keyphrase%s: ", keywords->next == NULL? "": "s");
-        for( arrow *t = keywords; t != NULL; t = t->next )
-        {   myfprintf(opfd, "%s%s", sep, t->u->s);
+        for( struct keywordlist *t = keywords; t != NULL; t = t->next )
+        {   myfprintf(opfd, "%s", sep);
+            linkkeyword(opfd, t, t->keyword->s);
+            myfprintf(opfd, "%s</a>", t->keyword->s);
             sep = "; ";
         }
         fprintf(opfd, ".</h3>\n");
@@ -132,7 +214,7 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
             if( t->s->flag == noflag ) fprintf(opfd, " (not highlighted)");
             myfprintf(opfd, "</h2>\n");
             HTMLkeywords(opfd, t->s->keywords);
-            HTMLtranslate(opfd, t->s->note->s);
+            HTMLtranslate(opfd, t->s, t->s->note->s);
             arrowTable(opfd, t, 0);
             myfprintf(opfd, "</div>\n");
         }
@@ -143,7 +225,7 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
         if( strlen(flagdefinitions[pullString]) == 0 )
             fprintf(stdout, "NOT DEFINED.  Say: highlight %s is \"...\" to define %s.", flagcolor(pullString), flagcolor(pullString));
         else
-            HTMLtranslate(stdout, flagdefinitions[pullString]);
+            HTMLtranslate(stdout, NULL, flagdefinitions[pullString]);
     }
     fprintf(stdout, "\n");
 }
@@ -172,7 +254,7 @@ void HTMLcolorkey(FILE *opfd, char *heading, char *vskip)
 				fprintf(opfd, "</td><td style=\"vertical-align:top\">%s", flagcolors[i]);
 				if( !flagsusedaftercascades[i] ) myfprintf(opfd, "&nbsp;not&nbsp;used</td><td>");
 				else myfprintf(opfd, "&nbsp;used&nbsp;%d&nbsp;time%s</td><td>", flagsusedaftercascades[i], flagsusedaftercascades[i] == 1? "": "s");
-				HTMLtranslate(opfd, flagdefinitions[i]); 
+				HTMLtranslate(opfd, NULL, flagdefinitions[i]);
 				if( hasHeading && flagsusedaftercascades[i] != flagsused[i] )
 				{	// %s&nbsp; , flagcolors[i] used&nbsp;explicitly 
 					myfprintf(opfd, "<td/><td/><tr><td/><td>");
@@ -187,6 +269,20 @@ void HTMLcolorkey(FILE *opfd, char *heading, char *vskip)
 		}
 		if( flagLegends )
 			myfprintf(opfd, "\n</table><p/>\n");
+}
+
+void wrapuplinkkeyword(FILE *opfd, struct keywordlist *t, char *debug)
+{   // stupid coding! should have had a keyword symbol table and used it first... easy to fix but this is easier
+    struct keywordlist *p;
+    for( p = allkeywords; p != NULL; p = p-> next )
+        if( !strcasecmp(p->keyword->s, t->keyword->s) )
+            break;
+
+    if( p == NULL ) { fprintf(stderr, "ooops! didn't find %s in keyword symbol table\n", t->keyword->s); exit(1); }
+
+    // fprintf(stderr, "%s: <a href=\"#key-%d-%d\" name=\"key-%d-%d\">\n", debug, p->xkey, 1, p->xkey, p->ykey);
+    fprintf(opfd, "<a href=\"#key-%d-%d\" name=\"key-%d-%d\">", p->xkey, 1, p->xkey, p->ykey);
+    p->ykey++;
 }
 
 // generate the narrative HTML file
@@ -219,7 +315,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 
 	if( *abstract ) // && pullString == noflag )
 	{	fprintf(opfd, "<a name=\"REEDabstract\"/><blockquote><div class=\"shadedBox\">");
-		HTMLtranslate(opfd, abstract);
+		HTMLtranslate(opfd, NULL, abstract);
 		fprintf(opfd, "</div></blockquote>\n");
 	}
 
@@ -313,7 +409,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 				{	fprintf(opfd, "<tr><td>");
 					htmlflagcolor(opfd, t->s->flag, 0);
 					fprintf(opfd, "</td><td>");
-					href(opfd, t->s->s, "</td>");
+                    directHref(opfd, 1, t->s, t->s, "</td>");
 					//printrank(opfd, t->s, version);
 					//myfprintf(opfd, "<td>%t</td><td>", t->s->is == NULL? t->s->s: t->s->is->s);
 					fprintf(opfd, "<td>");
@@ -368,8 +464,8 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 				myfprintf(opfd, "</h2>\n");
 
                 HTMLkeywords(opfd, t->s->keywords);
-				HTMLtranslate(opfd, t->s->note->s);
-				
+				HTMLtranslate(opfd, t->s, t->s->note->s);
+
                 arrowTable(opfd, t, 1);
 			}
 		}
@@ -414,14 +510,14 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		if( t->arrowis != NULL )
 			myfprintf(opfd, "%t<br/>\n", t->arrowis->s);
 		fprintf(opfd, "</h2>\n<table><tr><td/><td>");
-		href(opfd, t->u->s, "</td></tr>\n<tr><td>&rarr;</td><td>");
-		//printrank(opfd, t->u, t->u->nodeversion); 
+        directHref(opfd, 1, t->u, t->u, "</td></tr>\n<tr><td>&rarr;</td><td>");
+		//printrank(opfd, t->u, t->u->nodeversion);
 		//myfprintf(opfd, " %t ", t->u->is != NULL? t->u->is->s: t->u->s);
 		//myfprintf(opfd, "</td></tr>\n<tr><td>&rarr;</td><td>");
-		href(opfd, t->v->s, "</td></tr>\n</table><p/>");//printrank(opfd, t->v, t->v->nodeversion); 
+        directHref(opfd, 1, t->v, t->v, "</td></tr>\n</table><p/>");//printrank(opfd, t->v, t->v->nodeversion);
 		//myfprintf(opfd, " %t</td></tr>\n</table><p/>", t->v->is != NULL? t->v->is->s: t->v->s);
         HTMLkeywords(opfd, t->keywords);
-		HTMLtranslate(opfd, t->arrownote->s);
+		HTMLtranslate(opfd, t->arrownote, t->arrownote->s);
         fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n");
         fprintf(opfd, "</div>\n");
 	}
@@ -441,6 +537,22 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 				fprintf(opfd, "<h2/>");
 			} 
 	}
-	
+
+    // wrap up keyword list to loop back to start...
+    if( allkeywords != NULL )
+    {   char *sep = "";
+        int plural = allkeywords->next != NULL;
+        fprintf(opfd, "<hr><blockquote><h2>");
+             fprintf(opfd, "Jump back to first note with %s keyphrase:<br><span style=\"font-weight:normal;\">\n", plural? "any": "this");
+        for( struct keywordlist *t = allkeywords; t != NULL; t = t->next )
+        {   fprintf(opfd, "%s    ", sep);
+            wrapuplinkkeyword(opfd, t, t->keyword->s);
+            fprintf(opfd, "%s", t->keyword->s);
+            fprintf(opfd, "</a>");
+            sep = ";\n";
+        }
+        fprintf(opfd, ".</span></h2></blockquote>\n");
+    }
+
 	fprintf(opfd, "</body>\n</html>\n");
 }

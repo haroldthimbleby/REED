@@ -236,6 +236,7 @@ lexval readlex(str **lexstr)
                     if( !strcmp("htmldefinitions", (*lexstr)->s) ) return HTMLDEFINITIONS;
                     if( !strcmp("check", (*lexstr)->s) ) return CHECK;
                     if( !strcmp("keywords", (*lexstr)->s) ) return KEYWORDS;
+                    if( !strcmp("keyword", (*lexstr)->s) ) return KEYWORDS;
                     // if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n");
 					return ID;
 				}
@@ -763,7 +764,8 @@ int parse(char *skip, char *filename, char *bp)
 
 	int makenewstyle = 0;
 	
-	arrow *nl = NULL, *keywordlist = NULL;
+	struct keywordlist *keywordlist = NULL;
+    arrow *nl = NULL;
 
 	while( lex1->l != EndOfFile )
     {	if( 0 ) printf(":: %s :: %s :: %s\n", lexvalue(lex1), lexvalue(lex2), lexvalue(lex3));
@@ -957,16 +959,18 @@ int parse(char *skip, char *filename, char *bp)
                 break;
 
             case KEYWORDS:
-                 getlex();
-                 keywordlist = parsenodelist(0, 0, 0); // don't make these as nodes in the Dot graph
-                 if( keywordlist == NULL ) error("Expected at least one keyword or keyword list after 'keywords'");
-                 for( arrow *t = keywordlist; t != NULL; t = t->next )
-                 {    if( t->v != NULL )
-                         error("putting an arrow u->v keyword list doesn't make sense!");
-                      addkeyword(t->u);
-                 }
-                 if( lex1->l != NOTE )
+                getlex();
+                keywordlist = NULL;
+                while( lex1->l == ID || lex1->l == KEYWORDS )
+                {   if( lex1->l == ID )
+                    {   noteaddkeywordtolist(lex1, &keywordlist); // add to this node's keywords
+                        addkeyword(lex1); // add to global keyword list
+                    }
+                    getlex();
+                }
+                if( lex1->l != NOTE )
                     error("keywords must be followed by a note");
+                if( keywordlist == NULL ) error("Expected at least one keyword or keyword list after 'keywords'");
                 sortkeywords(&keywordlist);
 
             case NOTE:  // EITHER note [author string [;]] idlist string
@@ -1080,7 +1084,7 @@ int parse(char *skip, char *filename, char *bp)
                 getlex();
                 if( lex1->l != ID || lex2->l != TRANSARROW || lex3->l != ID ) error("check should be followed by node => node");
                 else
-                    saveCheckRtrans(lex1, lex3);
+                    saveCheckRtrans(NULL, lex1, lex3);
                 getlex();
                 getlex();
                 break;
@@ -1121,6 +1125,7 @@ int parse(char *skip, char *filename, char *bp)
 				break;
 
 			case SEMI:
+               // getlex();
 				// just ignore it (it should only occur between statements)
 				break;
 

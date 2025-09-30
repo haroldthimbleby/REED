@@ -37,7 +37,16 @@ void nolineerror(char *fmt, ...)
 		                       c = va_arg(ap, int);
 		                       fprintf(stderr, "%c", c);
 		                       break;
-		                default:
+                    case 'N':
+                        for( s = va_arg(ap, char *); *s; s++ )
+                             switch( *s )
+                                {
+                                    case '\n': fprintf(stderr, " "); break;
+                                    case '\t': fprintf(stderr, " "); break;
+                                    default:   fprintf(stderr, "%c", *s);
+                                }
+                        break;
+                    default:
 		                		fprintf(stderr, " !!!(1) unknown format %%%c !!!\n", *fmt);
 		                		break;
 		       	}
@@ -160,29 +169,38 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 			                       				fprintf(opfd, "\\"); break;
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
-		                       break;
+                           break;
 		               case 'j':    // same as %s but works with JSON                
-		                       for( s = va_arg(ap, char *); *s; s++ )
-		                       		switch( *s )
-		                       		{
-			                       		case '\n': fprintf(opfd, "\\n"); break;
-			                       		case '\t': fprintf(opfd, "\\t"); break;
-			                       		case '\\': fprintf(opfd, "\\\\"); break;
-			                       		default:   fprintf(opfd, "%c", *s);
-		                       		}
-		                       break;
-		               case 't':    // same as %s but works with tex  - \n becomes space      for( s = va_arg(ap, char *); *s; s++ )
-		                       	for( s = va_arg(ap, char *); *s; s++ )
-		                    		switch( *s )
-		                       		{
-			                       		case '\n': fprintf(opfd, " "); break;
-			                       		case '\t': fprintf(opfd, " "); break;
-			                       		//case '\\': fprintf(opfd, "\\\\"); break;
-			                       		case '%':  fprintf(opfd, "\\%%"); break;
-			                       		default:   fprintf(opfd, "%c", *s);
-		                       		}
-		                       break;
-                    case 'i': // indent, same as %s but prints \n as \n      with spaces
+                           for( s = va_arg(ap, char *); *s; s++ )
+                                switch( *s )
+                                {
+                                    case '\n': fprintf(opfd, "\\n"); break;
+                                    case '\t': fprintf(opfd, "\\t"); break;
+                                    case '\\': fprintf(opfd, "\\\\"); break;
+                                    default:   fprintf(opfd, "%c", *s);
+                                }
+                           break;
+                    case 't':    // same as %s but works with tex  - \n becomes space
+                        for( s = va_arg(ap, char *); *s; s++ )
+                             switch( *s )
+                                {
+                                    case '\n': fprintf(opfd, " "); break;
+                                    case '\t': fprintf(opfd, " "); break;
+                                    //case '\\': fprintf(opfd, "\\\\"); break;
+                                    case '%':  fprintf(opfd, "\\%%"); break;
+                                    default:   fprintf(opfd, "%c", *s);
+                                }
+                        break;
+                    case 'N':    // same as %s but newline becomes space
+                        for( s = va_arg(ap, char *); *s; s++ )
+                             switch( *s )
+                                {
+                                    case '\n': fprintf(opfd, " "); break;
+                                    case '\t': fprintf(opfd, " "); break;
+                                    default:   fprintf(opfd, "%c", *s);
+                                }
+                        break;
+                 case 'i': // indent, same as %s but prints \n as \n      with spaces so it can be more easily seen
                     {   int charsonline = 0;
                         const char *newlinestr = "\n>>    ";
                         for( s = va_arg(ap, char *); *s; s++ )
@@ -209,13 +227,13 @@ void myfprintf(FILE *opfd, char *fmt, ...)
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
 		                       break;
-		               case 'm':    // same as %t but for mathematica input                 
+                    case 'm':    // same as %t but for mathematica input
 		                       for( s = va_arg(ap, char *); *s; s++ )
 		                       		switch( *s )
-		                       		{	case '\n': fprintf(opfd, "\\n"); break;
+		                       		{	case '\n': fprintf(opfd, "\\\\n"); break;
 			                       		case '\t': fprintf(opfd, " "); break;
-			                       		case '\"': fprintf(opfd, "\\\""); break;
-			                       		case '\\':  fprintf(opfd, "\\\\"); break;
+			                       		case '\"': fprintf(opfd, "\\\\\\\""); break;
+			                       		case '\\':  fprintf(opfd, "\\\\\\\\"); break;
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
 		                       break;

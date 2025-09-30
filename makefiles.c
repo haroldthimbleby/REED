@@ -74,7 +74,7 @@ void makefiles(char *filename)
             if( 1 || verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
             system(cmd->s);
         }
-    }
+     }
 
     if( JSONOption )
     {   str *cmd = newstr("dot -Tjson ");

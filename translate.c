@@ -1,7 +1,7 @@
 #include "header.h"
 #include <regex.h>
 
-extern void href(FILE *opfd, char *id, char *close);
+extern void href(FILE *opfd, int html, str *fromhere, char *id, char *close);
 
 struct { char *latex, *html; char *close; } 
 
@@ -129,7 +129,7 @@ char *includeFile(FILE *opfd, int copy, char *s)
     return s;
 }
 
-void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, and include [[[id]]] notation
+void HTMLtranslate(FILE *opfd, str *context, char *note) // translate Latex and HTML to HTML, and include [[[id]]] notation
 {	mode = both;
 
     // first do simple multinewline->\n\n case (in for loop initialisation)
@@ -178,7 +178,7 @@ void HTMLtranslate(FILE *opfd, char *note) // translate Latex and HTML to HTML, 
 			while( !s[offset] || s[offset] != ']' || !s[offset+1] || s[offset+1] != ']' || !s[offset+2] || s[offset+2] != ']' ) offset++;
 			if( s[offset] == ']' && s[offset+1] == ']' && s[offset+2] == ']' )
 			{	s[offset] = (char) 0;
-				href(opfd, &s[3], "</a>");
+				href(opfd, 1, context, &s[3], "");
 				s[offset] = ']';
 				s = s+offset+2;
 			}
@@ -215,25 +215,12 @@ void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode) // trans
 			while( !s[offset] || s[offset] != ']' || !s[offset+1] || s[offset+1] != ']' || !s[offset+2] || s[offset+2] != ']' ) offset++;
 			if( s[offset] == ']' && s[offset+1] == ']' && s[offset+2] == ']' )
 			{	s[offset] = (char) 0;
-				int found = 0;
-				for( node *t = nodeList; t != NULL; t = t->next )
-					if( !strcmp(t->s->s, &s[3]) )
-					{	version = t->s->nodeversion;
-						myfprintf(opfd, "\\hyperlink{%s}{{%s%s%d.%d} %t}",
-                            t->s->s,
-							*version? version: "", *version? "--": "",
-							t->s->rankx, t->s->ranky, t->s->is == NULL? t->s->s: t->s->is->s);
-						if( showIDsOption ) myfprintf(opfd, " \\fbox{%t}\\,", t->s->s);
-						found = 1;
-						break;
-					}
-				if( !found )
-					nolineerror("no matching node for [[[%s]]] found in %s", &s[2], innode? "notes": "abstract");
+                href(opfd, 0, innode, &s[3], "");
 				s[offset] = ']';
 				s = s+offset+2;
 			}
 			else
-				nolineerror("incomplete <<node>> in notes for %s", innode->s);
+				nolineerror("incomplete [[[node]]] in notes for %s", innode->s);
 		}
 		else
 			myfprintf(opfd, "%c", s[0]);

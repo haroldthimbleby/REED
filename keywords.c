@@ -1,13 +1,13 @@
 #include "header.h"
 
-struct list {
-    str *keyword;
-    struct list *next;
-}
-*keywords = NULL;
+struct keywordlist *allkeywords = NULL;
 
 void addkeyword(str *keyword)
-{   struct list **p = &keywords;
+{   noteaddkeywordtolist(keyword, &allkeywords);
+}
+
+void noteaddkeywordtolist(str *keyword, struct keywordlist **keywords)
+{   struct keywordlist **p = keywords;
     int cmp;
 
     //fprintf(stderr, "keyword: %s\n", keyword->s);
@@ -17,9 +17,10 @@ void addkeyword(str *keyword)
         p = &(*p)->next;
     }
 
-    struct list *new = (struct list*) malloc(sizeof(struct list));
+    struct keywordlist* new = malloc(sizeof(struct keywordlist));
     new->keyword = keyword;
     new->next = *p;
+    new->ykey = new->xkey = 0;
     *p = new;
 }
 
@@ -28,17 +29,23 @@ int keywordsneedSwap(char *a, char *b)
     return strcasecmp(a, b) > 1;
 }
 
-void sortkeywords(arrow **keywordlist)
-{
-    // sort keywordlist into alphabetic (no case) order using bubble sort
+void debugkeywords(char *d, struct keywordlist *keywordlist)
+{   fprintf(stderr, "%s: ", d);
+    for( struct keywordlist *t = keywordlist; t != NULL; t = t->next )
+        fprintf(stderr, " '%s'", t->keyword->s);
+    fprintf(stderr, "\n");
+}
+
+void sortkeywords(struct keywordlist **keywordlist)
+{   // sort keywordlist into alphabetic (no case) order using bubble sort
     int swapped = 0;
     do
     {
         swapped = 0;
-        for( arrow **t = keywordlist; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
-            if( keywordsneedSwap((*t)->u->s, (*t)->next->u->s) )
+        for( struct keywordlist **t = keywordlist; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
+            if( keywordsneedSwap((*t)->keyword->s, (*t)->next->keyword->s) )
             {    //fprintf(stderr, "  swap *t: %d.%d & (*t)->next: %d.%d\n", (*t)->s->rankx, (*t)->s->ranky, (*t)->next->s->rankx, (*t)->next->s->ranky);
-                arrow *u = *t;
+                struct keywordlist *u = *t;
                 *t = (*t)->next;
                 //fprintf(stderr, "  A now u: %d.%d & t: %d.%d\n", u->s->rankx, u->s->ranky, (*t)->s->rankx, (*t)->s->ranky);
                 u->next = (*t)->next;
@@ -52,53 +59,75 @@ void sortkeywords(arrow **keywordlist)
                 //break;
             }
     } while( swapped );
+    int counter = 0;
+    if( *keywordlist == allkeywords ) // initialise href links for keywords
+        for( struct keywordlist *t = allkeywords; t != NULL && t->next != NULL; t = t->next )
+            t->xkey = ++counter;
+}
+
+void linkkeyword(FILE *opfd, struct keywordlist *t, char *debug)
+{   // stupid coding! should have had a keyword symbol table and used it first... easy to fix but this is easier
+    struct keywordlist *p;
+    for( p = allkeywords; p != NULL; p = p-> next )
+        if( !strcasecmp(p->keyword->s, t->keyword->s) )
+            break;
+
+    if( p == NULL ) { fprintf(stderr, "ooops! didn't find %s in keyword symbol table\n", t->keyword->s); exit(1); }
+
+    // fprintf(stderr, "%s: <a href=\"#key-%d-%d\" name=\"key-%d-%d\">\n", debug, p->xkey, p->ykey+1, p->xkey, p->ykey);
+    fprintf(opfd, "<a href=\"#key-%d-%d\" name=\"key-%d-%d\">", p->xkey, p->ykey+1, p->xkey, p->ykey);
+    p->ykey++;
 }
 
 void summarisekeywords(FILE *opfd)
 // either to an HTML file or to stderr
-{   if( keywords != NULL )
+{   int toHTML = opfd != stderr;
+    if( allkeywords != NULL )
     {   char *sep = "";
-        if( opfd == stderr )
+        if( !toHTML )
             fprintf(opfd, "Keywords:\n");
         else
         {    fprintf(opfd, "<blockquote><h2>");
-            fprintf(opfd, "Keyphrase%s: <span style=\"font-weight:normal;\">\n", keywords->next == NULL? "": "s");
+             fprintf(opfd, "Keyphrase%s: <span style=\"font-weight:normal;\">\n", allkeywords->next == NULL? "": "s");
         }
-        for( struct list *t = keywords; t != NULL; t = t->next )
-        {   fprintf(opfd, "%s    %s", sep, t->keyword->s);
+        for( struct keywordlist *t = allkeywords; t != NULL; t = t->next )
+        {   fprintf(opfd, "%s    ", sep);
+            if( toHTML ) linkkeyword(opfd, t, t->keyword->s);
+            fprintf(opfd, "%s", t->keyword->s);
+            if( toHTML ) fprintf(opfd, "</a>");
             sep = ";\n";
         }
-        if( opfd == stderr )
+        if( !toHTML )
             fprintf(opfd, "\n");
         else
             fprintf(opfd, ".</span></h2></blockquote>\n");
     }
-    else if( opfd == stderr )
+    else if( !toHTML )
         fprintf(opfd, "No keywords defined.\n");
 }
 
 void summariseLaTeXkeywords(FILE *opfd)
 // either to an HTML file or to stderr
-{   if( keywords != NULL )
+{   if( allkeywords != NULL )
     {   char *sep = "";
-        fprintf(opfd, "\\noindent\\textcolor{blue}{\\sf\\textbf{Keyphrase%s:}\n", keywords->next == NULL? "": "s");
-        for( struct list *t = keywords; t != NULL; t = t->next )
+        fprintf(opfd, "\\noindent\\textcolor{blue}{\\sf\\textbf{Keyphrase%s:}\n", allkeywords->next == NULL? "": "s");
+        for( struct keywordlist *t = allkeywords; t != NULL; t = t->next )
         {   fprintf(opfd, "%s%s", sep, t->keyword->s);
             sep = ";\n";
         }
-        fprintf(opfd, "}\n\\vskip .5ex\n");
+        fprintf(opfd, ".}\n\\vskip .5ex\n");
     }
 }
 
 int suffix(char *s, char *pattern)
 {    while( *s )
         {   if( !strcmp(s, pattern) )
-            {//fprintf(stderr, "%s==%s\n", s, pattern);
+            {  //fprintf(stderr, "%s==%s\n", s, pattern);
                return 0;
             }
             s++;
         }
-//fprintf(stderr, "%s<>%s\n", s, pattern);
+    //fprintf(stderr, "%s<>%s\n", s, pattern);
     return 1;
 }
 
@@ -115,7 +144,7 @@ int keywordcmp(char *keyword, char *pattern)
 }
 
 int isakeyword(char *keyword)
-{   for( struct list *t = keywords; t != NULL; t = t->next )
+{   for( struct keywordlist *t = allkeywords; t != NULL; t = t->next )
         if( !keywordcmp(t->keyword->s, keyword) )
             return 1;
     return 0;
@@ -138,9 +167,9 @@ void pullkeywords(char *keyword)
     for( node *t = nodeList; t != NULL; t = t->next )
     {   // if keyword is not in the list of the nodes keywords...
         t->s->keywordsOK = 0;
-        for( arrow *tt = t->s->keywords; tt != NULL; tt = tt->next )
+        for( struct keywordlist *tt = t->s->keywords; tt != NULL; tt = tt->next )
         {   //fprintf(stderr, "%s: compare %s with %s\n", t->s->s, keyword, tt->u->s);
-            if( !keywordcmp(tt->u->s, keyword) )
+            if( !keywordcmp(tt->keyword->s, keyword) )
             {   t->s->keywordsOK = 1;
                 break;
             }

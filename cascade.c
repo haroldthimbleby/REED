@@ -168,17 +168,18 @@ void cascade()
 }
 
 struct transpair {
-    str *u, *v;
+    str *u, *v, *context;
     struct transpair *next;
 } *transPairsList = NULL;
 
-void saveCheckRtrans(str *u, str *v)
+void saveCheckRtrans(str *context, str *u, str *v) // check there is a path s->v
 {   struct transpair *np = transPairsList;
     transPairsList = (struct transpair *) malloc(sizeof(struct transpair));
     transPairsList->next = np;
     transPairsList->u = u;
     transPairsList->v = v;
-    // fprintf(stderr, "save check %s => %s\n", u->s, v->s);
+    transPairsList->context = context;
+    //fprintf(stderr, "save check %s => %s in %s\n", u->s, v->s, context == NULL? "?": context->s);
 }
 
 int checkOneRtrans(str *u, str *v)
@@ -201,13 +202,17 @@ int checkOneRtrans(str *u, str *v)
 
 void checkAllRtrans()
 {   for( struct transpair *p = transPairsList; p != NULL; p = p->next )
-    {   if( checkOneRtrans(p->u, p->v) )
+{   if( checkOneRtrans(p->u, p->v) )
         {   if( verboseOption )
-                fprintf(stderr, "|    ** Passed check %s -> %s\n", p->u->s, p->v->s);
+            {   myfprintf(stderr, "| ** Passed check in %N:\n     %N (%s) => %N (%N)\n", p->context->is? p->context->is->s: p->context->s, p->u->is? p->u->is->s: p->u->s, p->u->s, p->v->is? p->v->is->s: p->v->s, p->v->s);
+            }
         }
         else
-            fprintf(stderr, "** Failed check %s => %s\n", p->u->s, p->v->s);
-    }
+        {    fprintf(stderr, "** Failed ");
+             if( p->context != NULL ) myfprintf(stderr, "node \"%N\"'s ", p->context->s);
+             myfprintf(stderr, "check %N (%N) => %N (%N)\n", p->u->is? p->u->is->s: p->u->s, p->u->s, p->v->is? p->v->is->s: p->v->s, p->v->s);
+        }
+    fprintf(stderr, "$\n"); }
 }
 
 void checkISaux(char *id, str *t)
