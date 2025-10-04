@@ -1,0 +1,31 @@
+Print["Draw betweenness graph for reed.tex paper"];
+
+nameExpand = Map[("name" -> "nodes") /. # &, groups];
+
+expandRule[u_ -> v_] := 
+ Module[{ul = u /. nameExpand, vl = v /. nameExpand},
+  Outer[Rule, If[Head[ul] === List, ul, {ul}], 
+   If[Head[vl] === List, vl, {vl}]]
+  ];
+expandedEdges = Flatten@Map[expandRule, edges];
+
+g = Graph@expandedEdges;
+
+vlist = VertexList[expandedEdges];
+
+bg = Map[Module[{b, g},
+     b = BetweennessCentrality[g = Subgraph[expandedEdges, #]];
+     HighlightGraph[g, Map[Style[#, Darker[Red]] &, VertexList[g]], 
+      VertexSize -> 
+       Thread[VertexList[g] -> 
+         Rescale[Rescale[b], {0, 1}, {If[Length@b == 3, .05, .2], 2}]],
+      VertexLabels -> {"7" -> 
+         Placed[Style["PrecisionWeb\ndatabase", 20, Bold, 
+           Black], {-.8, -.1}]}]
+     ] &, WeaklyConnectedComponents[expandedEdges]];
+
+betweennessplot = 
+ Show[{Show[bg[[1]], ImageSize -> 1000], 
+   Show[bg[[2]], ImageSize -> 50]}];
+
+Print["Exported: ", Export["betweenness.png", betweennessplot]];
