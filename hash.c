@@ -18,7 +18,7 @@ void whoops(char *fmt, char *file)
 }
 
 void hash(char *file)
-{	char *str = (char *) malloc(MD5LENGTH+1);
+{	char *str = (char *) safealloc(MD5LENGTH+1);
 	int pid;
 	if( str == NULL )
 		whoops("** Sorry. Run out of memory in hash for %s\n", file);
@@ -40,7 +40,7 @@ void hash(char *file)
     close(pipeEnds[0]);
     str[MD5LENGTH] = (char) 0;
     
-    struct filedata *p = (struct filedata *) malloc(sizeof(struct filedata));
+    struct filedata *p = (struct filedata *) safealloc(sizeof(struct filedata));
     p->file = file;
     p->hash = str;
     p->next = filelist;

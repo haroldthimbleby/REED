@@ -174,7 +174,7 @@ struct transpair {
 
 void saveCheckRtrans(str *context, str *u, str *v) // check there is a path s->v
 {   struct transpair *np = transPairsList;
-    transPairsList = (struct transpair *) malloc(sizeof(struct transpair));
+    transPairsList = (struct transpair *) safealloc(sizeof(struct transpair));
     transPairsList->next = np;
     transPairsList->u = u;
     transPairsList->v = v;

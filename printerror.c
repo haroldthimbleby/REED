@@ -230,10 +230,10 @@ void myfprintf(FILE *opfd, char *fmt, ...)
                     case 'm':    // same as %t but for mathematica input
 		                       for( s = va_arg(ap, char *); *s; s++ )
 		                       		switch( *s )
-		                       		{	case '\n': fprintf(opfd, "\\\\n"); break;
+		                       		{	case '\n': fprintf(opfd, "\\n"); break;
 			                       		case '\t': fprintf(opfd, " "); break;
-			                       		case '\"': fprintf(opfd, "\\\\\\\""); break;
-			                       		case '\\':  fprintf(opfd, "\\\\\\\\"); break;
+			                       		case '\"': fprintf(opfd, "\\\""); break;
+			                       		case '\\':  fprintf(opfd, "\\\\"); break;
 			                       		default:   fprintf(opfd, "%c", *s);
 		                       		}
 		                       break;

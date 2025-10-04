@@ -17,7 +17,7 @@ void noteaddkeywordtolist(str *keyword, struct keywordlist **keywords)
         p = &(*p)->next;
     }
 
-    struct keywordlist* new = malloc(sizeof(struct keywordlist));
+    struct keywordlist* new = safealloc(sizeof(struct keywordlist));
     new->keyword = keyword;
     new->next = *p;
     new->ykey = new->xkey = 0;

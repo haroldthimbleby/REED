@@ -4,7 +4,7 @@
 void *safealloc(size_t n)
 {	char *p = (char *) malloc(n);
 	if( p == NULL )
-	{	fprintf(stderr, "** run out of memory (malloc)!\n");
+	{	fprintf(stderr, "** run out of memory (safealloc in main.c)\n");
 		exit(0);
 	}
 	return p;
@@ -13,7 +13,7 @@ void *safealloc(size_t n)
 void *saferealloc(char *p, size_t n)
 {	p = (char *) realloc(p, n);
 	if( p == NULL )
-	{	fprintf(stderr, "** run out of memory (realloc)!\n");
+	{	fprintf(stderr, "** run out of memory (realloc in main.c)\n");
 		exit(0);
 	}
 	return p;
@@ -119,6 +119,7 @@ int basenameOption = 0,
     goOption = 0,
     hoOption = 0,
     pullOption = 0,
+    versionOption = 0,
     keywordsOption = 0;
 
 char *outputbasename = ""; // no basename is zero length string
@@ -172,6 +173,7 @@ structOption options[] =
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption, 0},
     {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: tags \"start\" \"end\"", &handleTags, 0},
     {"-v", "verbose mode", &verboseOption, 0},
+    {"-version", "state the version", &versionOption, 0},
     {"-w", "what versions are used in these files?*- helpful to know if using the v= flag", &showVersionsOption, 0},
     {"-watch", "run reed when any file changes (nice with -o)", &handleWatch, 0},
 	{"-x", "generate an .xml file*- representing all REED data for import into other applications", &xmlOption, 0},
@@ -401,6 +403,9 @@ int main(int argc, char *argv[])
         if( keywordsOption )
             summarisekeywords(stderr);
     }
+    else
+    if( versionOption )
+        fprintf(stderr, "%s version 2.1 compiled %s, %s\n", argv[0], __TIME__, __DATE__);
     else
     if( !syntaxOption && !showRulesOption && !opened )
         usage(argv[0]);

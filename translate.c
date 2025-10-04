@@ -65,7 +65,7 @@ void explainTranslationRules()
 struct stack { int length; char **contents; } closestack = { 0, (char**) 0 };
 
 void push(struct stack *stack, char *item)
-{	if( !stack->contents ) stack->contents = (char**) malloc(2000);
+{	if( !stack->contents ) stack->contents = (char**) safealloc(2000);
 	stack->contents[stack->length++] = item;
 }
 

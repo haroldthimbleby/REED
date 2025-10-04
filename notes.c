@@ -99,7 +99,7 @@ void latexxrefs(FILE *opfd)
 	}
 }
 
-void colorkey(FILE *opfd, char *heading, char *vskip)
+void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip)
 {	int flagLegends = 0;
 	int hasHeading = *heading;
 	char *vbar = hasHeading? "|": "";
@@ -117,7 +117,12 @@ void colorkey(FILE *opfd, char *heading, char *vskip)
 				{	myfprintf(opfd, "\\setbox0=\\hbox{\\colorflag{white}}%%\n\
 \\dimen0 = \\ht0 \\advance \\dimen0 by 1ex \\ht0 = \\dimen0\n");
 					myfprintf(opfd, "\\begin{tabular}{@{}%sclp{3.75in}%s}\n", vbar, vbar);
-					if( hasHeading ) myfprintf(opfd, "%s\n\\multicolumn{3}{@{}|l|}{\\bf %s} \\\\ \\hline\n", hbar, heading);
+					if( hasHeading )
+                    {   extern char *title;
+                        myfprintf(opfd, "%s\n\\multicolumn{3}{@{}|l|}{\\bf %s", hbar, heading);
+                        if( *title ) myfprintf(opfd, " for %s", title);
+                        myfprintf(opfd, "} \\\\ \\hline\n");
+                    }
 				}
 				flagLegends++;
 				if( flagLegends == 1 )
@@ -269,8 +274,8 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 	{
 		myfprintf(opfd, "\n\\section*{%d highlighted node%s}\n", anyflags, anyflags == 1? "": "s");
 		
-		colorkey(opfd, "Highlighting key", "\\vskip 4ex");
-			
+        LaTeXcolorkey(opfd, "Highlighting key", "\\vskip 4ex");
+
 		myfprintf(opfd, "\\noindent\\begin{tabular}{@{}llll}\n");
 		for( int i = 1; i < 8; i++ ) // gets flags in alphabetical order
 		{	for( node *t = nodeList; t != NULL; t = t->next )

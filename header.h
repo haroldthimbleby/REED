@@ -5,6 +5,8 @@
 #include <sys/errno.h>
 #include <ctype.h>
 
+void *safealloc(size_t size);
+
 extern int parse(char *skip, char *filename, char *bp);
 
 extern void latexxrefs(FILE *opfd);
@@ -43,7 +45,7 @@ typedef struct tmpstr {
     int keywordsOK;
 } str;
 
-extern void colorkey(FILE *opfd, char *heading, char *vskip);
+extern void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip);
 
 typedef struct rownode { str *node; int label; struct rownode *right, *down;} rownodes;
 

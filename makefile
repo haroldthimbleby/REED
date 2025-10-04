@@ -23,7 +23,7 @@ SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 
 paper: inputs
 
-inputs: reed
+inputs: reed betweenness.png
 	reed -pull yellow -basename lib/pow-reed-yellow v=v2 -l -g lib/pow-reed
 	dot -Tpdf lib/pow-reed-yellow.gv > ../REED-paper/figures/reedv2-yellow.pdf
 	reed v=v2 -l -g lib/pow-reed
@@ -49,6 +49,13 @@ inputs: reed
 	dot -Tpdf lib/ABCDis.gv > ../REED-paper/figures/ABCDis.pdf
 	reed -g lib/TB lib/ABCD lib/ABCDis-styles 
 	dot -Tpdf lib/ABCDis-styles.gv > ../REED-paper/figures/ABCDis-styles.pdf
+	
+betweenness.png: lib/pow-reed.nb plotBetweenness.nb
+	echo wolframscript does not handle multiple files, so use cat first...
+	cat lib/pow-reed.nb plotBetweenness.nb > tmp.nb
+	wolframscript -file tmp.nb
+	cp betweenness.png ../REED-paper/figures
+	rm tmp.nb
 	
 rsm: lib/darzi
 	reed -g lib/darzi

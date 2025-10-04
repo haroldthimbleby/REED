@@ -424,24 +424,23 @@ void connectedComponents()
 void mathematica(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract)
 {	// note use of %m in myfprintf instead of %s in fprintf - this makes %s mathematica-safe
 
-	myfprintf(opfd, "Notebook[{\n");
-	
-	if( *title ) myfprintf(opfd, "Cell[BoxData[\"title=\\\"%m\\\";\"],\"Input\"],\n", title);
+    //myfprintf(opfd, "Notebook[{Cell[BoxData[");
 
-	myfprintf(opfd, "Cell[BoxData[\"authors=\\\"");
+    myfprintf(opfd, "title=\"%m\";\n", title);
+
+	myfprintf(opfd, "authors=\"");
 	while( authors != NULL )
 	{	myfprintf(opfd, "%m", authors->author);
 		if( authors->next != NULL ) 
 			fprintf(opfd, ", ");
 		authors = authors->next;
 	}
-	myfprintf(opfd, "\\\";\"],\"Input\"],\n");
+	myfprintf(opfd, "\";\n");
 
-    if( *version ) myfprintf(opfd, "Cell[BoxData[\"version=\\\"%m\\\";\"],\"Input\"],\n", version);
-    if( *date ) myfprintf(opfd, "Cell[BoxData[\"date=\\\"%m\\\";\"],\"Input\"],\n", date);
+    myfprintf(opfd, "version=\"%m\";\n", version);
+    myfprintf(opfd, "date=\"%m\";\n", date);
 
-	myfprintf(opfd, "Cell[BoxData[\"edges={");
-
+	myfprintf(opfd, "edges={");
 	char *commarise = "", *ccommarise = "";
 	for( arrow *t = arrowList; t != NULL; t = t->next )
 	{	/* if( t->u->isgroup && t->v->isgroup)
@@ -462,54 +461,60 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 		}
 		else 
 		*/
-		myfprintf(opfd, "%s\n   \\\"%m\\\" -> \\\"%m\\\"", commarise, t->u->s, t->v->s);
-		if( t->doublearrow ) myfprintf(opfd, ", \\\"%m\\\" -> \\\"%m\\\"", t->v->s, t->u->s);
+		myfprintf(opfd, "%s\n   \"%m\" -> \"%m\"", commarise, t->u->s, t->v->s);
+		if( t->doublearrow ) myfprintf(opfd, ", \"%m\" -> \"%m\"", t->v->s, t->u->s);
 		commarise = ",";
 	}	
-	myfprintf(opfd, "\n};\"],\"Input\"],\nCell[BoxData[\"vertexNames={\n");
+    myfprintf(opfd, "\n};\n");
 
-	commarise = "";
+    myfprintf(opfd, "vertexNames={\n");
+    commarise = "";
 	for( node *t = nodeList; t != NULL; t = t->next )
 		if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID ) 
-		{	myfprintf(opfd, "%s   \\\"%m\\\"->\\\"", commarise, t->s->s);
+		{	myfprintf(opfd, "%s   \"%m\"->\"", commarise, t->s->s);
 			if( showIDsOption ) myfprintf(opfd, "[%m] ", t->s->s);
 			printrank(opfd, t->s, version);
-			myfprintf(opfd, " %m\\\"", t->s->is != NULL? t->s->is->s: t->s->s); // was % ....
+			myfprintf(opfd, " %m\"", t->s->is != NULL? t->s->is->s: t->s->s); // was % ....
 			commarise = ",\n";
 		}
+    myfprintf(opfd, "};\n");
 
-    myfprintf(opfd, "};\"],\"Input\"],\nCell[BoxData[\"keywords={\n");
+    myfprintf(opfd, "keywords={\n");
     commarise = "";
     for( node *t = nodeList; t != NULL; t = t->next )
         if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
-        {   myfprintf(opfd, "%s   \\\"%m\\\"->{", commarise, t->s->s);
+        {   myfprintf(opfd, "%s   \"%m\"->{", commarise, t->s->s);
             char *sep = "";
             if( t->s->keywords != NULL )
             {
                 for( struct keywordlist *tt = t->s->keywords; tt != NULL; tt = tt->next )
-                {   myfprintf(opfd, "%s\\\"%s\\\"", sep, tt->keyword->s);
+                {   myfprintf(opfd, "%s\"%s\"", sep, tt->keyword->s);
                     sep = ",\n";
                 }
             }
             commarise = "},\n";
         }
 
-    myfprintf(opfd, "}};\"],\"Input\"],\nCell[BoxData[\"notes={\n");
+    myfprintf(opfd, "}};\n");
+
+    myfprintf(opfd, "notes={\n");
     commarise = "";
     for( node *t = nodeList; t != NULL; t = t->next )
         if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
-        {   myfprintf(opfd, "%s   \\\"%m\\\"->\\\"%m\\\"", commarise, t->s->s, t->s->note != NULL? t->s->note->s: "");
+        {   myfprintf(opfd, "%s   \"%m\"->\"%m\"", commarise, t->s->s, t->s->note != NULL? t->s->note->s: "");
             commarise = ",\n";
         }
+    myfprintf(opfd, "\n};\n");
 
-    myfprintf(opfd, "\n};\"],\"Input\"],\nCell[BoxData[\"highlights={\n");
+    myfprintf(opfd, "highlights={\n");
     commarise = "";
     for( node *t = nodeList; t != NULL; t = t->next )
-    {   myfprintf(opfd, "%s\\\"%s\\\"->\\\"%s\\\"", commarise, t->s->s,  flagcolor(t->s->flag));
+    {   myfprintf(opfd, "%s\"%s\"->\"%s\"", commarise, t->s->s,  flagcolor(t->s->flag));
         commarise = ",\n";
     }
+    myfprintf(opfd,"};\n");
 
-    myfprintf(opfd,"};\"],\"Input\"],Cell[BoxData[\"communities={");
+    myfprintf(opfd, "communities={");
 	if(1 )
 	{ccommarise = "";
 	for( int c = 1; c <= numberOfComponents; c++ )
@@ -518,31 +523,31 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 		commarise = "";
 		for( node *t = nodeList; t != NULL; t = t->next )
 			if( t->s->component == c )
-			{	myfprintf(opfd, "%s\\\"%m\\\"", commarise, t->s->s);
+			{	myfprintf(opfd, "%s\"%m\"", commarise, t->s->s);
 				commarise = ",";
 			}
 		fprintf(opfd, "}");
 	}
 	}
-	myfprintf(opfd, "\n};\"],\"Input\"],\n");
+	myfprintf(opfd, "\n};\n");
 
     char *outercomma = "";
-    myfprintf(opfd, "Cell[BoxData[\"groups={");
+    myfprintf(opfd, "groups={");
     for( node *t = nodeList; t != NULL; t = t->next )
         if( t->s->isgroup &&
             !(flagOption && t->s->flag != noflag) // bug in graphviz means we can't have both
         )
         {   char *comma = "";
-            myfprintf(opfd, "%s{\\\"name\\\"->\\\"%S\\\", \\\"nodes\\\"->{", outercomma, t->s->s);
+            myfprintf(opfd, "%s{\"name\"->\"%S\", \"nodes\"->{", outercomma, t->s->s);
             outercomma = ",\n";
             for( node *u = nodeList; u != NULL; u = u->next )
                 if( u->s->group == t->s )
                 {    t->s->exampleGroupMember = u->s;
                     // myfprintf(opfd, //fprintf(opfd, "    %s [color=%s; style=filled];\n", u->s->s, u->s->flag? "pink": "white");
-                    fprintf(opfd, "%s\\\"%s\\\"", comma, u->s->s);
+                    fprintf(opfd, "%s\"%s\"", comma, u->s->s);
                     comma = ", ";
                 }
-           myfprintf(opfd, "},\n\\\"label\\\"->\\\"");
+           myfprintf(opfd, "},\n\"label\"->\"");
             if( !t->s->plain )
             {   int print = printrank(opfd, t->s, version);
                 if( showIDsOption )
@@ -565,12 +570,14 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
                 {    if( t->s->flag != noflag )
                         myfprintf(opfd, "\n\nHighlighted %j", flagcolor(t->s->flag));
                 }
-            myfprintf(opfd, "\\\"}");
+            myfprintf(opfd, "\"}");
         }
+    myfprintf(opfd, "};\n");
 
-    // myfprintf(opfd, "Cell[BoxData[\"title=\\\"%m\\\";\"],\"Input\"],\n", title);
+    myfprintf(opfd, "Print[Style[\"Defines\", Bold],\n\"\n      title=\", title, \n\"\n      authors=\", authors, \n\"\n      version=\", version, \n\"\n      date=\", date, \n\"\n      and: communities, edges, groups, highlights, keywords, notes, vertexNames\"];\n");
 
-     myfprintf(opfd, "};\"],\"Input\"],\nCell[BoxData[\"Print[Style[\\\"Defines\\\", Bold],\\\"\\\\ntitle=\\\", title, \\\"\\\\nauthors=\\\", authors, \\\"\\\\nversion=\\\", version, \\\"\\\\ndate=\\\", date, \\\"\\\\nand: communities, edges, groups, highlights, keywords, notes, vertexNames\\\"]\"],\"Input\"]\n}\n]\n");
+    // to close off Notebook[{Cell[BoxData["...",
+    //myfprintf(opfd, ", \"Input\"]]}];\n");
 }
 
 void generateFiles(char *filename)

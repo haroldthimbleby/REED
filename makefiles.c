@@ -133,7 +133,7 @@ void makefiles(char *filename)
         if( fd == NULL ) error("Can't open %s (tex/latex highlighting legend file) for writing", filename);
         else
         {
-            colorkey(fd, "", "");
+            LaTeXcolorkey(fd, "", "");
             fclose(fd);
             generated(filename, "", "Latex file explaining colour highlighting");
         }

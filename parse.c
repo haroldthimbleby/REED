@@ -31,7 +31,7 @@ void defineArrowStyle(str *u, str *v, str *theStyle)
 		{	error("arrow %s -> %s style being redefined", t->u->s, t->v->s);
 		}
 
-	arrow *a = (arrow*) malloc(sizeof(arrow));
+	arrow *a = (arrow*) safealloc(sizeof(arrow));
 	a->next = styledArrowList;
 	a->arrowStyle = theStyle;
 	//fprintf(stderr, "%s->%s styled as %s\n", u->s, v->s, theStyle->s); 
@@ -367,7 +367,7 @@ void newnode(str **u)
     	  return;
     	}
 	// fprintf(stderr, "new node %s at %ld\n", (*u)->s, (long) *u);
-	node *new = malloc(sizeof(node));
+	node *new = safealloc(sizeof(node));
 	new->next = nodeList;
 	new->s = *u;
 	(*u)->nodeversion = version;
@@ -390,7 +390,7 @@ void newarrow(arrow **putonthisarrowlist, str *u, str *v, int doublearrow, int f
 			break;
 		}
 	}
-	arrow *new = (arrow*) malloc(sizeof(arrow));
+	arrow *new = (arrow*) safealloc(sizeof(arrow));
 	new->next = *putonthisarrowlist;
 	new->force = forceadd;
 	new->arrowis = NULL;
@@ -527,7 +527,7 @@ void rows()
 	while( lex1->l == LBRA || lex1->l == ID )
 	{	int firstonrow = 1;
 		if( lex1->l == ID ) // row starts with an ID label
-		{	rownodes *n = (rownodes*) malloc(sizeof(rownodes));
+		{	rownodes *n = (rownodes*) safealloc(sizeof(rownodes));
 			firstonrow = 0;
 			*endofcols = n;
 			n->down = NULL;
@@ -543,7 +543,7 @@ void rows()
 		}
 		getlex(); 
 		while( lex1->l == ID || lex1->l == STAR )
-		{	rownodes *n = (rownodes*) malloc(sizeof(rownodes));
+		{	rownodes *n = (rownodes*) safealloc(sizeof(rownodes));
 			n->label = 0;
 			if( firstonrow )
 			{	firstonrow = 0;
@@ -600,7 +600,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
                 fprintf(stderr, "single node... %s\n", lex1->s);
 			if( makenodes && lex1->l != HIGHLIGHT )
                 newnode(&lex1);
-			t = (arrow*) malloc(sizeof(arrow));
+			t = (arrow*) safealloc(sizeof(arrow));
 			t->u = lex1;
 			t->v = NULL;
 			t->next = NULL;
@@ -624,7 +624,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
 			}
 			else
 			{	// single node in the list
-				arrow *u = (arrow*) malloc(sizeof(arrow));
+				arrow *u = (arrow*) safealloc(sizeof(arrow));
 				u->next = t;
 				if( makenodes ) newnode(&lex1);
 				u->u = lex1;
@@ -1067,7 +1067,7 @@ int parse(char *skip, char *filename, char *bp)
 						nl->u->styleName = lex1->s;
 						if( makenewstyle )
 						{	if( nl->v != NULL ) error("arrows cannot be style names");
-							node *new = malloc(sizeof(node));
+							node *new = safealloc(sizeof(node));
 							new->next = stylelist;
 							new->s = lex1;
 							lex1->style = nl->u;
