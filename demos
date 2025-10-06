@@ -1,0 +1,4 @@
+for i in demo[0123456789]*; do
+	echo $i
+	cat $i
+done

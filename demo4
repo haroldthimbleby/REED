@@ -1,0 +1,4 @@
+echo demo4 : Theory of Change example
+open demo-toc
+reed -go -watch demo-toc
+
