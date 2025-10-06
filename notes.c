@@ -199,7 +199,10 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
         summariseLaTeXkeywords(opfd);
 		LaTeXtranslate(opfd, version, abstract, NULL);
         myfprintf(opfd, "\n\\end{abstract}\n");
-	}	
+	}
+
+    myfprintf(opfd, "\n%s\n", introduction->s);
+
 	// sort notes into order using bubble sort
 	int swapped = 0;
 	do
@@ -408,6 +411,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 				fprintf(opfd, "\\\\");
 			} 
 	}
+    myfprintf(opfd, "\n%s\n", conclusion->s);
 	fprintf(opfd, "\n\n\\end{document}\n");
 }
 

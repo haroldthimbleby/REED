@@ -156,6 +156,8 @@ struct { lexval l; char *symbol; } lexes[] =
     { TAGS, "<tags>"},
     { LATEXDEFINITIONS, "<latexdefinitions>"},
     { HTMLDEFINITIONS, "<htmldefinitions>"},
+    { INTRODUCTION, "<introduction>"},
+    { CONCLUSION, "<conclusion>"},
     { CHECK, "<check>"},
     { TRANSARROW, "=>"},
     { KEYWORDS, "<keywords>"}
@@ -232,6 +234,8 @@ lexval readlex(str **lexstr)
 					if( !strcmp("ref", (*lexstr)->s) ) return REF;
                     if( !strcmp("direction", (*lexstr)->s) ) return DIRECTION;
                     if( !strcmp("tags", (*lexstr)->s) ) return TAGS;
+                    if( !strcmp("introduction", (*lexstr)->s) ) return INTRODUCTION;
+                    if( !strcmp("conclusion", (*lexstr)->s) ) return CONCLUSION;
                     if( !strcmp("latexdefinitions", (*lexstr)->s) ) return LATEXDEFINITIONS;
                     if( !strcmp("htmldefinitions", (*lexstr)->s) ) return HTMLDEFINITIONS;
                     if( !strcmp("check", (*lexstr)->s) ) return CHECK;
@@ -750,6 +754,8 @@ int parse(char *skip, char *filename, char *bp)
 	 lex3 = newstr("");
      latexdefinitions = newstr("");
      htmldefinitions = newstr("");
+     introduction = newstr("");
+     conclusion = newstr("");
 
 	 for( int i = 0; i < 3; i++ )
         getlex();
@@ -835,6 +841,26 @@ int parse(char *skip, char *filename, char *bp)
                         error("invalid direction '%s'; possible options are BT, TB, LR, RL (in upper or lower case)", direction);
                 }
                 getlex();
+                break;
+
+            case INTRODUCTION:
+                if( lex2->l != ID )
+                    error("introduction should be followed by a string of Latex");
+                else {
+                    appendcstr(introduction, "\n");
+                    appendstr(introduction, lex2);
+                    getlex();
+                }
+                break;
+
+            case CONCLUSION:
+                if( lex2->l != ID )
+                    error("conclusion should be followed by a string of Latex");
+                else {
+                    appendcstr(conclusion, "\n");
+                    appendstr(conclusion, lex2);
+                    getlex();
+                }
                 break;
 
             case LATEXDEFINITIONS:

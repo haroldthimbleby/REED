@@ -24,7 +24,7 @@ enum flagcolor pullString;
 
 typedef enum {
             DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK,
-			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS,
+			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS, INTRODUCTION, CONCLUSION,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
 			ID,// assumes the string s is initialised
             TAGS, LATEXDEFINITIONS, HTMLDEFINITIONS
@@ -47,10 +47,10 @@ typedef struct tmpstr {
 
 extern void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip);
 
-typedef struct rownode { str *node; int label; struct rownode *right, *down;} rownodes;
+typedef struct rownode { str *node; int label; struct rownode *right, *down; } rownodes;
 
 extern char *undefinedVersion;
-extern str *latexdefinitions, *htmldefinitions;
+extern str *latexdefinitions, *htmldefinitions, *introduction, *conclusion;
 extern str *newstr(char *s);
 
 extern str *appendch(str *d, char c);

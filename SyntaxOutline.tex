@@ -27,7 +27,7 @@ Herestring ::= <<< arbitrary-terminator\n                           characters (
 <html> ...        # following text is copied to HTML, but skipped in Latex
 <latex> ...       # following text is copied to Latex, but skipped in HTML
 <both> ...        # following text is mixed basic HTML and Latex (use flag -rules to see translation rules)
-<input> filename  # insert the text contents of file
+<input> filename  # insert the text contents of file into the string
 [[[id]]]!replace with id's name and make a cross-reference link (in both HTML and Latex)
 
 # reserved words can be used as ids if written as strings
@@ -53,8 +53,8 @@ document-details id!Specify document details. Details append when given multiple
 group node-or-arrow-list is id!The nodes are grouped, and the group is named
 highlight color [ cascade ] is id!Explain color as id, optionally cascading when it is used
 highlight id is color!Highlight node id with color
-htmldefinitions id!Insert id at start of <body> in HTML file; multiple htmldefinitions append it
-latexdefinitions id!Insert id at start of Latex file; multiple latexdefinitions append id 
+htmldefinitions id!Insert id at start of <body> in HTML file; multiple htmldefinitions append to id
+latexdefinitions id!Insert id at start of Latex file; multiple latexdefinitions append to id 
 new style id1 is id2!Define id1 as a style, using Dot syntax for id2!(e.g., new style blue18 is "fontcolor=blue; fontsize=18")
 node-or-arrow [ is id ]!Create nodes or arrows, with optional display name id
 note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them id1

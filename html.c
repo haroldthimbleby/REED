@@ -319,6 +319,8 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		fprintf(opfd, "</div></blockquote>\n");
 	}
 
+    fprintf(opfd, "\n%s\n", introduction->s);
+
 	// sort notes into order using bubble sort
 	int swapped = 0;
 	do
@@ -554,5 +556,6 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
         fprintf(opfd, ".</span></h2></blockquote>\n");
     }
 
+    fprintf(opfd, "\n%s\n", conclusion->s);
 	fprintf(opfd, "</body>\n</html>\n");
 }
