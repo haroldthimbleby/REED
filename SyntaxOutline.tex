@@ -42,14 +42,14 @@ color ::= black | blue | green | red | white | yellow
 id-or-star ::= id | *
 node-or-arrow ::= id | id { arrow id }+
 node-or-arrow-list ::= node-or-arrow | ( node-or-arrow++ )
-document-details ::= abstract | author | date | title
+document-details ::= title | author | abstract | date | introduction | conclusion | latexdefinitions | htmldefinitions
 
 ### the following are REED statements
 ### all terminals below are reserved words
 
 check id1 => id2!Check there is a path from id1 to id2
 direction { LR | RL | TB | BT }!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top
-document-details id!Specify document details. author id can be used multiple times for multiple authors
+document-details id!Specify document details. Details append when given multiple times
 group node-or-arrow-list is id!The nodes are grouped, and the group is named
 highlight color [ cascade ] is id!Explain color as id, optionally cascading when it is used
 highlight id is color!Highlight node id with color
