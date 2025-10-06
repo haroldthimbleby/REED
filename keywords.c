@@ -149,30 +149,3 @@ int isakeyword(char *keyword)
             return 1;
     return 0;
 }
-
-char *pullingthiskeyword = (char*) NULL;
-
-int ispullingkeywords()
-{   return pullingthiskeyword != NULL;
-}
-
-void htmlsaypullingkeyword(FILE *opfd)
-{
-    fprintf(opfd, "<blockquote><h2>Selecting only keyphrase: <span style=\"font-weight:normal;\">%s.</span></h2></blockquote>\n", pullingthiskeyword);
-}
-
-void pullkeywords(char *keyword)
-{   pullingthiskeyword = keyword;
-    //fprintf(stderr, "IMPLEMENTING -pull %s\n", keyword);
-    for( node *t = nodeList; t != NULL; t = t->next )
-    {   // if keyword is not in the list of the nodes keywords...
-        t->s->keywordsOK = 0;
-        for( struct keywordlist *tt = t->s->keywords; tt != NULL; tt = tt->next )
-        {   //fprintf(stderr, "%s: compare %s with %s\n", t->s->s, keyword, tt->u->s);
-            if( !keywordcmp(tt->keyword->s, keyword) )
-            {   t->s->keywordsOK = 1;
-                break;
-            }
-        }
-    }
-}

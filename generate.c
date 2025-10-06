@@ -199,23 +199,6 @@ void printColor(FILE *opfd, char *scheme, int index, int c)
 	// fprintf(stderr, "/%s%d/%d;\n", scheme, index < 3? 3: index > 11? 11: index, c);
 }
 
-int auxpullnode(str *n)
-{   if( n == NULL ) return 0;
-    return n->flag == pullString || (n->flag == noflag && pullString == gray);
-}
-
-int pullnode(str *n) // if -pull used, return true if color or keywords match
-{   if( !n->keywordsOK ) return 0;
-    if( pullString == noflag ) return 1;
-    if( auxpullnode(n) ) return 1;
-    return 0;
-    // if this node is on either end of an arrow ending in this node the pull it
-    for( arrow *t = arrowList; t != NULL; t = t->next )
-        if( auxpullnode(t->u) && auxpullnode(t->v) )
-            return 1;
-    return 0;
-}
-
 void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 { 	fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
 	myfprintf(opfd, "label=\"");
