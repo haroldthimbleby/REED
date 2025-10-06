@@ -1,3 +1,4 @@
-echo Yellow pull of full HTML reed
+echo demo3 : Yellow pull from full HTML reed
 open lib/pow-reed
 reed -pull yellow -ho -watch lib/pow-reed
+

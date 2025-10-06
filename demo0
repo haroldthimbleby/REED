@@ -1,3 +1,5 @@
-echo empty file
+echo demo0 : empty file
+echo \# empty file > tmp
 open tmp
-reed -v -go -watch tmp
+reed -go -watch tmp
+

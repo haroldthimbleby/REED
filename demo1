@@ -1,3 +1,4 @@
-echo Full POW reed
+echo demo1 : Full POW reed
 open lib/pow-reed
-reed -v -go -watch lib/pow-reed
+reed -go -watch lib/pow-reed
+
