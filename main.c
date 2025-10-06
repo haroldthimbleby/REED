@@ -219,7 +219,7 @@ char *skipversion(char *name, char *value)
 	return NULL;
 }
 
-char *keywordtopull = NULL, *whichPull = NULL;
+extern char *keywordtopull, *whichPull;
 
 int main(int argc, char *argv[])
 {	int opened = 0;
