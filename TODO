@@ -1,11 +1,14 @@
 new notes data structure ...
+to handle possible multiple authors
+
 reimplement in Rust!
 
 XML, JSON add keywords
-makefile for betweeness diagram
 
 when re-implemented:
 
 stuff like components and pulls need to be run before generating reports, etc creating subgraphs which are then used for generating html latex
 
 maybe allow [[[ a -> b ]]] ???
+
+Haven't implemented -drop x (to complement -pull x) yet
