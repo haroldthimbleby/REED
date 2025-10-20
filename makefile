@@ -21,10 +21,18 @@ SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 	git add SyntaxCode.c SyntaxOutline.tex
 	git commit -m "Updated SyntaxOutline.tex"
 
-paper: inputs
+paper: inputs betweenness.png
+	cd ../REED-paper; pdflatex REED.tex
+	
+lib/pow-reed.nb: lib/pow-reed reed
+	reed -m lib/pow-reed
+	
+betweenness.png: lib/pow-reed.nb plotBetweenness.nb
+	wolframscript -file plotBetweenness.nb
+	cp betweenness.png ../REED-paper/figures
 
-inputs: reed betweenness.png
-	reed -pull yellow -basename lib/pow-reed-yellow v=v2 -l -g lib/pow-reed
+inputs: reed
+	reed -pick yellow -basename lib/pow-reed-yellow v=v2 -l -g lib/pow-reed
 	dot -Tpdf lib/pow-reed-yellow.gv > ../REED-paper/figures/reedv2-yellow.pdf
 	reed v=v2 -l -g lib/pow-reed
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv2.pdf
@@ -49,14 +57,7 @@ inputs: reed betweenness.png
 	dot -Tpdf lib/ABCDis.gv > ../REED-paper/figures/ABCDis.pdf
 	reed -g lib/TB lib/ABCD lib/ABCDis-styles 
 	dot -Tpdf lib/ABCDis-styles.gv > ../REED-paper/figures/ABCDis-styles.pdf
-	
-betweenness.png: lib/pow-reed.nb plotBetweenness.nb
-	echo wolframscript does not handle multiple files, so use cat first...
-	cat lib/pow-reed.nb plotBetweenness.nb > tmp.nb
-	wolframscript -file tmp.nb
-	cp betweenness.png ../REED-paper/figures
-	rm tmp.nb
-	
+		
 rsm: lib/darzi
 	reed -g lib/darzi
 	echo darzi: fix arrow to arc upwards
@@ -67,6 +68,7 @@ rsm: lib/darzi
 	
 tidy:
 	rm -f *.o
+	rm betweenness.png 
 
 website: paper narrative $(WEBSITE)/REED.pdf $(WEBSITE)/pow-toc.pdf $(WEBSITE)/reedv2.pdf $(WEBSITE)/reedv3.pdf $(WEBSITE)/pow-reed.xml $(WEBSITE)/pow-reed.html
 
@@ -76,8 +78,14 @@ $(WEBSITE)/REED.pdf: $(WEBSITE)/../REED.pdf
 $(WEBSITE)/pow-toc.pdf: $(WEBSITE)/../figures/pow-toc.pdf
 	cp $^ $@
 
+lib/pow-reed.xml: lib/pow-reed
+	reed -x lib/pow-reed
+
 $(WEBSITE)/pow-reed.xml: lib/pow-reed.xml
 	cp $^ $@
+
+lib/pow-reed.html: lib/pow-reed
+	reed -h lib/pow-reed
 
 $(WEBSITE)/pow-reed.html: lib/pow-reed.html
 	cp $^ $@

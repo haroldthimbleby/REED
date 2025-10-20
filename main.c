@@ -161,9 +161,9 @@ structOption options[] =
     {"-n", "show node IDs in graph drawing", &showIDsOption, 1},
     {"-o", "open generated files automatically", &openOption, 1},
     {"-pdf", "generate a .pdf file*- representing the REED graph", &generatePDFOption, 1},
-    {"-pull", "<color> restrict generated files to just this color", &matchedpullOption, 1},
-    {"-pull", "<keyword> restrict generated files to notes with this keyword*-Abbreviate with ... (so xyz... matches any keyphrases starting xyz)", &matchedpullOption, 1},
-    {"-pull+", "<color> does -pull and also explains this color on standard output", &matchedpullPlusOption, 1},
+    {"-pick", "<color> restrict generated files to just this color", &matchedpullOption, 1},
+    {"-pick", "<keyword> restrict generated files to notes with this keyword*-Abbreviate with ... (so xyz... matches any keyphrases starting xyz)", &matchedpullOption, 1},
+    {"-pick+", "<color> does -pick and also explains this color on standard output", &matchedpullPlusOption, 1},
     {"-raw", "start in raw mode (skipping text until a start tag)*- only use -raw with -tags flag", &rawOption, 0},
     {"-rules", "summarise HTML <-> Latex rules", &showRulesOption, 0},
 	{"-s", "show REED file signatures", &showSignatures, 0},
@@ -314,12 +314,12 @@ int main(int argc, char *argv[])
                 i += 1;
             }
             if( matchedpullOption || matchedpullPlusOption )
-            {   whichPull = matchedpullPlusOption? "pull+": "pull";
+            {   whichPull = matchedpullPlusOption? "pick+": "pick";
                 pullOption |= matchedpullOption;
                 pullPlusOption |= matchedpullPlusOption;
                 matchedpullOption = matchedpullPlusOption = 0;
                 if( i+1 >= argc || iscolor(argv[i+1]) == noflag ) // can't use error() as there is no lineno yet
-                {   // -pull <not a color>, so see if it is a keyword
+                {   // -pick <not a color>, so see if it is a keyword
                     keywordtopull = argv[i+1];
                     i += 1;
                     continue;
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
                 pullString = iscolor(argv[i+1]);
                 if( verboseOption ) fprintf(stderr, "|-- -%s %s\n", whichPull, flagcolor(pullString));
                 fprintf(stderr, "Warning: -%s for -l has not been implemented yet\n", whichPull);
-                fprintf(stderr, "Warning: -h and -svg flags have been applied automatically (and will only generate pulled material)\n");
+                fprintf(stderr, "Warning: -h and -svg flags have been applied automatically (and will only generate picked material)\n");
                 htmlOption = 1;
                 generateSVGOption = 1;
                 i += 1;
@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
 
         if( keywordtopull )
         {   if( !isakeyword(keywordtopull) )
-                nolineerror("-%s must be followed by highlight colors or keywords to pull", whichPull);
+                nolineerror("-%s must be followed by highlight colors or keywords to pick", whichPull);
             else pullkeywords(keywordtopull);
         }
 
