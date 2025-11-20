@@ -557,7 +557,7 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
         }
     myfprintf(opfd, "};\n");
 
-    myfprintf(opfd, "Print[Style[\"Defines\", Bold],\n\"\n      title=\", title, \n\"\n      authors=\", authors, \n\"\n      version=\", version, \n\"\n      date=\", date, \n\"\n      and: communities, edges, groups, highlights, keywords, notes, vertexNames\"];\n");
+    myfprintf(opfd, "Print[\"      title=\", title, \n\"\n      authors=\", authors, \n\"\n      version=\", version, \n\"\n      date=\", date, \n\"\n      and: communities, edges, groups, highlights, keywords, notes, vertexNames\"];\n");
 
     // to close off Notebook[{Cell[BoxData["...",
     //myfprintf(opfd, ", \"Input\"]]}];\n");

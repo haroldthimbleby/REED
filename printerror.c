@@ -11,7 +11,8 @@ extern int lineno, nextlineno, startline, nextstartline;
 int errcount = 0;
 
 void nolineerror(char *fmt, ...)
-{ fprintf(stderr, "Error: ");
+{   beginError;
+    fprintf(stderr, "Error: ");
       va_list ap;
        int d;
        char c, *s;
@@ -59,12 +60,15 @@ void nolineerror(char *fmt, ...)
        fprintf(stderr, "\n");
 	if( ++errcount > MAXERRORS )
 	{	fprintf(stderr, "... too many errors!\n");
+        endError;
 		exit(1);
 	}
+    endError;
 }
 
 void error(char *fmt, ...)
-{	fprintf(stderr, "Error on line%s %d", lex1->lineno == lineno? "": "s", lex1->lineno);
+{	beginError;
+    fprintf(stderr, "Error on line%s %d", lex1->lineno == lineno? "": "s", lex1->lineno);
 	if( lex1->lineno != lineno ) fprintf(stderr, "-%d", lineno);
 	fprintf(stderr, ": ");
 	fflush(stderr);
@@ -114,8 +118,10 @@ void error(char *fmt, ...)
 	}
 	if( ++errcount > MAXERRORS )
 	{	fprintf(stderr, "... too many errors!\n");
-		exit(1);
+        endError;
+        exit(1);
 	}
+    endError;
 }
 
 void myfprintf(FILE *opfd, char *fmt, ...)

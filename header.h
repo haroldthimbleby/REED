@@ -5,6 +5,10 @@
 #include <sys/errno.h>
 #include <ctype.h>
 
+#define beginError fprintf(stderr, "\033[38;91m")
+#define endError   fprintf(stderr, "\033[0m")
+
+
 void *safealloc(size_t size);
 
 extern int parse(char *skip, char *filename, char *bp);

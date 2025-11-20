@@ -501,15 +501,20 @@ void checkNumbering()
     int notset = 0;
     for( node *t = nodeList; t != NULL; t = t->next )
     {   if( !t->s->rankx || !t->s->ranky )
-        {   if( t->s->noderef && *t->s->noderef ) continue;
-            if( !notset )
-                fprintf(stderr, "Warning: Some nodes have not had their reference or x.y numbering set:\n   ");
-            fprintf(stderr, "%s ", t->s->s);
-            notset = 1;
+    {   if( t->s->noderef && *t->s->noderef ) continue;
+        if( !notset )
+        {   beginError;
+            fprintf(stderr, "Warning: Some nodes have not had their reference or x.y numbering set:\n");
         }
+        fprintf(stderr, "            %s\n", t->s->s);
+        notset = 1;
+    }
     }
     if( notset )
-        fprintf(stderr, "\n   (use numbering or ref if you want to define references)\n");
+    {
+        fprintf(stderr, "   (use numbering or ref if you want to define references)\n");
+        endError;
+    }
 }
 
 // typedef struct rownode { str *node; int label; struct rownode *right, *down;} rownodes;
