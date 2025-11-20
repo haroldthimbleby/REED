@@ -5,9 +5,10 @@ showing betweenness centrality for the REED graph.
 This depends on running reed -m lib/pow-reed to generate the file lib/pow-reed.nb
 *)
 
-<< lib/pow-reed.nb;
+dataFile = "lib/pow-reed.nb";
+Print["Draw betweenness graph used by reed.tex paper\n", dataFile, " defines: "];
 
-Print["Draw betweenness graph for reed.tex paper"];
+Get[dataFile];
 
 nameExpand = Map[("name" -> "nodes") /. # &, groups];
 
