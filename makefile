@@ -28,7 +28,9 @@ lib/pow-reed.nb: lib/pow-reed reed
 	reed -m lib/pow-reed
 	
 betweenness.png: lib/pow-reed.nb plotBetweenness.nb
+	@printf "\033[38;91m"
 	wolframscript -file plotBetweenness.nb
+	@printf "\033[0m"
 	cp betweenness.png ../REED-paper/figures
 
 inputs: reed
@@ -44,7 +46,7 @@ inputs: reed
 	cp lib/pow-reed-xrefs.aux ../REED-paper/figures
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv3.pdf
 	grab lib/pow-reed.tex "/Node v3-2.3 Unsupervised Abbott engineer/" "/manual edits to PrecisionWeb/" > ../REED-paper/figures/narrative-examplev3.tex
-	echo "\\\\noindent\\hbox{" > ../REED-paper/figures/flags-examplev3.tex
+	@echo "\\\\noindent\\hbox{" > ../REED-paper/figures/flags-examplev3.tex
 	grab lib/pow-reed.tex "/hbox{.colorflag/" "/end{tabular/" >> ../REED-paper/figures/flags-examplev3.tex
 	echo "}" >> ../REED-paper/figures/flags-examplev3.tex
 	reed -g lib/toc-styles lib/pow-toc

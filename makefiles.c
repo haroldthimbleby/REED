@@ -46,7 +46,7 @@ void makefiles(char *filename)
         htmlOption = 1;
 
     if( htmlOption )
-    {    generateSVGOption = 1;
+    {   generateSVGOption = 1;
         fprintf(stderr, "-h implies -svg for demos\n");
     }
 
@@ -144,7 +144,7 @@ void makefiles(char *filename)
         {
             latexxrefs(fd);
             fclose(fd);
-            generated(filename, "", "Latex .aux file defining cross-references: short node name to node reference, and short name-is to full node name");
+            generated(filename, "", "Latex .aux file defining cross-references (short node names to node references, and short names followed by -is (e.g., \\ref{x-is}) to full node names)");
         }
     }
 

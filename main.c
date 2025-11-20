@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
                 pullString = iscolor(argv[i+1]);
                 if( verboseOption ) fprintf(stderr, "|-- -%s %s\n", whichPull, flagcolor(pullString));
                 fprintf(stderr, "Warning: -%s for -l has not been implemented yet\n", whichPull);
-                fprintf(stderr, "Warning: -h and -svg flags have been applied automatically (and will only generate picked material)\n");
+                fprintf(stderr, "Warning: because of -pick, -h and -svg flags have been applied automatically (and will only generate picked material)\n");
                 htmlOption = 1;
                 generateSVGOption = 1;
                 i += 1;
