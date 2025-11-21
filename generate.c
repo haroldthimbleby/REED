@@ -60,7 +60,7 @@ char copy(int quoted, char q, char **s)
 	return **s;
 }
 
-void xmlstyle(char *style) // to convert Graphviz styles into XML xx
+void xmlstyle(char *style) // to convert Graphviz styles into XML
 {	char *s = style;
 	char c;
 	int quoted;
@@ -207,7 +207,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
  	if( *date )  myfprintf(opfd, "%s%j", *title || *version? ", ": "", date);
     if( pullString != noflag )
     {   char *s = flagcolor(pullString);
-        myfprintf(opfd, ".  %c%s nodes only", toupper(*s), &s[1]);
+        myfprintf(opfd, ".  %c%s nodes only\n", toupper(*s), &s[1]);
     }
  	if( *title || *version || *date ) myfprintf(opfd, "\n "); // add a blank line after
  	myfprintf(opfd, "\";\n  rankdir=\"%s\";\n", direction);

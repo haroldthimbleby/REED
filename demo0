@@ -1,5 +1,5 @@
-echo demo0 : empty file
+echo demo0 : Empty file
 echo \# empty file > tmp
-open tmp
+open -a /Applications/TeX/TeXShop.app tmp
 reed -go -watch tmp
 

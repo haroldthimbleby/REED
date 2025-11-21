@@ -698,7 +698,7 @@ int flagcascade[] = {0,0,0,0,0,0,0,0};
 
 void defineflag(char *color, char *meaning, int cascade)
 {	if( iscolor(color) == noflag )
-	{	error("Attempt to define a highlight colour that isn't a known colour!");
+	{	error("Attempt to define a highlight colour that isn't a known colour");
 		return;
 	}
 	if( *flagdefinitions[(int) iscolor(color)] && strcmp(flagdefinitions[(int) iscolor(color)], meaning) )

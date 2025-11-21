@@ -200,6 +200,14 @@ void HTMLkeywords(FILE *opfd, struct keywordlist *keywords)
 
 void pullAcolor(FILE *opfd, enum flagcolor pullString)
 {   int count = 0;
+    {   char *s = flagcolor(pullString);
+        myfprintf(opfd, "\n<center><b>Note: %c%s highlighting ", toupper(*s), &s[1]);
+        if( !*flagdefinitions[(int)pullString] )
+            myfprintf(opfd, "is not defined!");
+         else
+             myfprintf(opfd, "means &ldquo;%s&rdquo;", flagdefinitions[(int)pullString] );
+        myfprintf(opfd, "</b></center>\n");
+    }
     for( node *t = nodeList; t != NULL; t = t->next )
         if( (t->s->flag == pullString || (t->s->flag == noflag && pullString == gray)) && t->s->note != NULL )
         {   count++;
@@ -221,13 +229,12 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
     if( !count )
         nolineerror("No notes highlighted in %s, so nothing to pull", flagcolor(pullString));
     if( pullPlusOption )
-    {   myfprintf(stdout, "%s: ", flagcolor(pullString));
+    {   myfprintf(stderr, "%s: ", flagcolor(pullString));
         if( strlen(flagdefinitions[pullString]) == 0 )
-            fprintf(stdout, "NOT DEFINED.  Say: highlight %s is \"...\" to define %s.", flagcolor(pullString), flagcolor(pullString));
+            fprintf(stderr, "NOT DEFINED.  Say: highlight %s is \"...\" to define %s.", flagcolor(pullString), flagcolor(pullString));
         else
-            HTMLtranslate(stdout, NULL, flagdefinitions[pullString]);
+            HTMLtranslate(stderr, NULL, flagdefinitions[pullString]);
     }
-    fprintf(stdout, "\n");
 }
 
 void HTMLcolorkey(FILE *opfd, char *heading, char *vskip)
@@ -309,8 +316,8 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
     {
         htmlsaypullingkeyword(opfd);
     }
-        else
-            summarisekeywords(opfd);
+    else
+        summarisekeywords(opfd);
     fprintf(opfd, "</center>\n");
 
 	if( *abstract ) // && pullString == noflag )
@@ -321,7 +328,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 
     fprintf(opfd, "\n%s\n", introduction->s);
 
-	// sort notes into order using bubble sort
+    // sort notes into order using bubble sort
 	int swapped = 0;
 	do
 	{	
@@ -381,7 +388,8 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	else
 		fprintf(opfd, "Single version");
 	fprintf(opfd, "</h2>\n<p/>\n");
-	HTMLprintfiledata(opfd);
+
+    HTMLprintfiledata(opfd);
 	fprintf(opfd, "<p/>");
 	
 	fprintf(opfd, "<table>\n<tr><td style=\"text-align:right\">%d</td><td>node%s</td><td>&mdash;</td><td style=\"text-align:right\">%d</td><td>with notes</td>", anynodes, anynodes==1? "": "s", anynotes);

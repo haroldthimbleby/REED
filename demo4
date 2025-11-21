@@ -1,4 +1,4 @@
 echo demo4 : Theory of Change example
-open demo-toc
+open -a /Applications/TeX/TeXShop.app demo-toc
 reed -go -watch demo-toc
 

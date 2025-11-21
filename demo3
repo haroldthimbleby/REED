@@ -1,4 +1,4 @@
-echo demo3 : Yellow pull from full HTML reed
-open lib/pow-reed
-reed -pull yellow -ho -watch lib/pow-reed
+echo demo3 : Yellow pick from full HTML reed
+open -a /Applications/TeX/TeXShop.app lib/pow-reed
+reed -pick yellow -ho -watch lib/pow-reed
 
