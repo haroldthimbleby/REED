@@ -4,18 +4,14 @@
 void *safealloc(size_t n)
 {	char *p = (char *) malloc(n);
 	if( p == NULL )
-	{	fprintf(stderr, "** run out of memory (safealloc in main.c)\n");
-		exit(0);
-	}
+    	fatalError("** run out of memory (safealloc in main.c)");
 	return p;
 }
 
 void *saferealloc(char *p, size_t n)
 {	p = (char *) realloc(p, n);
 	if( p == NULL )
-	{	fprintf(stderr, "** run out of memory (realloc in main.c)\n");
-		exit(0);
-	}
+		fatalError("** run out of memory (realloc in main.c)");
 	return p;
 }
 
@@ -223,7 +219,7 @@ extern char *keywordtopull, *whichPull;
 
 int main(int argc, char *argv[])
 {	int opened = 0;
-	FILE *fp;
+    FILE *fp;
 	char *bp, *openedfile, *processedFileName = NULL, *skip = NULL;
 	int successfulskip = 0;
 
@@ -249,9 +245,7 @@ int main(int argc, char *argv[])
                     verboseOption = 1; // this is the only option we need pay attention to in -watch
             }
             if( !filecount )
-            {   nolineerror("-watch specified, but no files to watch, so nothing to do\n");
-                exit(1);
-            }
+                fatalError("-watch specified, but no files to watch, so nothing to do");
             //fprintf(stderr, "command = %s\n", command->s);
             if( verboseOption ) fprintf(stderr, "|--%s watching file%s: %s\n", argv[0], filecount? "": "s", files->s);
             appendstr(fswatch, files);
@@ -266,9 +260,7 @@ int main(int argc, char *argv[])
         {   // fprintf(stderr, "i=%d arg=%d\n", i, argc);
             if( handleInsert )
             {   if( i+1 >= argc ) // can't use error() as there is no lineno yet
-                {   nolineerror("-insert <text> must be followed by some text to insert\n");
-                    exit(1);
-                }
+                    fatalError("-insert <text> must be followed by some text to insert");
                 fprintf(stderr, "-insert this text: %s\n", argv[i+1]);
                 opened = 1;
                 openedfile = "inserted-text";
@@ -285,15 +277,11 @@ int main(int argc, char *argv[])
             if( handleTags ) // set on each use of -tags
             {   hasHadTagsOption = 1;
                 if( i+2 >= argc ) // can't use error() as there is no lineno yet
-                {   nolineerror("-tags must be followed by both a start tag and an end tag\n");
-                    exit(1);
-                }
+                    fatalError("-tags must be followed by both a start tag and an end tag");
                 //fprintf(stderr, "tag start=\"%s\"\n", argv[i+1]);
                 if( startTag.tagLength > 0 )
-                {   // may fix this limitation soon
-                    nolineerror("Attempting to redefine tags, but can only have one set of start and end tags");
-                    exit(1);
-                }
+                    // may fix this limitation soon
+                    fatalError("Attempting to redefine tags, but can only have one set of start and end tags");
                 startTag = setTag(argv[i+1]);
                 endTag = setTag(argv[i+2]);
                 //fprintf(stderr, "tag end=\"%s\"\n", endTag.tagString);
@@ -304,9 +292,7 @@ int main(int argc, char *argv[])
             }
             if( basenameOption )
             {   if( i+1 >= argc )
-                {   nolineerror("-basename must be followed by either pathname/file or file");
-                    exit(1);
-                }
+                    fatalError("-basename must be followed by either pathname/file or file");
                 if( *outputbasename )
                     nolineerror("Cannot have multiple basenames, '%s' and '%s'", outputbasename, argv[i+1]);
                 outputbasename = argv[i+1];
@@ -345,9 +331,7 @@ int main(int argc, char *argv[])
         {   struct stat stat_buf;
             int errno;
             if( (errno = fstat(fileno(fp), &stat_buf)) != 0 )
-            {   nolineerror("** %s cannot stat \"%s\": %s\n", argv[0], openedfile, strerror(errno));
-                exit(0);
-            }
+                fatalError("** %s cannot stat \"%s\": %s", argv[0], openedfile, strerror(errno));
             bp = safealloc(1+stat_buf.st_size);
             if( fread(bp, 1, stat_buf.st_size, fp) != stat_buf.st_size )
             {   nolineerror("** %s cannot read from \"%s\" (maybe a permissions problem?)\n", argv[0], openedfile);

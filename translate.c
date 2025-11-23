@@ -70,12 +70,9 @@ void push(struct stack *stack, char *item)
 }
 
 char *pop(struct stack *stack)
-{	if (stack->length <= 0) {
-        	error("Fatal! Stack underflow - pop() in translate.c\n");
-        	(void) exit(1);
-		return (char*) NULL;
-    	}
- 	return stack->contents[--stack->length];
+{	if (stack->length <= 0)
+        fatalError("Fatal! Stack underflow - pop() in translate.c\n");
+	return stack->contents[--stack->length];
 }
 
 char *top(struct stack *stack)
@@ -116,9 +113,7 @@ char *includeFile(FILE *opfd, int copy, char *s)
         {   struct stat stat_buf;
             int errno;
             if( (errno = fstat(fileno(fd), &stat_buf)) != 0 )
-            {   nolineerror("** Cannot stat <insert> file: %s\n%s\n", file, strerror(errno));
-                exit(0);
-            }
+                fatalError("** Cannot stat <insert> file: %s\n%s\n", file, strerror(errno));
             while( (ch = fgetc(fd)) != EOF )
                 fputc(ch, opfd);
         }

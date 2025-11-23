@@ -10,6 +10,18 @@ extern int lineno, nextlineno, startline, nextstartline;
 
 int errcount = 0;
 
+void fatalError(char *fmt, ...)
+{   beginError;
+    fprintf(stderr, "Fatal error: ");
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+    fprintf(stderr, "\n");
+    endError;
+    exit(1);
+}
+
 void nolineerror(char *fmt, ...)
 {   beginError;
     fprintf(stderr, "Error: ");

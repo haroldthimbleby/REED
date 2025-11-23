@@ -16,9 +16,7 @@ extern void xml(FILE *opfd);
 
 void stopiferror()
 {   if( errcount > 0 )
-    {   nolineerror("Stopped due to error%s", errcount>1? "s": "");
-        exit(1);
-    }
+        fatalError("Stopped due to error%s", errcount>1? "s": "");
 }
 
 void generated(char *filename, char *suffix, char *reason)
@@ -61,9 +59,7 @@ void makefiles(char *filename)
     {    // try: $ dot -Tps graph1.gv -o graph1.ps
         fd = fopen(filename = newappendcstr(base, ".gv")->s, "w");
         if( fd == NULL )
-        {   error("Can't open %s (graphviz file) for writing", filename);
-            exit(1);
-        }
+            fatalError("Can't open %s (graphviz file) for writing", filename);
         dot(fd, title, version, date, direction);
         fclose(fd);
         generated(filename, "", "dot file of the REED graph");

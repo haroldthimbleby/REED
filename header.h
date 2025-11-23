@@ -5,9 +5,11 @@
 #include <sys/errno.h>
 #include <ctype.h>
 
+#define startBlue fprintf(stderr, "\033[94;91m")
 #define beginError fprintf(stderr, "\033[38;91m")
 #define endError   fprintf(stderr, "\033[0m")
 
+extern void fatalError(char *fmt, ...);
 
 void *safealloc(size_t size);
 

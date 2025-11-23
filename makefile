@@ -23,6 +23,7 @@ SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 
 paper: inputs betweenness.png
 	cd ../REED-paper; pdflatex REED.tex
+	echo Generated ../REED-paper/REED.pdf
 	
 lib/pow-reed.nb: lib/pow-reed reed
 	reed -m lib/pow-reed
@@ -100,5 +101,6 @@ $(WEBSITE)/reedv3.pdf: $(WEBSITE)/../figures/reedv3.pdf
 
 narrative: lib/pow-reed.tex
 	cd lib; pdflatex pow-reed.tex
+	echo Generated lib/pow-reed.pdf
 	cp lib/pow-reed.pdf $(WEBSITE)/narrative.pdf 
 
