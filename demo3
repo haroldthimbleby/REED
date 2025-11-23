@@ -1,4 +1,5 @@
 echo demo3 : Yellow pick from full HTML reed
-open -a /Applications/TeX/TeXShop.app lib/pow-reed
-reed -pick yellow -ho -watch lib/pow-reed
+cp lib/pow-reed tmp3
+open -a /Applications/TeX/TeXShop.app tmp3
+reed -pick yellow -ho -watch tmp3
 

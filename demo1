@@ -1,4 +1,5 @@
 echo demo1 : Full POW reed
-open -a /Applications/TeX/TeXShop.app lib/pow-reed
-reed -go -watch lib/pow-reed
+cp lib/pow-reed tmp1
+open -a /Applications/TeX/TeXShop.app tmp1
+reed -go -watch tmp1
 

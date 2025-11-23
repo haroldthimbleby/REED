@@ -1,4 +1,5 @@
 echo demo2 : Full HTML reed
-open -a /Applications/TeX/TeXShop.app lib/pow-reed
-reed -ho -watch lib/pow-reed
+cp lib/pow-reed tmp2
+open -a /Applications/TeX/TeXShop.app tmp2
+reed -ho -watch tmp2
 
