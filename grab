@@ -1,7 +1,11 @@
-echo grabs lines from file $1, from $2 to $3 1>&2
-echo "BEGIN { copy = 0 }" > tmp$$
-echo "$2 { if( copy == 0 ) copy++; }" >> tmp$$
-echo "$3 { if( copy == 1 )  copy++; }" >> tmp$$
-echo "   { if( copy == 1 || copy == 2 ) print; if( copy == 2 ) copy++ }" >> tmp$$ 
-awk -f tmp$$ $1 
+echo grabs lines from file $1, from $2 to $3  | cat 1>&2
+echo "BEGIN { start = output = end = copy = 0 }" > tmp$$
+echo "$2 { start = 1; if( copy == 0 ) copy++; }" >> tmp$$
+echo "$3 { end = 1; if( copy == 1 ) copy++; }" >> tmp$$
+echo "   { if( copy == 1 || copy == 2 ) { output = 1; print; } if( copy == 2 ) copy++ }" >> tmp$$ 
+echo "END { if( start == 0 ) print \"\\033[94;91m**** Grab did not match start pattern! $2\\033[0m\"   | \"cat 1>&2\"" >> tmp$$
+echo "       if( output == 0 ) print \"\\033[94;91m**** Grab did not produce any output!\\033[0m\"  | \"cat 1>&2\"" >> tmp$$
+echo "       if( end == 0 ) print \"\\033[94;91m**** Grab did not match end pattern! $3\\033[0m\"   | \"cat 1>&2\"" >> tmp$$
+""echo      "}" >> tmp$$
+awk -f tmp$$ $1
 rm tmp$$
