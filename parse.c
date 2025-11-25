@@ -150,7 +150,7 @@ struct { lexval l; char *symbol; } lexes[] =
     { STYLE, "<style>" },
     { EndOfFile, "end of file" },
     { NUMBERING, "<numbering>"},
-    { ROWS, "<rows>"},
+    { ROWS, "<layout>"},
     { DIRECTION, "<direction>"},
     { OVERRIDE, "<override>"},
     { TAGS, "<tags>"},
@@ -230,7 +230,7 @@ lexval readlex(str **lexstr)
 					if( !strcmp("new", (*lexstr)->s) ) return NEW;
 					if( !strcmp("style", (*lexstr)->s) ) return STYLE;
 					if( !strcmp("numbering", (*lexstr)->s) ) return NUMBERING;
-					if( !strcmp("rows", (*lexstr)->s) ) return ROWS;
+					if( !strcmp("layout", (*lexstr)->s) ) return ROWS;
 					if( !strcmp("ref", (*lexstr)->s) ) return REF;
                     if( !strcmp("direction", (*lexstr)->s) ) return DIRECTION;
                     if( !strcmp("tags", (*lexstr)->s) ) return TAGS;
@@ -522,15 +522,15 @@ void checkNumbering()
 
 int rowsCount = 0;
 
-void rows()
+void layout()
 {	if( rowsCount++ > 0 )
-		error("There should be only one rows layout");
+		error("There should be only one layout");
 	if( lex1->l == ID && !strcmp("TOC", lex1->s) )
 	{	rowsTOCstyled = 1;
 		getlex();
 	}
 	if( lex1->l != LBRA )
-		error("Bracketed lists of nodes expected after 'rows'");
+		error("Bracketed lists of nodes expected after 'layout'");
 	getlex();
 	rownodes **endofrow = NULL, **endofcols = &cols;
 	while( lex1->l == LBRA || lex1->l == ID )
@@ -576,12 +576,12 @@ void rows()
 		}
 		//fprintf(stderr, "\n");
 		if( lex1->l != RBRA )
-			error("a row should end with a closing bracket");
+			error("a row in a layout should end with a closing bracket");
 		getlex();
 	}
 	if( lex1->l != RBRA )
-		error("closing bracket missing from rows");
-	
+		error("closing bracket missing from layout");
+
 	//printf("ROWS - \n");
 	//for( rownodes *row = cols; row != NULL; row = row->down )
 	//{	for( rownodes *col = row; col != NULL; col = col->right )
@@ -1152,7 +1152,7 @@ int parse(char *skip, char *filename, char *bp)
 
 			case ROWS:
 				getlex();
-				rows();
+				layout();
 				break;
 
 			case SEMI:

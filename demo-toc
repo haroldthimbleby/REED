@@ -48,7 +48,7 @@ management -> io2
 management -> o1
 t-> barriermanagement
 
-rows TOC (
+layouts TOC (
 	"Inputs" (e a1 a2 a3 etc au)
 	"Activities needed" (t b)
 	"Barriers to overcome" (c barriermanagement)
