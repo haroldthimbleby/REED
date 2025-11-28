@@ -70,4 +70,4 @@
 "    override ...!Permit conflicting commands (e.g., title) to override earlier commands (used with version id and flag v=id)\n"
 "\n"
 "    ### Apart from override, tags, and version the order of commands does not matter\n"
-"    ### Except author, htmldefinitions, and latexdefinitions append in REED file order\n"
+"    ### Except: author, htmldefinitions, and latexdefinitions append in REED file order\n"
