@@ -1,3 +1,4 @@
+Convert SyntaxOutline.tex into C code to include into main.c
 "    Use reed (no parameters) to summarise flags\n"
 "\n"
 "    Syntax summary\n"
