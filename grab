@@ -1,11 +1,45 @@
-echo grabs lines from file $1, from $2 to $3  | cat 1>&2
-echo "BEGIN { start = output = end = copy = 0 }" > tmp$$
-echo "$2 { start = 1; if( copy == 0 ) copy++; }" >> tmp$$
-echo "$3 { end = 1; if( copy == 1 ) copy++; }" >> tmp$$
-echo "   { if( copy == 1 || copy == 2 ) { output = 1; print; } if( copy == 2 ) copy++ }" >> tmp$$ 
-echo "END { if( start == 0 ) print \"\\033[94;91m**** Grab did not match start pattern! $2\\033[0m\"   | \"cat 1>&2\"" >> tmp$$
-echo "       if( output == 0 ) print \"\\033[94;91m**** Grab did not produce any output!\\033[0m\"  | \"cat 1>&2\"" >> tmp$$
-echo "       if( end == 0 ) print \"\\033[94;91m**** Grab did not match end pattern! $3\\033[0m\"   | \"cat 1>&2\"" >> tmp$$
-""echo      "}" >> tmp$$
+echo grab lines from $1 "\n    " from $2 "\n    " to $3 1>&2
+
+cat > tmp$$ << HERESTRING
+
+# copy = 0 - nothing matched yet
+#      = 1 - first string $2 matched
+#      = 2 - second string $3 matched
+#      = 3 - past second string matching
+# hence, copy lines to stdout when copy = 1 or copy = 2
+
+function error(e) {
+    print "\\033[94;91m**** ", e, "\\033[0m" | "cat 1>&2"
+}
+
+BEGIN {
+    start = output = end = copy = 0;
+    if( length("$1") == 0 ) error("No \$1 file to read");
+    if( length("$2") == 0 ) error("No \$2 to search from")
+    if( length("$3") == 0 ) error("No \$3 to search to")
+    if( length("$1") * length("$2") * length("$3") == 0 ) exit
+}
+
+$2 { start = 1;
+     if( copy == 0 ) copy = 1;
+     if( copy > 0 )
+   }
+
+$3 { end = 1;
+
+     # this 'error' generally doesn't matter...
+     # if( copy == 0 ) error("Grab matched end pattern $3\n      before matching start pattern")
+
+     if( copy == 1 ) copy = 2;
+   }
+
+   { if( copy == 1 || copy == 2 ) { output = 1; print; } if( copy == 2 ) copy = 3 }
+
+END { if( start == 0 ) error("Grab did not match start pattern\n      $2")
+      if( end == 0 ) error("Grab did not match end pattern\n      $3")
+      if( output == 0 ) error("Grab did not produce any output")
+    }
+
+HERESTRING
 awk -f tmp$$ $1
 rm tmp$$

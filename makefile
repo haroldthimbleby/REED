@@ -29,7 +29,7 @@ lib/pow-reed.nb: lib/pow-reed reed
 	reed -m lib/pow-reed
 	
 betweenness.png: lib/pow-reed.nb plotBetweenness.nb
-	@printf "\033[38;91m"
+	@printf "\033[38;35m"
 	wolframscript -file plotBetweenness.nb
 	@printf "\033[0m"
 	cp betweenness.png ../REED-paper/figures
@@ -40,7 +40,7 @@ inputs: reed
 	reed v=v2 -l -g lib/pow-reed
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv2.pdf
 	cp lib/pow-reed-color-legend.tex ../REED-paper/figures
-	grab lib/pow-reed.tex "/Node v2-1.1 Wrong XceedPros/" "/summary/" > ../REED-paper/figures/node-examplev2.tex
+	grab lib/pow-reed.tex "/Node v2-1.1 Wrong XceedPros/" "/v2-3.1 Police summary/" > ../REED-paper/figures/node-examplev2.tex
 	grab lib/pow-reed.tex "/Arrow  E/" "/unreliable/" > ../REED-paper/figures/arrow-examplev2.tex
 	reed v=v3 -l -x -h -g lib/pow-reed 
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv3.pdf
@@ -50,15 +50,15 @@ inputs: reed
 	@echo "\\\\noindent\\hbox{" > ../REED-paper/figures/flags-examplev3.tex
 	grab lib/pow-reed.tex "/hbox{.colorflag/" "/end{tabular/" >> ../REED-paper/figures/flags-examplev3.tex
 	echo "}" >> ../REED-paper/figures/flags-examplev3.tex
-	reed -g lib/toc-styles lib/pow-toc
+	reed -g -insert norefs lib/toc-styles lib/pow-toc
 	dot -Tpdf lib/pow-toc.gv > ../REED-paper/figures/pow-toc.pdf
 	reed -g lib/pow-basic
 	dot -Tpdf lib/pow-basic.gv > ../REED-paper/figures/pow-basic.pdf
-	reed -g lib/LR lib/ABCD
+	reed -g -insert norefs lib/LR lib/ABCD
 	dot -Tpdf lib/ABCD.gv > ../REED-paper/figures/ABCD.pdf
-	reed -g lib/LR lib/ABCD lib/ABCDis
+	reed -g -insert norefs lib/LR lib/ABCD lib/ABCDis
 	dot -Tpdf lib/ABCDis.gv > ../REED-paper/figures/ABCDis.pdf
-	reed -g lib/TB lib/ABCD lib/ABCDis-styles 
+	reed -g -insert norefs lib/TB lib/ABCD lib/ABCDis-styles 
 	dot -Tpdf lib/ABCDis-styles.gv > ../REED-paper/figures/ABCDis-styles.pdf
 		
 rsm: lib/darzi

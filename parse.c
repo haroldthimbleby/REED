@@ -3,6 +3,8 @@
 
 const int EndOfFile = -1;
 
+int norefs = 0;
+
 extern rownodes *cols;
 
 char *title = "", *date = "", *version = "", *abstract = "", *direction = "";
@@ -160,7 +162,8 @@ struct { lexval l; char *symbol; } lexes[] =
     { CONCLUSION, "<conclusion>"},
     { CHECK, "<check>"},
     { TRANSARROW, "=>"},
-    { KEYWORDS, "<keywords>"}
+    { KEYWORDS, "<keywords>"},
+    { NOREFS, "<norefs>"}
 };
 
 str *currentlexstr;
@@ -241,6 +244,7 @@ lexval readlex(str **lexstr)
                     if( !strcmp("check", (*lexstr)->s) ) return CHECK;
                     if( !strcmp("keywords", (*lexstr)->s) ) return KEYWORDS;
                     if( !strcmp("keyword", (*lexstr)->s) ) return KEYWORDS;
+                    if( !strcmp("norefs", (*lexstr)->s) ) return NOREFS;
                     // if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n");
 					return ID;
 				}
@@ -498,19 +502,22 @@ void numbering()
 
 void checkNumbering()
 {   // have we set reference numbers for all nodes?
-    int notset = 0;
+    int warned = 0;
     for( node *t = nodeList; t != NULL; t = t->next )
-    {   if( !t->s->rankx || !t->s->ranky )
-    {   if( t->s->noderef && *t->s->noderef ) continue;
-        if( !notset )
-        {   beginError;
-            fprintf(stderr, "Warning: Some nodes have not had their reference or x.y numbering set:\n");
+    {   int set = t->s->rankx || t->s->ranky || (t->s->noderef && *t->s->noderef);
+        if( (set && norefs) || (!set && !norefs) )
+        {
+            if( !warned )
+            {   beginError;
+                fprintf(stderr,
+                        norefs? "Warning: norefs used, but some nodes have had their reference or x.y numbering set:\n":
+                                "Warning: norefs not used, but some nodes have not had their reference or x.y numbering set:\n");
+            }
+            fprintf(stderr, "            %s\n", t->s->s);
+            warned = 1;
         }
-        fprintf(stderr, "            %s\n", t->s->s);
-        notset = 1;
     }
-    }
-    if( notset )
+    if( warned )
     {
         fprintf(stderr, "   (use numbering or ref if you want to define references)\n");
         endError;
@@ -782,7 +789,11 @@ int parse(char *skip, char *filename, char *bp)
     {	if( 0 ) printf(":: %s :: %s :: %s\n", lexvalue(lex1), lexvalue(lex2), lexvalue(lex3));
         if( overrideCounter > 0 ) overrideCounter--;
         switch( lex1->l )
-        {	case OVERRIDE:
+        {	case NOREFS:
+                norefs = 1;
+                break;
+
+            case OVERRIDE:
                 if( checkOverride("override") ) break;
                 overrideCounter = 2; // so overrideCounter should be =1 next time the switch is called
                 break;

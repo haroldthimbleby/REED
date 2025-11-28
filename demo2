@@ -1,5 +1,5 @@
-echo demo2 : Full HTML reed
-cp lib/pow-reed tmp2
-open -a /Applications/TeX/TeXShop.app tmp2
-reed -ho -watch tmp2
+echo demo1 : Full POW reed
+cp lib/pow-reed tmp1
+open -a /Applications/TeX/TeXShop.app tmp1
+reed -go -watch tmp1
 

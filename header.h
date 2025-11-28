@@ -28,8 +28,10 @@ enum flagcolor { noflag, black, blue, gray, green, red, white, yellow };  // in 
 
 enum flagcolor pullString;
 
+extern int norefs;
+
 typedef enum {
-            DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK,
+            DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK, NOREFS,
 			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS, INTRODUCTION, CONCLUSION,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
 			ID,// assumes the string s is initialised

@@ -1,5 +1,24 @@
-echo demo0 : Empty file
-echo \# empty file > tmp0
+echo demo0 : Basic file
+cat <<< ENDSTRING > tmp0
+# not quite empty file
+
+
+a
+
+b
+
+a->b
+
+highlight a is red
+
+highlight red is wow
+
+a is "hello world"
+
+group (a b) is nuts
+
+ENDSTRING
+
 open -a /Applications/TeX/TeXShop.app tmp0
 reed -go -watch tmp0
 
