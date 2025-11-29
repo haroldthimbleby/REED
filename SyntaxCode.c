@@ -37,7 +37,7 @@
 "\n"
 "    ### the following are definitions of non-terminals\n"
 "\n"
-"    arrow ::= -> | <- | <->\n"
+"    arrow ::= -> | <- \n"
 "    color ::= black | blue | green | red | white | yellow\n"
 "    id-or-star ::= id | *\n"
 "    node-or-arrow ::= id | id { arrow id }+\n"
