@@ -40,6 +40,7 @@ Herestring ::= <<< arbitrary-terminator\n                           characters (
 arrow ::= -> | <- 
 color ::= black | blue | green | red | white | yellow
 id-or-star ::= id | *
+node-list ::= id | ( id++ )
 node-or-arrow ::= id | id { arrow id }+
 node-or-arrow-list ::= node-or-arrow | ( node-or-arrow++ )
 document-details ::= title | author | abstract | date | introduction | conclusion | latexdefinitions | htmldefinitions
@@ -48,6 +49,7 @@ document-details ::= title | author | abstract | date | introduction | conclusio
 ### all terminals below are reserved words
 
 check id1 => id2!Check there is a path from id1 to id2
+cycle node-list!Confirm nodes are on a cycle, and don't report them
 direction { LR | RL | TB | BT }!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top
 document-details id!Specify document details. Details append when given multiple times
 group node-or-arrow-list is id!The nodes are grouped, and the group is named
@@ -59,9 +61,9 @@ new style id1 is id2!Define id1 as a style, using Dot syntax for id2!(e.g., new 
 node-or-arrow [ is id ]!Create nodes or arrows, with optional display name id
 norefs!Nodes without reference numbers will not be reported as errors
 note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them id1
-numbering ( { ( id-or-star+ ) }++ )!Make node references row.column numbers following the grid layout
+numbering ( { ( id-or-star++ ) }++ )!Make node references row.column numbers following the grid layout
 ref id1 is id2!Set the reference of node id1 to be id2
-rows [ TOC ] ( { id ( id+ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling
+rows [ TOC ] ( { id ( id++ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling
 style node-or-arrow-list is id!Set style of nodes or arrows, either to a named style or to an explicit Dot specification
 tags id1 id2!Only process REED code between id1 (begin) and id2 (end)
 version id!Subsequent REED code is version id (see flag v=value)
