@@ -49,7 +49,7 @@
 "    ### all terminals below are reserved words\n"
 "\n"
 "    check id1 => id2!Check there is a path from id1 to id2\n"
-"    cycle node-list!Confirm nodes are on a cycle, and don't report them\n"
+"    cycle node-list!Confirm these nodes are supposed to be on a cycle, and don't report them\n"
 "    direction { LR | RL | TB | BT }!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top\n"
 "    document-details id!Specify document details. Details append when given multiple times\n"
 "    group node-or-arrow-list is id!The nodes are grouped, and the group is named\n"
