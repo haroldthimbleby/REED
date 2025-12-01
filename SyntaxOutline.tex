@@ -30,10 +30,13 @@ Herestring ::= <<< arbitrary-terminator\n                           characters (
 <input> filename  # insert the text contents of file into the string
 [[[id]]]          # replace with id's name and make a cross-reference link (in both HTML and Latex)
 
-# reserved words can be used as ids if written as strings
+# reserved words can be used as ids if written out as strings
 # otherwise, id xyz and string "xyz" are equivalent
-# so red is reserved, but "red" can be used arbitrarily
+# so check is reserved, but "check" can be used arbitrarily
 # string notations allow more characters to be used
+
+# The current highlight syntax unfortunately does not
+# allow colors to be used as node names
 
 ### the following are definitions of non-terminals
 
