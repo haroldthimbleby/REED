@@ -38,7 +38,7 @@
 "    ### the following are definitions of non-terminals\n"
 "\n"
 "    arrow ::= -> | <- \n"
-"    color ::= black | blue | green | red | white | yellow\n"
+"    color ::= aqua | black | blue | fuchsia | gray | green | lime | maroon | navy | olive | orange | purple | red | silver | teal | white | yellow\n"
 "    id-or-star ::= id | *\n"
 "    node-list ::= id | ( id++ )\n"
 "    node-or-arrow ::= id | id { arrow id }+\n"
