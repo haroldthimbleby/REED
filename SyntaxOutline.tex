@@ -28,7 +28,7 @@ Herestring ::= <<< arbitrary-terminator\n                           characters (
 <latex> ...       # following text is copied to Latex, but skipped in HTML
 <both> ...        # following text is mixed basic HTML and Latex (use flag -rules to see translation rules)
 <input> filename  # insert the text contents of file into the string
-[[[id]]]!replace with id's name and make a cross-reference link (in both HTML and Latex)
+[[[id]]]          # replace with id's name and make a cross-reference link (in both HTML and Latex)
 
 # reserved words can be used as ids if written as strings
 # otherwise, id xyz and string "xyz" are equivalent

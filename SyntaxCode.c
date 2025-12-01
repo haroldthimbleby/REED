@@ -28,7 +28,7 @@
 "    <latex> ...       # following text is copied to Latex, but skipped in HTML\n"
 "    <both> ...        # following text is mixed basic HTML and Latex (use flag -rules to see translation rules)\n"
 "    <input> filename  # insert the text contents of file into the string\n"
-"    [[[id]]]!replace with id's name and make a cross-reference link (in both HTML and Latex)\n"
+"    [[[id]]]          # replace with id's name and make a cross-reference link (in both HTML and Latex)\n"
 "\n"
 "    # reserved words can be used as ids if written as strings\n"
 "    # otherwise, id xyz and string \"xyz\" are equivalent\n"
