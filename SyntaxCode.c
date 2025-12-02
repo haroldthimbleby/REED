@@ -36,7 +36,7 @@
 "    # string notations allow more characters to be used\n"
 "\n"
 "    # The current highlight syntax unfortunately does not\n"
-"    # allow colors to be used as node names\n"
+"    # allow color names to be used as node names\n"
 "\n"
 "    ### the following are definitions of non-terminals\n"
 "\n"
