@@ -1,3 +1,4 @@
+In[1140]:=
 (* 
 This file reads in lib/pow-reed.nb and uses the definitions to generate a highlighted graph
 showing betweenness centrality for the REED graph.
@@ -5,19 +6,33 @@ showing betweenness centrality for the REED graph.
 This depends on running reed -m lib/pow-reed to generate the file lib/pow-reed.nb
 *)
 
+pad = "     ";
 dataFile = "lib/pow-reed.nb";
-Print["Draw betweenness graph used by reed.tex paper\n", dataFile, " defines: "];
+Print["Make betweenness graph used by reed.tex paper\n", pad, dataFile, " defines:"];
 
 Get[dataFile];
 
 nameExpand = Map[("name" -> "nodes") /. # &, groups];
 
+(* anything that goes to or comes from a group goes to all or comes from all members of the group *)
 expandRule[u_ -> v_] := 
  Module[{ul = u /. nameExpand, vl = v /. nameExpand},
-  Outer[Rule, If[Head[ul] === List, ul, {ul}], 
-   If[Head[vl] === List, vl, {vl}]]
-  ];
+  Outer[Rule,
+    If[Head[ul] === List, ul, {ul}], 
+    If[Head[vl] === List, vl, {vl}]
+  ]
+];
 expandedEdges = Flatten@Map[expandRule, edges];
+
+(* make the expanded edges dashed or dotted, whatever *)
+fixCompoundEdges[u_ -> v_] := 
+   Module[{ul = u /. nameExpand, vl = v /. nameExpand},
+   If[Head[ul] === List || Head[vl] === List, List, zap]@Flatten@Outer[Rule,
+          If[Head[ul] === List, ul, {ul}], 
+          If[Head[vl] === List, vl, {vl}]
+        ]
+   ];
+styledEdges = (# -> Dashed) & /@ DeleteCases[Flatten@Map[fixCompoundEdges, edges], zap@_];
 
 g = Graph@expandedEdges;
 
@@ -26,16 +41,40 @@ vlist = VertexList[expandedEdges];
 bg = Map[Module[{b, g},
      b = BetweennessCentrality[g = Subgraph[expandedEdges, #]];
      HighlightGraph[g, Map[Style[#, Darker[Red]] &, VertexList[g]], 
+     EdgeStyle->styledEdges,
       VertexSize -> 
        Thread[VertexList[g] -> 
          Rescale[Rescale[b], {0, 1}, {If[Length@b == 3, .05, .2], 2}]],
-      VertexLabels -> {"7" -> 
-         Placed[Style["PrecisionWeb\ndatabase", 20, Bold, 
-           Black], {-.8, -.1}]}]
+      VertexLabels -> {"7" -> Placed[Style["PrecisionWeb\ndatabase", 20, Bold, Black], 
+                                     {0.55,1.25}
+                                    ]}]
      ] &, WeaklyConnectedComponents[expandedEdges]];
 
 betweennessplot = 
- Show[{Show[bg[[1]], ImageSize -> 1000], 
-   Show[bg[[2]], ImageSize -> 50]}];
+ Show[
+      {Show[bg[[1]], ImageSize -> 1000], 
+       Show[bg[[2]], ImageSize -> 50]
+      }
+     ];
+   
+(* new layout next! *)
+betweennessplot = Grid[{{Show[bg[[1]], ImageSize->1000], Show[bg[[2]], ImageSize->200]}}]
 
-Print["Exported: ", Export["betweenness.png", betweennessplot]];
+If[True,
+	Print["Exported: ", Export["betweenness.png", betweennessplot]];
+	Print["Exported: ", Export["betweenness1.png", Show[bg[[1]], ImageSize->1000]]];
+	Print["Exported: ", Export["betweenness2.png", Show[bg[[2]], ImageSize->200]]],
+	betweennessplot
+]
+
+During evaluation of In[1140]:= Make betweenness graph used by reed.tex paper
+     lib/pow-reed.nb defines:
+During evaluation of In[1140]:=       title=Princess of Wales Hospital blood glucometer case
+      authors=Harold Thimbleby
+      version=v3
+      date=10 September 2025
+      and: communities, edges, groups, highlights, keywords, notes, vertexNames
+Out[1167]= 
+During evaluation of In[1140]:= Exported: betweenness.png
+During evaluation of In[1140]:= Exported: betweenness1.png
+During evaluation of In[1140]:= Exported: betweenness2.png

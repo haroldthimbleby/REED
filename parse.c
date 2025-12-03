@@ -9,21 +9,76 @@ extern rownodes *cols;
 
 char *title = "", *date = "", *version = "", *abstract = "", *direction = "";
 
-char *flagcolors[] = {"NONE", "black", "blue", "gray", "green", "red", "white", "yellow"};
+char *flagcolors[] = // 17 colors
+{ "NONE",
+  "aqua", "black", "blue", "fuchsia", "gray",
+  "green", "lime", "maroon", "navy", "olive",
+  "orange", "purple", "red", "silver", "teal",
+  "white", "yellow"
+};
+
+enum flagcolor iscolor(char *s)
+{   if( !strcmp(s, "aqua") ) return aqua;
+    if( !strcmp(s, "black") ) return black;
+    if( !strcmp(s, "blue") ) return blue;
+    if( !strcmp(s, "fuchsia") ) return fuchsia;
+    if( !strcmp(s, "gray") ) return gray;
+    if( !strcmp(s, "green") ) return green;
+    if( !strcmp(s, "lime") ) return lime;
+    if( !strcmp(s, "maroon") ) return maroon;
+    if( !strcmp(s, "navy") ) return navy;
+    if( !strcmp(s, "olive") ) return olive;
+    if( !strcmp(s, "orange") ) return orange;
+    if( !strcmp(s, "purple") ) return purple;
+    if( !strcmp(s, "red") ) return red;
+    if( !strcmp(s, "silver") ) return silver;
+    if( !strcmp(s, "teal") ) return teal;
+    if( !strcmp(s, "white") ) return white;
+    if( !strcmp(s, "yellow") ) return yellow;
+    return noflag;
+}
+
+char *flagdefinitions[] = {"","","","","", "","","","","", "","","","","", "","",""};
+int flagsused[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
+int flagsusedaftercascades[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
+int flagcascade[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
+
+const int numberOfColors = sizeof(flagcolors)/sizeof(char *)-1;
+
+int alreadyShownAllColors = 0;
+void showAllColors()
+{   if( alreadyShownAllColors++ ) return;
+    fprintf(stderr, "Available highlighting colors are:\n   ");
+    for( int i = 1; i <= numberOfColors; i++ )
+        fprintf(stderr, "%s ", flagcolor(i));
+    fprintf(stderr, "\n");
+}
 
 str *lex1 = NULL, *lex2 = NULL, *lex3 = NULL;
 
 char *flagcolor(enum flagcolor fc)
 {	switch( fc )
 	{	case noflag: return "none";
-		case blue: return "blue";
-		case white: return "white";
-		case red: return "red";
-		case black: return "black";
-		case yellow: return "yellow";
-        case green: return "green";
+        case aqua: return "aqua";
+        case black: return "black";
+        case blue: return "blue";
+        case fuchsia: return "fuchsia";
         case gray: return "gray";
-        default: error("unknown flag color"); return "?flag colour error?";
+        case green: return "green";
+        case lime: return "lime";
+        case maroon: return "maroon";
+        case navy: return "navy";
+        case olive: return "olive";
+        case orange: return "orange";
+        case purple: return "purple";
+        case red: return "red";
+        case silver: return "silver";
+        case teal: return "teal";
+        case white: return "white";
+        case yellow: return "yellow";
+        default:
+            error("unknown flag color");
+            return "?flag colour error?";
 	}
 }
 
@@ -44,7 +99,9 @@ void defineArrowStyle(str *u, str *v, str *theStyle)
 
 int p, eof;
 char *buffer;
+char *buffer;
 int lineno, nextlineno, startline, nextstartline;
+extern void debug(int n);
 
 int rowsTOCstyled = 0;
 
@@ -137,7 +194,6 @@ struct { lexval l; char *symbol; } lexes[] =
     { SEMI, ";" },
     { LARROW, "<-" },
     { RARROW, "->" },
-    { DOUBLEARROW, "<->" },
     { ID, "identifier or string" },
     { IS, "<is>" },
     { NOTE, "<note>" },
@@ -150,6 +206,7 @@ struct { lexval l; char *symbol; } lexes[] =
     { GROUP, "<group>" },
     { NEW, "<new>" },
     { STYLE, "<style>" },
+    { CYCLE, "<cycle>"},
     { EndOfFile, "end of file" },
     { NUMBERING, "<numbering>"},
     { ROWS, "<layout>"},
@@ -209,6 +266,7 @@ void removetrailingblanks(str *t)
 lexval readlex(str **lexstr)
 {	*lexstr = newstr("");
 	(*lexstr)->lineno = lineno;
+    (*lexstr)->wasString = 0; // hack for parser to distinguish IDs from strings
 	for(;;)
 	{	char ch = getch();
 
@@ -245,8 +303,8 @@ lexval readlex(str **lexstr)
                     if( !strcmp("keywords", (*lexstr)->s) ) return KEYWORDS;
                     if( !strcmp("keyword", (*lexstr)->s) ) return KEYWORDS;
                     if( !strcmp("norefs", (*lexstr)->s) ) return NOREFS;
-                    // if( !strcmp("flag", (*lexstr)->s) ) error("Use of obsolete 'flag' - use 'highlight' instead\n");
-					return ID;
+                    if( !strcmp("cycle", (*lexstr)->s) ) return CYCLE;
+                    return ID;
 				}
 				ch = getch();
 			} 
@@ -300,11 +358,6 @@ lexval readlex(str **lexstr)
 				}
 				if( nextch() != '-' ) error("< not followed by - to make either <- or <-> arrows");
 				else getch();
-				if( nextch() == '>' )
-				{
-					getch();
-					return DOUBLEARROW;
-				}
 				return LARROW;
             case '=':
                 if( nextch() != '>' )
@@ -326,6 +379,7 @@ lexval readlex(str **lexstr)
                 continue;
 			case '"': // string
 				{	ch = getch();
+                    (*lexstr)->wasString = 1; // hack for parser :-)
 					while( ch != '"' && ch != EndOfFile )
 					{	if( ch == '\\' ) 
 						{	char t;
@@ -369,12 +423,13 @@ void newnode(str **u)
 		(*u)->nodeversion = version; // update version to be latest (in file order)
 	for( node *t = nodeList; t != NULL; t = t->next )
 		if( !strcmp(t->s->s, (*u)->s) )
-    	{ //fprintf(stderr, "existing node %s -- ", u->s);
-    	  //fprintf(stderr, "%s\n", t->s == u? "SAME": "DIFFERENT ADDRESSES!");
+    	{ //fprintf(stderr, "existing node t=%s = us=%s -- ", t->s->s, (*u)->s);
+    	  //fprintf(stderr, "%s = %ld; ", t->s == *u? "SAME": "DIFFERENT ADDRESSES!", (long) t->s);
     	  *u = t->s;
+          //fprintf(stderr, "update *u\n");
     	  return;
     	}
-	// fprintf(stderr, "new node %s at %ld\n", (*u)->s, (long) *u);
+	//fprintf(stderr, "new node %s at %ld\n", (*u)->s, (long) *u);
 	node *new = safealloc(sizeof(node));
 	new->next = nodeList;
 	new->s = *u;
@@ -383,7 +438,7 @@ void newnode(str **u)
 	nodeList = new;
 }
 
-void newarrow(arrow **putonthisarrowlist, str *u, str *v, int doublearrow, int forceadd) 
+void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd)
 {	newnode(&u);
 	newnode(&v);
 
@@ -402,9 +457,11 @@ void newarrow(arrow **putonthisarrowlist, str *u, str *v, int doublearrow, int f
 	new->next = *putonthisarrowlist;
 	new->force = forceadd;
 	new->arrowis = NULL;
+
+    //fprintf(stderr, "parsed %s -> %s\n", u->s, v->s);
+
 	new->u = u;
 	new->v = v;
-	new->doublearrow = doublearrow;
 	*putonthisarrowlist = new;
 }
 
@@ -415,19 +472,48 @@ void getlex()
 }
 
 void whilearrow(arrow **whicharrowlist, int forceadd)
-{	while( lex2->l == LARROW || lex2->l == RARROW || lex2->l == DOUBLEARROW )
-	{	if( lex1->l == HIGHLIGHT || lex3->l == HIGHLIGHT ) { error("highlight cannot be at end of an arrow"); getlex(); break; } 
+{	while( lex2->l == LARROW || lex2->l == RARROW )
+	{	if( lex1->l == HIGHLIGHT || lex3->l == HIGHLIGHT )
+        {   error("highlight cannot be at end of an arrow");
+            getlex();
+            break;
+        }
 		if( lex3->l != ID ) { error("Expected ID after arrow"); getlex(); break; }
 		// myfprintf(stderr, "in whilearrow() read arrow: %s -> %s\n", lex1->s, lex3->s);
-		if( lex2->l == LARROW ) newarrow(whicharrowlist, lex3, lex1, 0, forceadd);
-		else if( lex2->l == RARROW ) newarrow(whicharrowlist, lex1, lex3, 0, forceadd);
+		if( lex2->l == LARROW ) newarrow(whicharrowlist, lex3, lex1, forceadd);
+		else if( lex2->l == RARROW ) newarrow(whicharrowlist, lex1, lex3, forceadd);
 		else // double arrow
 		{	
-			newarrow(whicharrowlist, lex1, lex3, 1, forceadd);
+			newarrow(whicharrowlist, lex1, lex3, forceadd);
 		}
 		getlex();
 		getlex();
 	}
+}
+
+void defineCycleNodes()
+{   // fprintf(stderr, "in defineCycleNodes: %s\n", lexvalue(lex1));
+    int bracketed = lex2->l == LBRA;
+    int ids = 0;
+    if( bracketed ) getlex();
+    while( lex2->l == ID )
+    {   ids++;
+        //fprintf(stderr, "...cycle %s\n", lex2->s);
+        //printf("%ld ... \n", (long) lex2);
+        newnode(&lex2);
+        //printf("%ld ... \n", (long) lex2);
+        lex2->declaredCyclic = 1;
+        getlex();
+    }
+    if( bracketed )
+    {
+        if( lex2->l != RBRA )
+            error("cycle (... needs to end with ')'");
+        else
+            getlex(); // skip RBRA
+    }
+    if( !ids )
+        error("cycle needs to be followed by at least one node name");
 }
 
 int numberingRow(int flat, int row) //kk
@@ -602,7 +688,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
 {	//fprintf(stderr, "parsenodelist()\n");
 	if( lex1->l == ID ) // we have a single node or arrow
 	{	arrow *t = NULL;
-		if( lex2->l == LARROW || lex2->l == RARROW || lex2->l == DOUBLEARROW )
+		if( lex2->l == LARROW || lex2->l == RARROW )
 		{	// single row of arrows
 			//myfprintf(stderr, "in parsenodelist() read arrow: %s -> %s\n", lex1->s, lex3->s);
 			whilearrow(&t, makearrows);
@@ -630,7 +716,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
 		//fprintf(stderr, "list of nodes...\n");
 		arrow *t = NULL;
 		while( lex1->l == ID || lex1->l == HIGHLIGHT )
-		{	if( lex2->l == LARROW || lex2->l == RARROW || lex2->l == DOUBLEARROW )
+		{	if( lex2->l == LARROW || lex2->l == RARROW )
 			{	// single row of arrows in the list
 				// myfprintf(stderr, "in parsenodelist() read arrow in list: %s -> %s\n", lex1->s, lex3->s);
 				whilearrow(&t, makearrows);
@@ -687,22 +773,6 @@ str *basename(char *fullname)
 	return bn;
 }
 
-enum flagcolor iscolor(char *s)
-{	if( !strcmp(s, "blue") ) return blue; 
-	if( !strcmp(s, "white") ) return white; 
-	if( !strcmp(s, "red") ) return red; 
-	if( !strcmp(s, "black") ) return black; 
-	if( !strcmp(s, "yellow") ) return yellow; 
-	if( !strcmp(s, "green") ) return green;
-    if( !strcmp(s, "gray") ) return gray;
-	return noflag;
-}
-
-char *flagdefinitions[] = {"","","","","","","",""};
-int flagsused[] = {0,0,0,0,0,0,0,0};
-int flagsusedaftercascades[] = {0,0,0,0,0,0,0,0};
-int flagcascade[] = {0,0,0,0,0,0,0,0};
-
 void defineflag(char *color, char *meaning, int cascade)
 {	if( iscolor(color) == noflag )
 	{	error("Attempt to define a highlight colour that isn't a known colour");
@@ -726,15 +796,14 @@ void defineflag(char *color, char *meaning, int cascade)
 }
 
 void summarizeMissingFlagDefinitions()
-{
-	for( int i = 1; i <= 6; i++ )
-	{	if( iscolor(flagcolors[i]) != i )
-			error("!!! Internal error !!! flacolors[%d]=%s but iscolor(%s)=%d\n", i, flagcolors[i], flagcolors[i], iscolor(flagcolors[i]));
-	
-		//fprintf(stderr, "%d highlight is colored %s. Used=%d. Defined=%s.\n", i, flagcolors[i], flagsused[i], flagdefinitions[i]);
-		if( flagsused[i] && !*flagdefinitions[i] )
-			error("%s highlight meaning not defined. Say: highlight %s is \"...\"", flagcolors[i], flagcolors[i]);
-	}
+{   for( int i = 1; i <= numberOfColors; i++ )
+    {	if( iscolor(flagcolors[i]) != i )
+            error("!!! Internal error !!! flacolors[%d]=%s but iscolor(%s)=%d\n", i, flagcolors[i], flagcolors[i], iscolor(flagcolors[i]));
+
+        //fprintf(stderr, "%d highlight is colored %s. Used=%d. Defined=%s.\n", i, flagcolors[i], flagsused[i], flagdefinitions[i]);
+        if( flagsused[i] && !*flagdefinitions[i] )
+           error("%s highlight meaning not defined", flagcolors[i]); // , flagcolors[i]
+    }
 }
 
 int checkOverride(char *e)
@@ -758,7 +827,7 @@ int parse(char *skip, char *filename, char *bp)
 	 p = 0;
 	 eof = 0;
 	 buffer = bp;
-	 nextlineno = lineno = 1;
+     nextlineno = lineno = 1;
      p = ifRAWskipToStart(p);
 	 nextstartline = startline = p;
 	 lex1 = newstr("");
@@ -791,6 +860,10 @@ int parse(char *skip, char *filename, char *bp)
         switch( lex1->l )
         {	case NOREFS:
                 norefs = 1;
+                break;
+
+            case CYCLE:
+                defineCycleNodes();
                 break;
 
             case OVERRIDE:
@@ -930,12 +1003,15 @@ int parse(char *skip, char *filename, char *bp)
                 if( checkOverride("highlight") ) break;
                 getlex();
                 str *thenodetoflag = lex1;
+                // fprintf(stderr, "wasString=%d on %s\n", thenodetoflag->wasString, thenodetoflag->s);
                 int cascadeflag = 0;
                 if( !strcmp(lex2->s, "cascade") )
                 {	cascadeflag = 1;
                     getlex();
                 }
-                if( iscolor(thenodetoflag->s) != noflag )
+                // if it is a string, it isn't a color even if it is "red" etc.
+                // a color *has* to be written literally (eg red) and not as a string (eg "red)
+                if( !thenodetoflag->wasString && iscolor(thenodetoflag->s) != noflag )
                 {
                     if( lex2->l != IS ) error("Expected 'is' after highlight <color> ...");
                     else if( lex3->l != ID ) error("Expected string after highlight <color> is ...");
@@ -958,7 +1034,9 @@ int parse(char *skip, char *filename, char *bp)
                         flagsused[thenodetoflag->flag]++;
                     }
                     else
-                        error("Expected blue, white, red, black, yellow, or green highlight colour, but got '%s' instead", lex3->s);
+                    {   error("Expected standard color but got '%s' instead", lex3->s);
+                        showAllColors();
+                    }
                     getlex();
                     getlex();
                 }
@@ -1089,15 +1167,12 @@ int parse(char *skip, char *filename, char *bp)
 				while( nl != NULL )
 				{	// fprintf(stderr, "new style for %s is %s \n", nl->s->s, lex1->s);
 					if( nl->v != NULL ) // an arrow
-					{
-						if( makenewstyle )
-							error("arrows cannot be made into new styles");
-						else
-						{	// bug: new->doublearrow is ignored for style setting !!
-							// is it already defined?
-							defineArrowStyle(nl->u, nl->v, lex1);
-						}
-					}
+                    {
+                        if( makenewstyle )
+                            error("arrows cannot be made into new styles");
+                        else
+                            defineArrowStyle(nl->u, nl->v, lex1);
+                    }
 					else // a node
 					{	if( nl->u->style != NULL ) 
 						{	if( nl->u->style == lex1 )
@@ -1146,7 +1221,7 @@ int parse(char *skip, char *filename, char *bp)
 						getlex();
 						getlex();
 						break;
-					case LARROW: case RARROW: case DOUBLEARROW:
+					case LARROW: case RARROW:
 						whilearrow(&arrowList, 1);
 						break;
                     default: // an isolated node
