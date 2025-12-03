@@ -21,15 +21,6 @@ void auxcascade(enum flagcolor fly, str *t, int depth) // recursive cascading
 				auxcascade(fly, a->v, depth+1);
 			}
 		}
-		if( a->doublearrow && a->v == t )
-		{	a->flag = fly;			
-			if( a->u->flag != fly )
-			{	//fprintf(stderr, " matches %s -> %s\n", a->u->is->s, a->v->is->s);
-				a->u->originalflag = a->u->flag;
-				a->u->flag = fly;
-				auxcascade(fly, a->u, depth+1);
-			}
-		}
 	}
 }
 
@@ -67,6 +58,116 @@ void mypadstring(FILE *opfd, char *str, int max)
         fputc(' ', opfd);
 
     myfprintf(opfd, "%t", str);
+}
+
+char *nodename(str *s)
+{   if( s->is && s->is != NULL ) return s->is->s;
+        return s->s;
+}
+
+void findCycles()
+{   // we don't rely on findComponents in case it's got bugs or interactions with findCycles somehow :-)
+    // besides, each component may have more than one cycle
+    // initially, all nodes have ->cyclePhase set to 0
+
+    // how many nodes? and number each node
+    int N = 0;
+    int max = 0;
+
+    for( node *t = nodeList; t != NULL; t = t->next )
+    {   int tmp;
+        t->s->nodeNumber = N; // numbering from 0
+        // fprintf(stderr, "node %s is %d\n", t->s->s, t->s->nodeNumber);
+        N++;
+        if( (tmp = strlen(t->s->s)) > max )
+            max = tmp;
+    }
+
+    // create a path length NxN matrix m
+    int huge = N+1;
+    int **m = (int**) safealloc((N+1) * sizeof(int*));
+    for( int i = 0; i < N; i++ )
+    {   m[i] = (int*) safealloc((N+1) * sizeof(int));
+        for( int j = 0; j < N; j++ )
+            m[i][j] = huge;
+    }
+    // fprintf(stderr, "allocated m\n");
+
+    struct cycles
+    { str *s; int cycle; }
+    *cycles = (struct cycles*) safealloc(N * sizeof(struct cycles*));
+
+    {   int i = 0;
+        for( node *t = nodeList; t != NULL; t = t->next )
+        {   cycles[i].s = t->s;
+            cycles[i].cycle = 0;
+            i++;
+        }
+    }
+
+    // for each edge, put path length of 1 in m
+    for( arrow *a = arrowList; a != NULL; a = a->next )
+    {   // arrow goes from a->u to a->v
+        //fprintf(stderr, "arrow goes from %s to %s\n", cycles[a->u->nodeNumber].s->s, cycles[a->v->nodeNumber].s->s);
+        m[a->u->nodeNumber][a->v->nodeNumber] = 1;
+    }
+
+    if( 0 )
+    {   fprintf(stderr, "Edges:\n");
+        for( int i = 0; i < N; i++ )
+        {   mypadstring(stderr, cycles[i].s->s, max);
+            fprintf(stderr, " ");
+            for( int j = 0; j < N; j++ )
+                fprintf(stderr, m[i][j] == huge? "  - ": "%3d ", m[i][j]);
+            fprintf(stderr, "\n");
+        }
+    }
+
+    // Floyd-Warshall to find shortest paths
+    for( int k = 0; k < N; k++ )
+        for( int i = 0; i < N; i++ )
+            for( int j = 0; j < N; j++ )
+                if( m[i][j] > m[i][k] + m[k][j] )
+                    m[i][j] = m[i][k] + m[k][j];
+
+    if( 0 )
+    {   fprintf(stderr, "Paths:\n");
+        for( int i = 0; i < N; i++ )
+        {   mypadstring(stderr, cycles[i].s->s, max);
+            fprintf(stderr, " ");
+            for( int j = 0; j < N; j++ )
+                fprintf(stderr, m[i][j] == huge? "  - ": "%3d ", m[i][j]);
+            fprintf(stderr, "\n");
+        }
+    }
+
+    // there is a cycle when you can get from a to b and from b to a
+    // in particular if m[a][a] < huge, a is on a cycle
+    // hence if m[a][b] < huge and m[b][a] < huge then a (and b if different) are both on a cycle
+
+    int anyUndeclaredCycles = 0;
+    for( int i = 0; i < N; i++ )
+    {   if( m[i][i] < huge )
+        {   if( !cycles[i].s->declaredCyclic )
+                anyUndeclaredCycles = cycles[i].cycle = 1;
+        }
+        else if( cycles[i].s->declaredCyclic )
+            myfprintf(stderr, "Warning: %t declared in a cycle BUT is not in a cycle\n", nodename(cycles[i].s));
+    }
+
+    if( anyUndeclaredCycles )
+    {   fprintf(stderr, "There are %d nodes\n", N+1);
+        beginError;
+        fprintf(stderr, "Warning: The following nodes are on undeclared cycles:\n");
+        for( int i = 0; i < N; i++ )
+            if( cycles[i].cycle && !cycles[i].s->declaredCyclic )
+            {   mypadstring(stderr, cycles[i].s->s, max+5);
+                if( cycles[i].s->is != NULL ) myfprintf(stderr, " is \"%t\"", nodename(cycles[i].s));
+                fprintf(stderr, "\n");
+                cycles[i].s->cyclic = 1;
+            }
+        endError;
+    }
 }
 
 int numberOfComponents = 0;
@@ -123,8 +224,7 @@ void findComponents() // weakly connected components
 	{	myfprintf(stderr, "Warning: There are %d components, so there may be missing arrows that should have linked %s components", numberOfComponents, numberOfComponents == 2? "the": "some"); 
                 myfprintf(stderr, "\n         - 'components' here means weakly connected components\n         - i.e., groups of nodes connected by arrows, regardless of which way they point\n");
 		if( !componentsOption )
-			myfprintf(stderr, "         Use option -c to show more details");
-		myfprintf(stderr, "\n");
+			myfprintf(stderr, "         Use option -c to show more details\n");
 	}
 
  	if( componentsOption )
@@ -191,10 +291,6 @@ int checkOneRtrans(str *u, str *v)
             }
             if( checkOneRtrans(a->v, v) )
                 return 1;
-        }
-        if( a->doublearrow && a->v == u &&  a->v == u )
-        {   //fprintf(stderr, "yes! <->");
-            return 1;
         }
     }
     return 0;

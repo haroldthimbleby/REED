@@ -26,7 +26,7 @@ str *newstr(char *s)
 	new->l = ID;
 	new->is = new->note = new->style = new->group = new->exampleGroupMember = NULL;
 	new->pointsTo = new->pointedFrom = new->isgroup = new->isstyle = new->rowDefaultNodeStyle = new->cascade = 0;
-	new->flag = new->originalflag =noflag;
+	new->flag = new->originalflag = noflag;
 	new->plain = 0;
 	new->rankx = new->ranky = 0;
 	new->color = 0;
@@ -34,7 +34,9 @@ str *newstr(char *s)
 	new->nodeversion = undefinedVersion;
 	new->noderef = "";
 	new->component = 0;
+    new->cyclic = new->declaredCyclic = 0;
     new->keywordsOK = 1;
+    new->wasString = 0;
 	strcpy(new->s, s);
 	return new;
 } 
@@ -116,6 +118,7 @@ int basenameOption = 0,
     hoOption = 0,
     pullOption = 0,
     versionOption = 0,
+    allColorsOption = 0,
     keywordsOption = 0;
 
 char *outputbasename = ""; // no basename is zero length string
@@ -140,6 +143,7 @@ structOption options[] =
 {	{"-#", "show comments, if any", &commentOption, 0},
     {"-basename", "<path/file.ext> set name of generated files (replacing .ext with .gv, .html, .pdf, etc)", &basenameOption, 0},
     {"-c", "show weakly connected components", &componentsOption, 0},
+    {"-allcolors", "list all colors that are available for highlighting", &allColorsOption, 0},
     {"-colors", "list all colors used on standard output", &colorsOption, 0},
     {"-colors+", "does -colors and also lists meanings of all colors used on standard output", &colorsPlusOption, 0},
     {"-F", "highlight flags in drawing*- unfortunately due to a Graphviz bug, this breaks up any groups", &flagOption, 1},
@@ -169,7 +173,7 @@ structOption options[] =
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption, 0},
     {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: tags \"start\" \"end\"", &handleTags, 0},
     {"-v", "verbose mode", &verboseOption, 0},
-    {"-version", "state the version", &versionOption, 0},
+    {"-version", "state the version number reed", &versionOption, 0},
     {"-w", "what versions are used in these files?*- helpful to know if using the v= flag", &showVersionsOption, 0},
     {"-watch", "run reed when any file changes (nice with -o)", &handleWatch, 0},
 	{"-x", "generate an .xml file*- representing all REED data for import into other applications", &xmlOption, 0},
@@ -261,7 +265,7 @@ int main(int argc, char *argv[])
             if( handleInsert )
             {   if( i+1 >= argc ) // can't use error() as there is no lineno yet
                     fatalError("-insert <text> must be followed by some text to insert");
-                fprintf(stderr, "-insert this text: %s\n", argv[i+1]);
+                // fprintf(stderr, "-insert this text: %s\n", argv[i+1]);
                 opened = 1;
                 openedfile = "inserted-text";
                 bp = argv[i+1];
@@ -337,7 +341,7 @@ int main(int argc, char *argv[])
             {   nolineerror("** %s cannot read from \"%s\" (maybe a permissions problem?)\n", argv[0], openedfile);
                 continue;
             }
-            bp[stat_buf.st_size] = (char) 0;
+            bp[stat_buf.st_size] = (char) 0; // EOF is made (char) 0
             opened = 1;
             //if( verboseOption ) fprintf(stderr, ": File %s\n", processedFileName);
             //fprintf(stderr, "Parse %s starting with successfulskip=%d\n", openedfile, successfulskip);
@@ -353,7 +357,7 @@ int main(int argc, char *argv[])
             }
             processedFileName = openedfile;
             //fprintf(stderr, "file processed = %s\n", openedfile);
-            free(bp);
+            //free(bp); // we need to keep bp around in case we later generate error messages quoting it
             fclose(fp);
         }
         else nolineerror("** %s cannot open file \"%s\": %s", argv[0], openedfile, strerror(errno));
@@ -367,11 +371,14 @@ int main(int argc, char *argv[])
     }
     if( showRulesOption )
         explainTranslationRules();
+    if( allColorsOption )
+        showAllColors();
     if( !opened )
         fprintf(stderr, "** %s did not process any files\n", argv[0]);
     if( skip && !successfulskip )
         nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
     findComponents(); // find components before generating HTML, Latex, etc
+    findCycles();
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
     {   if( !setSomeInterestingOption ) graphvizOption = 1; // effectively set -g if nothing else
 
@@ -387,11 +394,12 @@ int main(int argc, char *argv[])
         if( keywordsOption )
             summarisekeywords(stderr);
     }
-    else
+
     if( versionOption )
-        fprintf(stderr, "%s version 2.1 compiled %s, %s\n", argv[0], __TIME__, __DATE__);
-    else
-    if( !syntaxOption && !showRulesOption && !opened )
+        fprintf(stderr, "%s version 2.2 compiled %s, %s\n", argv[0], __TIME__, __DATE__);
+
+    if( !syntaxOption && !showRulesOption && !opened && !allColorsOption && !versionOption )
         usage(argv[0]);
+
     return 0;
 }

@@ -4,6 +4,10 @@
 char *flagstyle = "fillcolor=%s; style=filled; penwidth=2; shape=note; ";
 char *defaultstyle = "fillcolor=\"gray90\"; style=filled; shape=ellipse; fontname=\"Helvetica\"; ";
 
+int darkcolor(int fc)
+{   return fc == purple || fc == navy || fc == maroon || fc == red || fc == blue || fc == black || fc == green || fc == gray || fc == teal || fc == olive;
+}
+
 rownodes *cols = NULL;
 extern char *title, *date, *version, *abstract, *direction;
 extern void summarizeMissingFlagDefinitions();
@@ -111,7 +115,6 @@ void xml(FILE *opfd)
 			for( arrow *a = arrowList; a != NULL; a = a->next )
 				if( a->u == t->s )
 				{	myfprintf(opfd, "    <arrow to=\"%s\"", a->v->s);
-					if( a->doublearrow ) myfprintf(opfd, " doubleArrow=\"true\"");
 					myfprintf(opfd, ">\n");
 					xmlattribute(opfd, "    ", "version", t->s->nodeversion);
 					
@@ -231,10 +234,9 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 		{	if( col->label )
 			{	// printf("  Pass 2: %s is the row label\n", col->node->is? col->node->is->s: col->node->s);
 				strpad(col->node->is? &col->node->is: &col->node, maxlength);
-				//newarrow(arrow **putonthisarrowlist, str *u, str *v, int doublearrow, int forceadd) 
 				myfprintf(opfd, "\"%S\";", col->node->s);
 				if( col->down != NULL )
-				{	newarrow(&arrowList, col->node, col->down->node, 0, 1);
+				{	newarrow(&arrowList, col->node, col->down->node, 1);
 					defineArrowStyle(col->node, col->down->node, newstr("style=invis"));
 				}
 				if( col->node->style == NULL )
@@ -268,7 +270,8 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			{	enum flagcolor fc = t->s->flag;
 				char *color = flagcolor(fc), *edgecolor = color, *fontcolor = "black";
 				if( fc == white ) edgecolor = "black";
-				if( fc == red || fc == blue || fc == black || fc == green ) fontcolor = "white";
+				if( darkcolor(fc) )
+                    fontcolor = "white";
 				myfprintf(opfd, "subgraph \"clusterflag%d\" { \"%s\"; color=%s; bgcolor=%s; shape=circle; label=\"Flagged %s\"; labelloc=\"b\"; fontcolor=\"%s\"; fontsize=12; fontname=\"Helvetica\"; penwidth=2; };\n", flagclustern++, t->s->s, edgecolor, color, color, fontcolor);
 			}
 	}
@@ -311,9 +314,11 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			if( !rowsTOCstyled && t->s->flag != noflag ) // put last, flag style overrides other styles
 			{	if( t->s->flag == white ) myfprintf(opfd, "color=black;");
 				myfprintf(opfd, flagstyle, flagcolor(t->s->flag)); 
-				if( t->s->flag == blue || t->s->flag == red || t->s->flag == black )
+				if( darkcolor(t->s->flag))
                     myfprintf(opfd, "fontcolor=white;");
 			}
+            if( t->s->cyclic )
+                myfprintf(opfd, "peripheries=2;");
 			fprintf(opfd, "];\n");
 		}
 	
@@ -325,7 +330,6 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 				t->v->exampleGroupMember == NULL? t->v->s: t->v->exampleGroupMember->s);
 			if( t->v->isgroup ) myfprintf(opfd, "lhead=\"cluster%S\"", t->v->s);
 			if( t->u->isgroup && t->v->isgroup ) myfprintf(opfd, "; ");
-			if( t->doublearrow ) fprintf(opfd, " dir=both; ");
 
 			for( arrow *a = styledArrowList; a != NULL; a = a->next )
 			{	if( a->u == t->u && a->v == t->v )
@@ -367,11 +371,6 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 				//printf("  %s->%s", t->u->s, t->v->s);
 				printf(" free IS %s\n", t->arrowis != NULL? t->arrowis->s: "");
 			}
-			if( t->doublearrow ) 
-			{	fprintf(opfd, "%sdir=both;", openbra);
-				openbra = "";
-				closebra = "]";
-			}
 			for( arrow *a = noteArrowList; a != NULL; a = a->next )
 				if( t->u == a->u && t->v == a->v && a->arrowis != NULL )
 				{	myfprintf(opfd, "%slabel=\"%t\";", openbra, a->arrowis->s);
@@ -392,7 +391,6 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 
 void connectedComponents()
 {
-// int expanded, component;
 	int current = 0;
 	for( arrow *t = arrowList; t != NULL; t = t->next )
 		if( !t->expanded && t->component == current )
@@ -445,7 +443,6 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 		else 
 		*/
 		myfprintf(opfd, "%s\n   \"%m\" -> \"%m\"", commarise, t->u->s, t->v->s);
-		if( t->doublearrow ) myfprintf(opfd, ", \"%m\" -> \"%m\"", t->v->s, t->u->s);
 		commarise = ",";
 	}	
     myfprintf(opfd, "\n};\n");
@@ -472,7 +469,7 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
             {
                 for( struct keywordlist *tt = t->s->keywords; tt != NULL; tt = tt->next )
                 {   myfprintf(opfd, "%s\"%s\"", sep, tt->keyword->s);
-                    sep = ",\n";
+                    sep = ", ";
                 }
             }
             commarise = "},\n";
@@ -573,7 +570,8 @@ void generateFiles(char *filename)
     checkNumbering();
 
 	// now everything collected, replace use of style nodes with the style values themselves
-	for( node *t = nodeList; t != NULL; t = t->next )
+
+    for( node *t = nodeList; t != NULL; t = t->next )
     {	if( (t->s->rankx || t->s->ranky) && t->s->noderef && *t->s->noderef )
         {   fprintf(stderr, "Warning: node %s has references set by ref (%s) and numbering (", t->s->s, t->s->noderef);
             if( t->s->rankx ) fprintf(stderr, "%d", t->s->rankx);
@@ -611,9 +609,8 @@ void generateFiles(char *filename)
 					fprintf(stderr, "Warning: Numbering for %s '%s' not defined\n", t->s->isgroup? "group": "node", t->s->s);
 				// fprintf(stderr, "Node %s @ %d.%d\n", t->s->s, t->s->rankx, t->s->ranky);
 			}
-			
-	cascade();
-    summarizeMissingFlagDefinitions();
+
+    cascade();
     sortkeywords(&allkeywords);
 
     if( 0 )
@@ -639,6 +636,7 @@ void generateFiles(char *filename)
                 swapped = 1;
             }
     } while( swapped );
+    summarizeMissingFlagDefinitions();
     makefiles(filename);
 }
 

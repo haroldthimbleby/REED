@@ -17,9 +17,9 @@ $(TARGET) : $(OBJECTS)
 main.o: SyntaxCode.c header.h notes.h
 
 SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
-	SyntaxCodeScript > SyntaxCode.c
+	SyntaxCodeScript SyntaxOutline.tex > SyntaxCode.c
 	git add SyntaxCode.c SyntaxOutline.tex
-	git commit -m "Updated SyntaxOutline.tex"
+	git commit -m "Updated SyntaxOutline.tex and SyntaxCode.c (generated from SyntaxOutline.tex)"
 
 paper: inputs betweenness.png
 	cd ../REED-paper; pdflatex REED.tex
@@ -33,6 +33,8 @@ betweenness.png: lib/pow-reed.nb plotBetweenness.nb
 	wolframscript -file plotBetweenness.nb
 	@printf "\033[0m"
 	cp betweenness.png ../REED-paper/figures
+	cp betweenness1.png ../REED-paper/figures
+	cp betweenness2.png ../REED-paper/figures
 
 inputs: reed
 	reed -pick yellow -basename lib/pow-reed-yellow v=v2 -l -g lib/pow-reed
@@ -46,10 +48,12 @@ inputs: reed
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv3.pdf
 	cp lib/pow-reed-xrefs.aux ../REED-paper/figures
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/reedv3.pdf
-	grab lib/pow-reed.tex "/Node v3-2.4 Unsupervised Abbott engineer/" "/manual edits to PrecisionWeb/" > ../REED-paper/figures/narrative-examplev3.tex
+	grab lib/pow-reed.tex "/Node v3-2.2 Unsupervised Abbott engineer/" "/manual edits to PrecisionWeb/" > ../REED-paper/figures/narrative-examplev3.tex
 	@echo "\\\\noindent\\hbox{" > ../REED-paper/figures/flags-examplev3.tex
 	grab lib/pow-reed.tex "/hbox{.colorflag/" "/end{tabular/" >> ../REED-paper/figures/flags-examplev3.tex
 	echo "}" >> ../REED-paper/figures/flags-examplev3.tex
+	reed lib/cycles
+	dot -Tpdf lib/cycles.gv  > ../REED-paper/figures/cycles.pdf
 	reed -g -insert norefs lib/toc-styles lib/pow-toc
 	dot -Tpdf lib/pow-toc.gv > ../REED-paper/figures/pow-toc.pdf
 	reed -g lib/pow-basic
@@ -72,6 +76,8 @@ rsm: lib/darzi
 tidy:
 	rm -f *.o
 	rm betweenness.png 
+	rm betweenness1.png
+	rm betweenness2.png
 
 website: paper narrative $(WEBSITE)/REED.pdf $(WEBSITE)/pow-toc.pdf $(WEBSITE)/reedv2.pdf $(WEBSITE)/reedv3.pdf $(WEBSITE)/pow-reed.xml $(WEBSITE)/pow-reed.html
 

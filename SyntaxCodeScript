@@ -1,3 +1,4 @@
+echo Convert $1 into C code to include into main.c 1>&2
 awk 'BEGIN { blankline = 0 }
 {	if( length($0) > 0) 
 	{	if( blankline ) print "\"\\n\""
@@ -8,4 +9,4 @@ awk 'BEGIN { blankline = 0 }
 	else
  		blankline = 1
 }
-' SyntaxOutline.tex
+' $1

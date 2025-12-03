@@ -3,8 +3,14 @@
 
 #define MAXERRORS 5 // before quitting
 
-extern int p, eof;
 extern char *buffer;
+
+void debug(int n)
+{ for( int i = 0; i <= 22; i++ )
+    fprintf(stderr, "%d: buffer[%2d] = %c\n", n, i, buffer[i]);
+}
+
+extern int p, eof;
 extern str *lex1, *lex2, *lex3;
 extern int lineno, nextlineno, startline, nextstartline;
 
@@ -109,7 +115,7 @@ void error(char *fmt, ...)
 		                       c = va_arg(ap, int);
 		                       fprintf(stderr, "%c", c);
 		                       break;
-		                default:
+                       default:
 		                		fprintf(stderr, " !!!(2) unknown format %%%c !!!\n", *fmt);
 		                		break;
 		       	}
@@ -119,16 +125,16 @@ void error(char *fmt, ...)
        			fprintf(stderr, "%c", *fmt++);       
        }
        va_end(ap);
-       fprintf(stderr, "\n");
-	for( int i = startline; i < p && buffer[i] != '\n' && buffer[i]; i++ )
-	{	fprintf(stderr, "%c", buffer[i]);
-	}
-	fprintf(stderr, "\n");
-	{	for( int i = startline; i < p-1; i++ )
+
+    fprintf(stderr, "\n");
+    for( int i = startline; i < p && buffer[i] != '\n' && buffer[i]; i++ )
+		fprintf(stderr, "%c", buffer[i]);
+    fprintf(stderr, "\n");
+    for( int i = startline; i < p-1; i++ )
 			fprintf(stderr, " ");
-		fprintf(stderr, "^\n");
-	}
-	if( ++errcount > MAXERRORS )
+    fprintf(stderr, "^\n");
+
+    if( ++errcount > MAXERRORS )
 	{	fprintf(stderr, "... too many errors!\n");
         endError;
         exit(1);

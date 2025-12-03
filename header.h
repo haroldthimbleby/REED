@@ -11,6 +11,10 @@
 
 extern void fatalError(char *fmt, ...);
 
+extern void debug(int n);
+
+extern void showAllColors();
+
 void *safealloc(size_t size);
 
 extern int parse(char *skip, char *filename, char *bp);
@@ -24,7 +28,9 @@ extern void appendVersions(char *version);
 
 typedef enum { None, String, Node, Arrow, Annotation } type;
 
-enum flagcolor { noflag, black, blue, gray, green, red, white, yellow };  // in alpha order
+enum flagcolor { noflag, aqua, black, blue, fuchsia, gray, green,
+                 lime, maroon, navy, olive, orange, purple, red,
+                 silver, teal, white, yellow };  // in alpha order
 
 enum flagcolor pullString;
 
@@ -32,10 +38,10 @@ extern int norefs;
 
 typedef enum {
             DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK, NOREFS,
-			DOUBLEARROW, IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS, INTRODUCTION, CONCLUSION,
+			IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS, INTRODUCTION, CONCLUSION,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
 			ID,// assumes the string s is initialised
-            TAGS, LATEXDEFINITIONS, HTMLDEFINITIONS
+            TAGS, LATEXDEFINITIONS, HTMLDEFINITIONS, CYCLE
 		 } lexval;
 
 typedef struct tmpstr { 
@@ -47,10 +53,14 @@ typedef struct tmpstr {
 	int color;
 	int lineno;
 	int component;
-	enum flagcolor flag, originalflag;
+    enum flagcolor flag, originalflag;
 	char *nodeversion, *noderef;
     struct keywordlist *keywords;
+    int nodeNumber; // for cycle algorithms, etc
+    int cyclic; // is node on a cycle?
+    int declaredCyclic; // if REED has said cyclic <node>?
     int keywordsOK;
+    int wasString;
 } str;
 
 extern void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip);
@@ -78,18 +88,19 @@ typedef struct
     int *optionFlag;
     int needGraphViz;
 } structOption;
+
 extern int verboseOption, graphvizOption, openOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption, IDsOption,
 	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption, goOption, hoOption, keywordsOption;
 
 extern void generateFiles(char *filename);
 
-typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct keywordlist *keywords; int force; int doublearrow; struct tmparrow *next;
+typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct keywordlist *keywords; int force; struct tmparrow *next;
 		// flags for connected components analysis
 		int expanded, component;
 		enum flagcolor flag;
 	} arrow;
 	
-extern void newarrow(arrow **putonthisarrowlist, str *u, str *v, int doublearrow, int forceadd);
+extern void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd);
 
 typedef struct tmpnode { str *s; struct tmpnode *next; } node;
 
@@ -116,6 +127,7 @@ extern char *version;
 extern void saveCheckRtrans(str *claims, str *u, str *v);
 extern void checkAllRtrans();
 extern void findComponents();
+extern void findCycles();
 extern void explainTranslationRules();
 
 extern int numberOfComponents;
@@ -160,3 +172,5 @@ extern void noteaddkeywordtolist(str *keyword, struct keywordlist **keywords);
 
 extern int keywordcmp(char *keyword, char *pattern);
 
+
+extern const int numberOfColors;
