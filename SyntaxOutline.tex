@@ -1,4 +1,4 @@
-Use reed (no parameters) to summarise flags
+Use reed (with no parameters) to summarise flags
 
 Syntax summary
 ==============
@@ -65,13 +65,13 @@ norefs!Nodes without reference numbers will not be reported as errors
 note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them id1
 numbering ( { ( id-or-star++ ) }++ )!Make node references row.column numbers following the grid layout
 ref id1 is id2!Set the reference of node id1 to be id2
-rows [ TOC ] ( { id ( id++ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling
+layout [ TOC ] ( { id ( id++ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling
 style node-or-arrow-list is id!Set style of nodes or arrows, either to a named style or to an explicit Dot specification
 tags id1 id2!Only process REED code between id1 (begin) and id2 (end)
 version id!Subsequent REED code is version id (see flag v=value)
 
 ;!semicolons are empty statements, and can be placed freely between statements!... and in note statements for legibility
-override ...!Permit conflicting commands (e.g., title) to override earlier commands (used with version id and flag v=id)
+override ...!Permit conflicting commands (e.g., title or version) to override earlier commands
 
 ### Apart from override, tags, and version the order of commands does not matter
 ### Except: author, htmldefinitions, and latexdefinitions append in REED file order
