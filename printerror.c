@@ -56,17 +56,17 @@ void nolineerror(char *fmt, ...)
 		                       c = va_arg(ap, int);
 		                       fprintf(stderr, "%c", c);
 		                       break;
-                    case 'N':
-                        for( s = va_arg(ap, char *); *s; s++ )
-                             switch( *s )
-                                {
-                                    case '\n': fprintf(stderr, " "); break;
-                                    case '\t': fprintf(stderr, " "); break;
-                                    default:   fprintf(stderr, "%c", *s);
-                                }
-                        break;
+                        case 'N':
+                            for( s = va_arg(ap, char *); *s; s++ )
+                                 switch( *s )
+                                    {
+                                        case '\n': fprintf(stderr, " "); break;
+                                        case '\t': fprintf(stderr, " "); break;
+                                        default:   fprintf(stderr, "%c", *s);
+                                    }
+                            break;
                     default:
-		                		fprintf(stderr, " !!!(1) unknown format %%%c !!!\n", *fmt);
+		                		fprintf(stderr, " !!! nolineerror() unknown format %%%c !!!\n", *fmt);
 		                		break;
 		       	}
 		       	fmt++;
@@ -74,13 +74,25 @@ void nolineerror(char *fmt, ...)
        		else
        			fprintf(stderr, "%c", *fmt++);       
        }
-       va_end(ap);
-       fprintf(stderr, "\n");
+    va_end(ap);
+    fprintf(stderr, "\n");
 	if( ++errcount > MAXERRORS )
 	{	fprintf(stderr, "... too many errors!\n");
         endError;
 		exit(1);
 	}
+    endError;
+}
+
+void warning(char *fmt, ...)
+{
+    beginError;
+    fprintf(stderr, "Warning: ");
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
+    fprintf(stderr, "\n");
     endError;
 }
 

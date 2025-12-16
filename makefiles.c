@@ -34,7 +34,7 @@ void generated(char *filename, char *suffix, char *reason)
     }
 }
 
-void makefiles(char *filename)
+void makefiles(char *targetVersion, char *filename)
 {       FILE *fd = NULL;
     str *base = basename(filename);
 
@@ -60,7 +60,7 @@ void makefiles(char *filename)
         fd = fopen(filename = newappendcstr(base, ".gv")->s, "w");
         if( fd == NULL )
             fatalError("Can't open %s (graphviz file) for writing", filename);
-        dot(fd, title, version, date, direction);
+        dot(fd, title, targetVersion, date, direction);
         fclose(fd);
         generated(filename, "", "dot file of the REED graph");
         if( goOption )
@@ -183,7 +183,7 @@ void makefiles(char *filename)
     {    fd = fopen(filename = newappendcstr(base, ".nb")->s, "w");
         if( fd == NULL ) error("Can't open %s (mathematica file) for writing", filename);
         else
-        {    mathematica(fd, title, version, authors, date, abstract);
+        {   mathematica(fd, title, version, authors, date, abstract);
             fclose(fd);
             generated(filename, "", "Mathematica definition of the REED graph");
         }

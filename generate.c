@@ -140,22 +140,25 @@ void xml(FILE *opfd)
 }
 
 int printrank(FILE *opfd, str *n, char *version) // for tex file
-{	if( *n->nodeversion )
+{	char *dash = ""; // insert a dash if version AND (node ref OR ranks)
+    if( *n->nodeversion )
 	{	//fprintf(stderr, "Version: %s\n", n->nodeversion);
-		fprintf(opfd, "%s-", n->nodeversion);
+		fprintf(opfd, "%s", n->nodeversion);
+        dash = "-";
 	}
 	if( n->noderef && *n->noderef )
-	{	fprintf(opfd, "%s", n->noderef);
+	{	fprintf(opfd, "%s%s", dash, n->noderef);
 	}
 	else
 	{
 		if( n->rankx )
-		{	fprintf(opfd, "%d", n->rankx);
+		{	fprintf(opfd, "%s%d", dash, n->rankx);
+            dash = "";
 			if( n->ranky )
 				fprintf(opfd, ".");
 		}
 		if( n->ranky )
-			fprintf(opfd, "%d", n->ranky);
+			fprintf(opfd, "%s%d", dash, n->ranky);
 	}
 	return *version || n->rankx || n->ranky;
 }
@@ -207,7 +210,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 	myfprintf(opfd, "label=\"");
 	if( *title ) myfprintf(opfd, "%j", title);
  	if( *version ) myfprintf(opfd, "\n%j", version);
- 	if( *date )  myfprintf(opfd, "%s%j", *title || *version? ", ": "", date);
+ 	if( *date ) myfprintf(opfd, "%s%j", *title || *version? ", ": "", date);
     if( pullString != noflag )
     {   char *s = flagcolor(pullString);
         myfprintf(opfd, ".  %c%s nodes only\n", toupper(*s), &s[1]);
@@ -292,6 +295,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			printNodeLabel(opfd, t, version);
 			fprintf(opfd, "\n};\n\n");
 		}
+
 	//for( node *t = nodeList; t != NULL; t = t->next )
 	//	printf("%s: group=%d, style=%d\n",t->s->s,t->s->isgroup,t->s->isstyle); 
 
@@ -299,8 +303,8 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 		if( pullnode(t->s) && !t->s->isgroup && !t->s->isstyle && t->s->l != HIGHLIGHT )
 		{	myfprintf(opfd, "  \"%s%S\"", t->s->isgroup? "cluster": "", t->s->s);
 			myfprintf(opfd, " [");
-			if( !rowsTOCstyled && t->s->style == NULL ) // do not override an explicit style
-				myfprintf(opfd, "%s", defaultstyle);
+		//	if( !rowsTOCstyled && t->s->style == NULL ) // do not override an explicit style
+			//	myfprintf(opfd, "%s", defaultstyle);
 			if( rowsTOCstyled )
 			{	printColor(opfd, "rdylgn", rowcounter, t->s->rowDefaultNodeStyle);
 				myfprintf(opfd, "shape=box; fontname=Helvetica; ");
@@ -315,11 +319,13 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			{	if( t->s->flag == white ) myfprintf(opfd, "color=black;");
 				myfprintf(opfd, flagstyle, flagcolor(t->s->flag)); 
 				if( darkcolor(t->s->flag))
-                    myfprintf(opfd, "fontcolor=white;");
+                    myfprintf(opfd, "fontcolor=\"white\";");
 			}
             if( t->s->cyclic )
-                myfprintf(opfd, "peripheries=2;");
-			fprintf(opfd, "];\n");
+                myfprintf(opfd, "peripheries=3;");
+            if( !t->s->visible )
+                myfprintf(opfd, "style=invis;");
+            fprintf(opfd, "];\n");
 		}
 	
 	fprintf(opfd, "\n");
@@ -352,8 +358,11 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 				t->v->exampleGroupMember == NULL? t->v->s: t->v->exampleGroupMember->s);
 				fprintf(stderr, " in group IS %s\n",  t->arrowis != NULL? t->arrowis->s: "");
 			}
-			fprintf(opfd, "]");
-			fprintf(opfd, ";\n");
+
+            if( !t->u->visible || !t->v->visible )
+                myfprintf(opfd, "color=invis;");
+
+            fprintf(opfd, "];\n");
 		}
 		else
         if( pullnode(t->u) && pullnode(t->v) )
@@ -382,7 +391,12 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			if( t->flag != noflag )
 			{	myfprintf(opfd, "%scolor=%s;penwidth=4;", openbra, flagcolors[t->flag]);	
 				closebra = "]";
+                openbra = "";
 			}
+            if( !t->u->visible || !t->v->visible )
+            {   myfprintf(opfd, "%sstyle=invis;", openbra);
+                closebra = "]";
+            }
 			fprintf(opfd, "%s;\n", closebra);
 		}
 	}
@@ -560,7 +574,63 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     //myfprintf(opfd, ", \"Input\"]]}];\n");
 }
 
-void generateFiles(char *filename)
+void styleReplace(str *target, char *styleName, str *replace)
+{   // scan target for occurences styleName and replace with replace->s
+    //fprintf(stderr, "replace %s\n  in |%s|\n  with |%s|\n", styleName, target->s, replace->s);
+    int len = strlen(styleName);
+    for( char *s = target->s; *s; s++ )
+    {   if( !strncmp(s, styleName, len) )
+        {
+            //fprintf(stderr, "replace %s\n  in |%s|\n  with |%s|\n", styleName, target->s, replace->s);
+            *s = (char) 0;
+            //fprintf(stderr, ">>> |%s|\n", &s[len]);
+            str *appending = newstr(&s[len]);
+            //fprintf(stderr, ">>> |%s|\n", appending->s);
+            appendstr(target, replace);
+            //fprintf(stderr, "  making |%s|\n", target->s);
+            //fprintf(stderr, ">>> |%s|\n", appending->s);
+            //fprintf(stderr, "  WAS check: |%s|\n", &s[len]);
+            appendstr(target, appending);
+            //fprintf(stderr, "  then   |%s|\n", target->s);
+        }
+    }
+}
+
+int versionstrcmp(char *a, char *b)
+// like strcmp
+// but runs of digits are integers
+// uppercase before lower case for each letter
+{
+    int cmp = 0;
+    while( *a && *b )
+    {   if( isdigit(*a) && isdigit(*b) )
+        {   int an = 0, bn = 0;
+            while( *a && isdigit(*a) )
+                an = 10*an+*a++-'0';
+            while( *b && isdigit(*b) )
+                bn = 10*bn+*b++-'0';
+            //fprintf(stderr, "..  %d <> %d\n", an, bn);
+            if( an == bn ) continue;
+                return bn-an;
+        }
+        if( *a == *b ) { a++; b++; continue; }
+        if( isalpha(*a) && isalpha(*b) )
+        {
+            if( tolower(*a) == tolower(*b) )
+            {
+                if( isupper(*a) ) return 1;
+                return -1;
+            }
+            return tolower(*b)-tolower(*a);
+        }
+        return *b-*a;
+    }
+    if( *a ) return -1;
+    if( *b ) return 1;
+    return 0;
+}
+
+void generateFiles(char *targetVersion, char *filename)
 {
     // printf("Styles are:\n");
 	// for( node *u = stylelist; u != NULL; u = u->next )
@@ -570,7 +640,6 @@ void generateFiles(char *filename)
     checkNumbering();
 
 	// now everything collected, replace use of style nodes with the style values themselves
-
     for( node *t = nodeList; t != NULL; t = t->next )
     {	if( (t->s->rankx || t->s->ranky) && t->s->noderef && *t->s->noderef )
         {   fprintf(stderr, "Warning: node %s has references set by ref (%s) and numbering (", t->s->s, t->s->noderef);
@@ -584,12 +653,15 @@ void generateFiles(char *filename)
             //printf(" .. and that istyle = %d\n", t->s->style->isstyle);
             for( node *u = stylelist; u != NULL; u = u->next )
             {	//printf("compare %s (node) ..with.. %s (style)\n", t->s->style->s, u->s->style->s);
+                if( strlen(t->s->style->s) == 0 ) continue;
                 if(  t->s->style->s == u->s->style->s )
                 {
                     //printf("  set %s in %s\n", t->s->style->s, t->s->s);
                     //printf("  to style %s\n**\n", u->s->s);
                     t->s->style = u->s;
                 }
+                else
+                    styleReplace(t->s->style, u->s->style->s, u->s);
             }
         }
     }
@@ -637,7 +709,29 @@ void generateFiles(char *filename)
             }
     } while( swapped );
     summarizeMissingFlagDefinitions();
-    makefiles(filename);
+
+    // work out which files are visible in this version...
+
+    fprintf(stderr, "Generating files for version v=%s\n", targetVersion);
+    for( node *t = nodeList; t != NULL; t = t->next )
+        if( t->s->nodeversion != NULL )
+        {  //fprintf(stderr, "%s v=%s versionstrcmp=%d :", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
+            if( t->s->nodeversion == undefinedVersion || versionstrcmp(targetVersion, t->s->nodeversion) > 0 )
+            {   //fprintf(stderr, " - so make %s INvisible!\n", t->s->s);
+                t->s->visible = 0;
+            }
+            else
+            {   //fprintf(stderr, " - so make %s visible!\n", t->s->s);
+                t->s->visible = 1;
+            }
+        }
+        else
+        {
+            fprintf(stderr, "%s nodeversion=NULL\n", t->s->s);
+            t->s->visible = 0;
+        }
+
+    makefiles(targetVersion, filename);
 }
 
 extern int flagsusedaftercascades[];

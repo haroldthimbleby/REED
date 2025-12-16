@@ -17,7 +17,7 @@ extern void showAllColors();
 
 void *safealloc(size_t size);
 
-extern int parse(char *skip, char *filename, char *bp);
+extern int parse(char *filename, char *bp);
 
 extern void latexxrefs(FILE *opfd);
 
@@ -41,6 +41,7 @@ typedef enum {
 			IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS, INTRODUCTION, CONCLUSION,
 			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
 			ID,// assumes the string s is initialised
+            INVISIBLE, VISIBLE,
             TAGS, LATEXDEFINITIONS, HTMLDEFINITIONS, CYCLE
 		 } lexval;
 
@@ -61,6 +62,7 @@ typedef struct tmpstr {
     int declaredCyclic; // if REED has said cyclic <node>?
     int keywordsOK;
     int wasString;
+    int visible;
 } str;
 
 extern void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip);
@@ -76,7 +78,7 @@ extern str *appendch(str *d, char c);
 extern const int EndOfFile;
 
 extern void error(char *fmt, ...);
-
+extern void warning(char *fmt, ...);
 extern str *copystr(str *s);
 extern str *appendcstr(str *d, char *e); // appends in situ (changing d)
 extern str *newappendcstr(str *d, char *e); // appends to a new string (not changing d)
@@ -92,12 +94,13 @@ typedef struct
 extern int verboseOption, graphvizOption, openOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption, IDsOption,
 	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption, goOption, hoOption, keywordsOption;
 
-extern void generateFiles(char *filename);
+extern void generateFiles(char *targetVersion, char *filename);
 
 typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct keywordlist *keywords; int force; struct tmparrow *next;
 		// flags for connected components analysis
 		int expanded, component;
 		enum flagcolor flag;
+        int visible;
 	} arrow;
 	
 extern void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd);
@@ -139,13 +142,13 @@ typedef struct {
 
 extern tag startTag, endTag;
 extern tag setTag(char *string);
-
+extern int versionstrcmp(char *a, char *b);
 extern void checkIS();
 extern int errcount;
 extern void checkNumbering();
 extern void listColorsUsed();
 extern void HTMLtranslate(FILE *opfd, str *context, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
-extern void makefiles(char *filename);
+extern void makefiles(char *targetVersion, char *filename);
 extern void stopiferror();
 extern void addkeyword(str *keyword);
 extern void summarisekeywords(FILE *opfd);

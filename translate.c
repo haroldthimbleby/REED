@@ -37,28 +37,76 @@ LaTeXmappings[] = { // anything that is a prefix of another MUST come later (eg,
 	{ "---", "&mdash;", 0 },
 	{ "--", "&ndash;", 0 },
 	{ "\\&", "&amp;", 0 },
-	{ "\n\n", "<p/>\n", 0 },
-	{ "~", "&nbsp;", 0 },
+    { "\n\n", "<p/>", 0 },
+    { "\n\n", "<p>", 0 },
+    { "~", "&nbsp;", 0 },
 	{ "\\emph{", "<em>", "</em>" },
 	{ "\\textbf{", "<b>", "</b>" }
 //	{ "\\/", "", 0 }
 };
 
-void explainTranslationRules()
-{	fprintf(stdout, "In the following * means a space, and \\n a newline (so you can see them)\n\n");
-	fprintf(stdout, "Rules for converting LaTeX to HTML\n\n");
-	for( int i = 0; i < sizeof(HTMLmappings)/sizeof(HTMLmappings[0]); i++ )
-		if( HTMLmappings[i].close )
-			myfprintf(stdout, "  %l...}\n      -> %l...%l\n", HTMLmappings[i].latex, HTMLmappings[i].html, HTMLmappings[i].close);
-		else
-			myfprintf(stdout, "  %l\n      -> %l\n", HTMLmappings[i].latex, HTMLmappings[i].html);
+int mystrlen(char *s)
+{   int n = 0;
+    while( *s )
+    {   if( *s == '\n' ) n++;
+        n++;
+        s++;
+    }
+    return n;
+}
 
-	fprintf(stdout, "\nRules for converting HTML to LaTeX\n\n");
-	for( int i = 0; i < sizeof(LaTeXmappings)/sizeof(LaTeXmappings[0]); i++ )
+void mypadding(FILE *opfd, char *s1, char *s2, int max)
+{   max -= mystrlen(s1)+mystrlen(s2);
+    while( max-- > 0 )
+        fprintf(opfd, " ");
+}
+
+void explainTranslationRules()
+{	int n, strn;
+    fprintf(stdout, "In the following * means a space, and \\n means a newline (so you can see them)\n\n");
+	fprintf(stdout, "Rules for converting LaTeX to HTML:\n");
+    int max = 0;
+    n = sizeof(LaTeXmappings)/sizeof(LaTeXmappings[0]);
+    for( int i = 0; i < n; i++ )
+        if( HTMLmappings[i].close )
+        {   strn = 6+mystrlen(HTMLmappings[i].latex);
+            if( strn > max ) max = strn;
+        }
+        else
+        {   strn = 2+mystrlen(HTMLmappings[i].latex);
+            if( strn > max ) max = strn;
+        }
+    for( int i = 0; i < n; i++ )
+        if( HTMLmappings[i].close )
+        {	mypadding(stdout, HTMLmappings[i].latex, "", max);
+            myfprintf(stdout, "  %l...}  ->  %l...%l\n", HTMLmappings[i].latex, HTMLmappings[i].html, HTMLmappings[i].close);
+        }
+        else
+        {	mypadding(stdout, HTMLmappings[i].latex, "", max);
+            myfprintf(stdout, "  %l  ->  %l\n", HTMLmappings[i].latex, HTMLmappings[i].html);
+        }
+	fprintf(stdout, "\nRules for converting HTML to LaTeX:\n");
+    max = 0;
+    for( int i = 0; i < n; i++ )
+        if( LaTeXmappings[i].close )
+        {   strn = 4+mystrlen(LaTeXmappings[i].html)+mystrlen(&LaTeXmappings[i].html[1]);
+            if( strn > max ) max = strn;
+        }
+        else
+        {   strn = mystrlen(LaTeXmappings[i].html);
+            if( strn > max ) max = strn;
+        }
+
+	for( int i = 0; i < n; i++ )
 		if( LaTeXmappings[i].close )
-			myfprintf(stdout, "  %l...</%s\n      -> %l...}\n", LaTeXmappings[i].html, &LaTeXmappings[i].html[1], LaTeXmappings[i].latex);		
+        {	mypadding(stdout, LaTeXmappings[i].html, &LaTeXmappings[i].html[1], max-3);
+            myfprintf(stdout, "%l...</%s", LaTeXmappings[i].html, &LaTeXmappings[i].html[1]);
+            myfprintf(stdout, "  ->  %l...}\n", LaTeXmappings[i].latex);
+        }
 		else
-			myfprintf(stdout, "  %l\n      -> %l\n", LaTeXmappings[i].html, LaTeXmappings[i].latex);
+        {	mypadding(stdout, LaTeXmappings[i].html, "", max);
+            myfprintf(stdout, "  %l  ->  %l\n", LaTeXmappings[i].html, LaTeXmappings[i].latex);
+        }
 	fprintf(stdout, "\n");
 }
 

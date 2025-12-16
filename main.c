@@ -18,11 +18,11 @@ void *saferealloc(char *p, size_t n)
 char *undefinedVersion = "node version not set!";
 
 str *newstr(char *s)
-{	int len = strlen(s);
-	// we could treat "" specially .... if( !len ) return s; // return "" directly
+{	// we could treat "" specially .... if( !len ) return s; // return "" directly
 	str *new = (str*) safealloc(sizeof(str));
-	new->s = safealloc(len+1);
-	new->t = None;
+    new->s = (char*) safealloc(strlen(s)+1);
+    strcpy(new->s, s);
+    new->t = None;
 	new->l = ID;
 	new->is = new->note = new->style = new->group = new->exampleGroupMember = NULL;
 	new->pointsTo = new->pointedFrom = new->isgroup = new->isstyle = new->rowDefaultNodeStyle = new->cascade = 0;
@@ -37,7 +37,7 @@ str *newstr(char *s)
     new->cyclic = new->declaredCyclic = 0;
     new->keywordsOK = 1;
     new->wasString = 0;
-	strcpy(new->s, s);
+    new->visible = 1;
 	return new;
 } 
 
@@ -65,14 +65,18 @@ void strpad(str **s, int d)
 }
 
 str *appendstr(str *d, str *e)
-{	d->s = saferealloc(d->s, strlen(d->s)+strlen(e->s)+2);
-	strlcat(d->s, e->s, strlen(d->s)+strlen(e->s)+2);
+{   appendcstr(d, e->s);
+//    d->s = saferealloc(d->s, strlen(d->s)+strlen(e->s)+2);
+//	strlcat(d->s, e->s, strlen(d->s)+strlen(e->s)+1);
 	return d;
 }
 
 str *appendcstr(str *d, char *e) // appends in situ
 {	d->s = saferealloc(d->s, strlen(d->s)+strlen(e)+2);
-	strlcat(d->s, e, strlen(d->s)+strlen(e)+2);
+	//strlcat(d->s, e, strlen(d->s)+strlen(e)+2);
+    char *s = d->s;
+    while( *s ) s++;
+    while( (*s++ = *e++) );
 	return d;
 }
 
@@ -207,12 +211,12 @@ void usage(char *process)
 				fputc(*s, stderr);
 		fprintf(stderr, "\n");
     }
-    fprintf(stderr, "       v=<value> include all versions up to <value> and skip all later versions in file\n");
+    fprintf(stderr, "       v=<value> include all versions up to <value>\n");
     exit(0);
 }
 
-char *skipversion(char *name, char *value)
-{	if( strcmp(name, "v") ) 
+char *parseversion(char *name, char *value)
+{	if( strcmp(name, "v") )
 		nolineerror("** only v=<value> skip versions option implemented\n");
 	else
 		return value;
@@ -221,11 +225,39 @@ char *skipversion(char *name, char *value)
 
 extern char *keywordtopull, *whichPull;
 
+void test(char *a, char *b)
+{   int r = versionstrcmp(a, b), s = versionstrcmp(b, a), rfix, sfix;
+    rfix = r < -1? -1: r > 1? 1: r;
+    sfix = s < -1? -1: s > 1? 1: s;
+    fprintf(stderr, "%s <> %s = %d (strcmp=%d) reverse?%s => %s %s %s\n", a, b, r, strcmp(a,b),
+            rfix == -sfix? "OK": "FAIL",
+            r < 0? b: a,
+            (!r)? "=": "<",
+            r < 0? a: b
+            );
+}
+
 int main(int argc, char *argv[])
 {	int opened = 0;
     FILE *fp;
-	char *bp, *openedfile, *processedFileName = NULL, *skip = NULL;
-	int successfulskip = 0;
+	char *bp, *openedfile, *processedFileName = NULL, *targetVersion = "";
+
+/*
+    test("hello", "hello");
+    test("helloLonger", "hello");
+    test("A", "B");
+    test("a", "A");
+    test("xyzBe", "xyzbe");
+    test("fred12.5", "fred12.5");
+    test("!@#&", "!@#");
+    test("!@#&", "!@#&*");
+    test("fred15x", "fred1x");
+    test("v2.3", "v2.29");
+    test("v2.3", "v2.31");
+    test("v9001", "v873");
+    test("v1234", "v90");
+    exit(0);
+*/
 
     // if any argument is -watch
     // pull out string of files for fswatch system call
@@ -255,7 +287,7 @@ int main(int argc, char *argv[])
             appendstr(fswatch, files);
             appendcstr(fswatch, "| xargs -I {} ");
             appendstr(fswatch, command);
-            if( verboseOption ) fprintf(stderr, "|--System:  %s\n", fswatch->s);
+            if( verboseOption ) fprintf(stderr, "| -- %s\n", fswatch->s);
             system(fswatch->s);
             exit(0);
         }
@@ -269,9 +301,8 @@ int main(int argc, char *argv[])
                 opened = 1;
                 openedfile = "inserted-text";
                 bp = argv[i+1];
-                if( !parse(skip, openedfile, bp) ) // return 0 means a fatal error or matched version number to skip
+                if( !parse(openedfile, bp) ) // return 0 means a fatal error
                 {   processedFileName = bp;
-                    successfulskip = 1;
                     break;
                 }
                 processedFileName = openedfile;
@@ -328,12 +359,14 @@ int main(int argc, char *argv[])
         }
         else if( !optionsOption && (bp = index(argv[i], '=')) != NULL )
         {   bp[0] = (char) 0;
-            skip = skipversion(newstr(argv[i])->s, &bp[1]);
+            targetVersion = parseversion(newstr(argv[i])->s, &bp[1]);
+            fprintf(stderr, "Generate version %s\n", targetVersion);
         }
         else
         if( (fp = fopen(openedfile = argv[i], "r")) != NULL )
         {   struct stat stat_buf;
             int errno;
+            fprintf(stderr, "%s:\n", openedfile);
             if( (errno = fstat(fileno(fp), &stat_buf)) != 0 )
                 fatalError("** %s cannot stat \"%s\": %s", argv[0], openedfile, strerror(errno));
             bp = safealloc(1+stat_buf.st_size);
@@ -344,18 +377,15 @@ int main(int argc, char *argv[])
             bp[stat_buf.st_size] = (char) 0; // EOF is made (char) 0
             opened = 1;
             //if( verboseOption ) fprintf(stderr, ": File %s\n", processedFileName);
-            //fprintf(stderr, "Parse %s starting with successfulskip=%d\n", openedfile, successfulskip);
             hash(openedfile);
 
             if( rawOption && !hasHadTagsOption )
                     nolineerror("Using -raw makes no sense unless -tags has been set, because in raw mode nothing will be processed until a begin tag is found");
 
-            if( !parse(skip, openedfile, bp) ) // return 0 means a fatal error or matched version number to skip
-            {   processedFileName = openedfile;
-                successfulskip = 1;
-                break;
-            }
             processedFileName = openedfile;
+            if( !parse(openedfile, bp) ) // return 0 means a fatal error
+                break;
+
             //fprintf(stderr, "file processed = %s\n", openedfile);
             //free(bp); // we need to keep bp around in case we later generate error messages quoting it
             fclose(fp);
@@ -375,8 +405,6 @@ int main(int argc, char *argv[])
         showAllColors();
     if( !opened )
         fprintf(stderr, "** %s did not process any files\n", argv[0]);
-    if( skip && !successfulskip )
-        nolineerror("Never matched version v=%s but used version '%s' instead", skip, version);
     findComponents(); // find components before generating HTML, Latex, etc
     findCycles();
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
@@ -388,7 +416,7 @@ int main(int argc, char *argv[])
             else pullkeywords(keywordtopull);
         }
 
-        generateFiles(*outputbasename? outputbasename: processedFileName); // processFileName is the last file named
+        generateFiles(targetVersion, *outputbasename? outputbasename: processedFileName); // processFileName is the last file named
         if( colorsOption || colorsPlusOption )
             listColorsUsed();
         if( keywordsOption )

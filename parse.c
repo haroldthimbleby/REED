@@ -304,6 +304,8 @@ lexval readlex(str **lexstr)
                     if( !strcmp("keyword", (*lexstr)->s) ) return KEYWORDS;
                     if( !strcmp("norefs", (*lexstr)->s) ) return NOREFS;
                     if( !strcmp("cycle", (*lexstr)->s) ) return CYCLE;
+                    if( !strcmp("visible", (*lexstr)->s) ) return VISIBLE;
+                    if( !strcmp("invisible", (*lexstr)->s) ) return INVISIBLE;
                     return ID;
 				}
 				ch = getch();
@@ -370,8 +372,10 @@ lexval readlex(str **lexstr)
                 else getch();
 				return RARROW;
 			case '#': // comment
-                if( commentOption ) fprintf(stderr, "Line %4d #", lineno);
-				while( nextch() != '\n' && nextch() != EndOfFile )
+                if( commentOption )
+                {   fprintf(stderr, "   Line %4d #", lineno);
+                }
+                while( nextch() != '\n' && nextch() != EndOfFile )
                 {   char c = getch();
                     if( commentOption ) fprintf(stderr, "%c", c);
                 }
@@ -418,29 +422,30 @@ node *nodeList = (node*) NULL, *stylelist = (node*) NULL;
 
 int rankx = 1;
 
-void newnode(str **u)
-{	if( (*u)->nodeversion == undefinedVersion ) 
-		(*u)->nodeversion = version; // update version to be latest (in file order)
+void newnode(int fixVersion, str **u)
+{	if( fixVersion && (*u)->nodeversion == undefinedVersion )
+		(*u)->nodeversion = version; // update version to be latest (as specified in file order)
 	for( node *t = nodeList; t != NULL; t = t->next )
 		if( !strcmp(t->s->s, (*u)->s) )
     	{ //fprintf(stderr, "existing node t=%s = us=%s -- ", t->s->s, (*u)->s);
     	  //fprintf(stderr, "%s = %ld; ", t->s == *u? "SAME": "DIFFERENT ADDRESSES!", (long) t->s);
     	  *u = t->s;
           //fprintf(stderr, "update *u\n");
-    	  return;
+          return;
     	}
 	//fprintf(stderr, "new node %s at %ld\n", (*u)->s, (long) *u);
 	node *new = safealloc(sizeof(node));
 	new->next = nodeList;
 	new->s = *u;
-	(*u)->nodeversion = version;
+    (*u)->nodeversion = fixVersion? version: undefinedVersion;
 	(*u)->component = 0;
+    (*u)->visible = 1;
 	nodeList = new;
 }
 
 void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd)
-{	newnode(&u);
-	newnode(&v);
+{	newnode(1, &u);
+	newnode(1, &v);
 
 	// do we already have the arrow?
 	for( arrow *t = *putonthisarrowlist; t != NULL; t = t->next )
@@ -448,7 +453,7 @@ void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd)
 		if( t->u == u && t->v == v )
 		{	if( !t->force ) 
 			{	t->force = forceadd;
-				return;
+                return;
 			}
 			break;
 		}
@@ -456,7 +461,7 @@ void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd)
 	arrow *new = (arrow*) safealloc(sizeof(arrow));
 	new->next = *putonthisarrowlist;
 	new->force = forceadd;
-	new->arrowis = NULL;
+    new->arrowis = NULL;
 
     //fprintf(stderr, "parsed %s -> %s\n", u->s, v->s);
 
@@ -500,7 +505,7 @@ void defineCycleNodes()
     {   ids++;
         //fprintf(stderr, "...cycle %s\n", lex2->s);
         //printf("%ld ... \n", (long) lex2);
-        newnode(&lex2);
+        newnode(1, &lex2);
         //printf("%ld ... \n", (long) lex2);
         lex2->declaredCyclic = 1;
         getlex();
@@ -521,7 +526,7 @@ int numberingRow(int flat, int row) //kk
 
 	while( lex1->l == ID || lex1->l == STAR )
 	{	if( lex1->l == ID )
-		{	newnode(&lex1);
+		{	newnode(0, &lex1);
 			if( lex1->rankx || lex1->ranky )
 				error("numbering node %s in more than one position", lex1->s);
 			if( transposeOption )
@@ -635,7 +640,7 @@ void layout()
 			n->down = NULL;
 			n->right = NULL;
 			n->label = 1;
-			newnode(&lex1);
+			newnode(1, &lex1);
 			n->node = lex1;
 			endofcols = &n->down;
 			endofrow = &n->right;
@@ -662,7 +667,7 @@ void layout()
 				endofrow = &n->right;
 			}
 			if( lex1->l == ID )
-			{	newnode(&lex1);
+			{	newnode(1, &lex1);
 				n->node = lex1;
 			}
 			getlex();
@@ -701,7 +706,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
             if( debug )
                 fprintf(stderr, "single node... %s\n", lex1->s);
 			if( makenodes && lex1->l != HIGHLIGHT )
-                newnode(&lex1);
+                newnode(1, &lex1);
 			t = (arrow*) safealloc(sizeof(arrow));
 			t->u = lex1;
 			t->v = NULL;
@@ -728,7 +733,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
 			{	// single node in the list
 				arrow *u = (arrow*) safealloc(sizeof(arrow));
 				u->next = t;
-				if( makenodes ) newnode(&lex1);
+				if( makenodes ) newnode(1, &lex1);
 				u->u = lex1;
 				u->v = NULL;
 				//fprintf(stderr, "got %s\n", u->s->s);
@@ -816,7 +821,26 @@ int checkOverride(char *e)
 
 int skipnexttime = 0; // must be preserved between files
 
-int parse(char *skip, char *filename, char *bp)
+void nodeorarrow(int visible)
+{
+    if( lex2->l == LARROW || lex2->l == RARROW )
+    {   // arrow
+        if( lex3->l != ID )
+            error("%s %s %s is an ill-formed arrow", lex1->s, lex2->s, lex3->s);
+        getlex();
+        getlex();
+    }
+    else
+    {   // node
+        if( lex1->visible && visible ) warning("visible %s when node %s is already visible has no further effect", lex1->s, lex1->s);
+        if( !lex1->visible && !visible ) warning("invisible %s when node %s is already invisible has no further effect", lex1->s, lex1->s);
+        newnode(1, &lex1);
+        lex1->visible = visible;
+        if( lex1->visible && *version ) lex1->nodeversion = version;
+    }
+}
+
+int parse(char *filename, char *bp)
 {	if( separatorOption ) fprintf(stderr, "***************************************\n");
     if( verboseOption ) fprintf(stdout, "|--Reading file %s\n", filename);
 	str *base = basename(filename);
@@ -858,7 +882,19 @@ int parse(char *skip, char *filename, char *bp)
     {	if( 0 ) printf(":: %s :: %s :: %s\n", lexvalue(lex1), lexvalue(lex2), lexvalue(lex3));
         if( overrideCounter > 0 ) overrideCounter--;
         switch( lex1->l )
-        {	case NOREFS:
+        {   case VISIBLE:
+                getlex();
+                nodeorarrow(1);
+                break;
+
+            case INVISIBLE:
+                getlex();
+                nodeorarrow(0);
+                newnode(1, &lex1);
+                lex1->visible = 0;
+                break;
+
+            case NOREFS:
                 norefs = 1;
                 break;
 
@@ -888,26 +924,14 @@ int parse(char *skip, char *filename, char *bp)
                     date = lex2->s;
                 }
                 if( lex1->l == VERSION )
-                {	//fprintf(stderr, "A skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);
-                    if( dontOverride() && *version ) { error("Multiple versions need 'override' to be allowed"); break; }
+                {	// fprintf(stderr, "Was %s becoming version %s\n", version, lex2->s);
+                    if( dontOverride() && *version )
+                    {   error("Multiple versions need 'override' to be allowed");
+                        break;
+                    }
                     if( verboseOption ) fprintf(stderr, "|    File %s defines version '%s'\n", filename, lex2->s);
-                    if( showVersionsOption || verboseOption )
-                    {   if( verboseOption ) fprintf(stderr, "| ** ");
-                        fprintf(stderr, "Defines version '%s'\n", lex2->s);
-                    }
-                    if( skip != NULL ) // trace version setting
-                    {	if( skipnexttime )
-                    {	if( verboseOption ) fprintf(stderr, "   Skipping version '%s' and after\n", lex2->s);
-                        return 0;
-                    }
-                        if( !strcmp(lex2->s, skip) ) // then return 0 next time
-                        {	skipnexttime = 1;
-                            if( verboseOption ) fprintf(stderr, "   Using version '%s'\n", lex2->s);
-                        }
-                        if( verboseOption ) fprintf(stderr, "   Using version '%s'\n", lex2->s);
-                    }
+                    if( showVersionsOption && !verboseOption ) fprintf(stderr, "Defines version '%s'\n", lex2->s);
                     appendVersions(version = lex2->s);
-                    //fprintf(stderr, "B skipnexttime=%d, skip=%s, version=%s\n", skipnexttime, skip, version);
                 }
                 if( lex1->l == ABSTRACT )
                 {	if( dontOverride() && *abstract ) error("Multiple abstracts");
@@ -915,11 +939,11 @@ int parse(char *skip, char *filename, char *bp)
                 }
                 if( lex1->l == DIRECTION )
                 {	if( dontOverride() && *direction )
-                {	fprintf(stderr, strcmp(direction, lex2->s)?
-                            "Warning: Too many drawing directions, %s, %s etc. (%s will be used)":
-                            "Warning: Repeated drawing direction, %s", direction, lex2->s, lex2->s);
-                    fprintf(stderr, "\n");
-                }
+                    {	fprintf(stderr, strcmp(direction, lex2->s)?
+                                "Warning: Too many drawing directions, %s, %s etc. (%s will be used)":
+                                "Warning: Repeated drawing direction, %s", direction, lex2->s, lex2->s);
+                        fprintf(stderr, "\n");
+                    }
                     char *valid[] = {"BT", "TB", "LR", "RL", (char*) 0};
                     int ok = 0;
                     direction = lex2->s;
@@ -988,6 +1012,7 @@ int parse(char *skip, char *filename, char *bp)
             case REF:
                 if( checkOverride("ref") ) break;
                 getlex();
+                newnode(1, &lex1);
                 str *thenodetoref = lex1;
                 if( thenodetoref->l != ID ) { error("Expected a node after 'ref'"); getlex(); break; }
                 if( lex2->l != IS ) { error("Expected node then 'is' after 'ref %s'", thenodetoref->s); getlex(); break; }
@@ -1002,7 +1027,7 @@ int parse(char *skip, char *filename, char *bp)
                 // highlight <color> [cascade] is <description> .... oops this means node names can't be colors :-(
                 if( checkOverride("highlight") ) break;
                 getlex();
-                str *thenodetoflag = lex1;
+                str *thenodetoflag = lex1; // maybe a color or a node name
                 // fprintf(stderr, "wasString=%d on %s\n", thenodetoflag->wasString, thenodetoflag->s);
                 int cascadeflag = 0;
                 if( !strcmp(lex2->s, "cascade") )
@@ -1018,11 +1043,11 @@ int parse(char *skip, char *filename, char *bp)
                     defineflag(thenodetoflag->s, lex3->s, cascadeflag);
                     getlex();
                     getlex();
-                    break;
+                    break; // was a color name
                 }
 
                 if( thenodetoflag->l != ID ) { error("Expected node after 'highlight'"); getlex(); break; }
-                newnode(&thenodetoflag);
+                newnode(1, &thenodetoflag); // was a node name
                 enum flagcolor previousFlag = thenodetoflag->flag;
                 thenodetoflag->flag = red; // default flag color if none is specified
                 enum flagcolor fc;
@@ -1061,7 +1086,7 @@ int parse(char *skip, char *filename, char *bp)
                 if( lex1->l != IS ) error("Expected 'is' after group");
                 getlex();
                 if( lex1->l != ID ) error("Expected a group name");
-                newnode(&lex1);
+                newnode(1, &lex1);
                 lex1->isgroup = 1;
                 while( nl != NULL )
                 {	//fprintf(stderr, "fixing group for %s at %ld to be %s \n", nl->s->s, (long) nl->s, lex1->s);
@@ -1175,13 +1200,17 @@ int parse(char *skip, char *filename, char *bp)
                     }
 					else // a node
 					{	if( nl->u->style != NULL ) 
-						{	if( nl->u->style == lex1 )
-								myfprintf(stderr, "Warning: %s is being put in style %s again", nl->u->s, nl->u->style->s);
-							else
-								error("%s in style %s changed to style %s\n", nl->u->s, nl->u->style->s, lex1->s);
-						}
+                        {	if( !strcmp(nl->u->style->s, lex1->s) )
+                                myfprintf(stderr, "Warning: %s is being put in style %s again", nl->u->s, nl->u->style->s);
+                            else
+                            {	fprintf(stderr, "Warning: %s\n  style %s\n  has appended %s\n", nl->u->s, nl->u->style->s, lex1->s);
+                                appendch(nl->u->style, ';');
+                                appendstr(nl->u->style, lex1);
+                                fprintf(stderr, "\n  making %s\n", nl->u->style->s);
+                            }
+                        }
 						nl->u->style = lex1;
-						nl->u->styleName = lex1->s;
+                        nl->u->styleName = lex1->s;
 						if( makenewstyle )
 						{	if( nl->v != NULL ) error("arrows cannot be style names");
 							node *new = safealloc(sizeof(node));
@@ -1210,7 +1239,7 @@ int parse(char *skip, char *filename, char *bp)
 				if( checkOverride("nodes or arrows") ) break;
 				switch( lex2->l )
 				{ 	case IS: // id1 is id3
-						newnode(&lex1);
+						newnode(1, &lex1);
                         if( lex3->l != ID )
                         {   error("Expected string or identifier afer 'is'");
                             getlex();
@@ -1225,9 +1254,9 @@ int parse(char *skip, char *filename, char *bp)
 						whilearrow(&arrowList, 1);
 						break;
                     default: // an isolated node
-						fprintf(stderr, "Warning: isolated node with no arrow or 'is': %s\n", lex1->s);
-						newnode(&lex1);
-						break;
+						warning("isolated node with no arrow or 'is': %s", lex1->s);
+						newnode(1, &lex1);
+                        break;
 				}
 				break;
 
@@ -1242,7 +1271,7 @@ int parse(char *skip, char *filename, char *bp)
 				break;
 
 			case SEMI:
-               // getlex();
+                // getlex();
 				// just ignore it (it should only occur between statements)
 				break;
 

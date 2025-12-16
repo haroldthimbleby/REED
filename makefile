@@ -21,20 +21,19 @@ SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 	git add SyntaxCode.c SyntaxOutline.tex
 	git commit -m "Updated SyntaxOutline.tex and SyntaxCode.c (generated from SyntaxOutline.tex)"
 
-paper: inputs betweenness.png
+paper: inputs betweenness1.jpg betweenness2.jpg
 	cd ../REED-paper; pdflatex REED.tex
 	echo Generated ../REED-paper/REED.pdf
 	
 lib/pow-reed.nb: lib/pow-reed reed
 	reed -m lib/pow-reed
 	
-betweenness.png: lib/pow-reed.nb plotBetweenness.nb
+betweenness1.jpg betweenness2.jpg: lib/pow-reed.nb plotBetweenness.nb
 	@printf "\033[38;35m"
 	wolframscript -file plotBetweenness.nb
 	@printf "\033[0m"
-	cp betweenness.png ../REED-paper/figures
-	cp betweenness1.png ../REED-paper/figures
-	cp betweenness2.png ../REED-paper/figures
+	cp betweenness1.jpg ../REED-paper/figures
+	cp betweenness2.jpg ../REED-paper/figures
 
 inputs: reed
 	reed -pick yellow -basename lib/pow-reed-yellow v=v2 -l -g lib/pow-reed
