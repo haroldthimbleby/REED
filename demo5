@@ -1,5 +1,5 @@
-echo demo4 : Theory of Change example
-cp demo-toc tmp4
-open -a /Applications/TeX/TeXShop.app tmp4
-reed -go -watch tmp4
+echo demo5 : Theory of Change example
+cp demo-toc tmp5
+open -a /Applications/TeX/TeXShop.app tmp5
+reed -go -watch tmp5
 

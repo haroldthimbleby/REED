@@ -48,7 +48,7 @@ management -> io2
 management -> o1
 t-> barriermanagement
 
-layouts TOC (
+layout TOC (
 	"Inputs" (e a1 a2 a3 etc au)
 	"Activities needed" (t b)
 	"Barriers to overcome" (c barriermanagement)
@@ -87,8 +87,9 @@ au -> audit
 au -> w
 au -> b
 
-o1 <-> "Staff satisfaction"
-style o1 <-> "Staff satisfaction" is "minlen=3"
+o1 -> "Staff satisfaction" -> o1
+style o1 -> "Staff satisfaction" is "minlen=3" 
+style o1 <- "Staff satisfaction" is "minlen=3" 
 io1 -> "Staff satisfaction"
 d1 -> "Staff satisfaction"
 d2 -> "Staff satisfaction"
