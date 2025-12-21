@@ -41,6 +41,8 @@ arrow ::= -> | <-
 color ::= aqua | black | blue | fuchsia | gray | green
         | lime | maroon | navy | olive | orange | purple
         | red | silver | teal | white | yellow
+        # NB, reed -allcolors lists all supported colors
+        # note that color names cannot be used as ids
 id-or-star ::= id | *
 node-list ::= id | ( id++ )
 node-or-arrow ::= id | id { arrow id }+
@@ -51,7 +53,7 @@ document-details ::= title | author | abstract | date | introduction | conclusio
 ### all terminals below are reserved words
 
 check id1 => id2!Check there is a path from id1 to id2
-cycle node-list!Confirm these nodes are supposed to be on a cycle, and don't report them
+cycle node-list!Confirms that these nodes are supposed to be on a cycle, and don't report them
 direction { LR | RL | TB | BT }!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top
 document-details id!Specify document details. Details append when given multiple times
 group node-or-arrow-list is id!The nodes are grouped, and the group is named
@@ -71,7 +73,6 @@ tags id1 id2!Only process REED code between id1 (begin) and id2 (end)
 version id!Subsequent REED code is version id (see flag v=value)
 
 ;!semicolons are empty statements, and can be placed freely between statements!... and in note statements for legibility
-override ...!Permit conflicting commands (e.g., title or version) to override earlier commands
 
 ### Apart from override, tags, and version the order of commands does not matter
 ### Except: author, htmldefinitions, and latexdefinitions append in REED file order
