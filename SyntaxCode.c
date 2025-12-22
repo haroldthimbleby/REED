@@ -54,6 +54,7 @@
 "\n"
 "    check id1 => id2!Check there is a path from id1 to id2\n"
 "    cycle node-list!Confirms that these nodes are supposed to be on a cycle, and don't report them\n"
+"    defaultstyle id!Define default style for nodes and edges\n"
 "    direction { LR | RL | TB | BT }!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top\n"
 "    document-details id!Specify document details. Details append when given multiple times\n"
 "    group node-or-arrow-list is id!The nodes are grouped, and the group is named\n"
