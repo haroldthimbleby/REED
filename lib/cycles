@@ -1,50 +1,49 @@
+# check cycles, and generate image for REED.tex
+norefs
+
 # illustrate cycles for the REED paper....
 
-# empty file
+layout (
+	(1a 2a 3a 4a) 
+	(1b 2b 3b 4b)
+	(1c 2c 3c 4c)  
+) 
 
-rows ( (1 pn p x u m j a1x a2x) (2 nq q y v n i k b1x) (w o) )
+Evidence -> 1a
+Evidence -> 2a
+Evidence -> 3a
+Evidence -> 4a
 
-style (1 2) is "fontname=\"Helvetica\",color=\"firebrick1\",style=\"filled\",fillcolor=\"firebrick1\""
+new style setfont is "fontname=\"Helvetica\""
+new style normal is "setfont;fontcolor=\"black\";fillcolor=\"gray90\";style=\"filled\";label=<"
+new style warn is "setfont;label=<"
+new style middle  is "<FONT POINT-SIZE='10'><SUB>"
+new style end is "</SUB></FONT>>"
 
-pn <-> nq
-pn is a
-nq is b
+1a -> 1b -> 1c -> 1a
+style 1a is "warn A middle 1 end"
+style 1b is "warn B middle 1 end"
+style 1c is "warn C middle 1 end"
 
-1 -> 2 -> 1
+2a -> 2b -> 2c; 2a -> 2c
+style 2a is "normal A middle 2 end"
+style 2b is "normal B middle 2 end"
+style 2c is "normal C middle 2 end"
 
-p -> q
+3a -> 3b -> 3c; 3c -> 3b
+style 3a is "normal A middle 3 end"
+style 3b is "warn B middle 3 end"
+style 3c is "warn C middle 3 end"
 
-x -> y <- x
+4a -> 4b -> 4c <- 4b
+style 4a is "normal A middle 4 end"
+style 4b is "normal B middle 4 end"
+style 4c is "normal C middle 4 end"
 
-u -> v -> w
-m -> n -> o
+1c -> Conclusions
+2c -> Conclusions
+3c -> Conclusions
+4c -> Conclusions
 
-i <- j -> k
-
-a1x -> b1x <- a2x
-
-p is a
-q is b
-
-1 is "a"
-2 is "b"
-
-x is "a"
-y is "b"
-
-u is "a1"
-v is "b"
-w is "a2"
-
-m is b1
-n is a
-o is b2
-
-j is "a"
-i is "b1"
-k is "b2"
-
-a1x is a1
-a2x is a2
-b1x is b
-
+style Evidence is setfont
+style Conclusions is setfont

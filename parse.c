@@ -7,7 +7,7 @@ int norefs = 0;
 
 extern rownodes *cols;
 
-char *title = "", *date = "", *version = "", *abstract = "", *direction = "";
+char *title = "", *date = "", *version = "", *abstract = "", *direction = "", *defaultStyle = "";
 
 char *flagcolors[] = // 17 colors
 { "NONE",
@@ -211,7 +211,6 @@ struct { lexval l; char *symbol; } lexes[] =
     { NUMBERING, "<numbering>"},
     { ROWS, "<layout>"},
     { DIRECTION, "<direction>"},
-    { OVERRIDE, "<override>"},
     { TAGS, "<tags>"},
     { LATEXDEFINITIONS, "<latexdefinitions>"},
     { HTMLDEFINITIONS, "<htmldefinitions>"},
@@ -220,7 +219,11 @@ struct { lexval l; char *symbol; } lexes[] =
     { CHECK, "<check>"},
     { TRANSARROW, "=>"},
     { KEYWORDS, "<keywords>"},
-    { NOREFS, "<norefs>"}
+    { NOREFS, "<norefs>"},
+    { VISIBLE, "<visible>"},
+    { INVISIBLE, "<invisible>"},
+    { DEFAULTSTYLE, "<defaultstyle>"},
+    { CYCLICSTYLE, "<cyclestyle>"}
 };
 
 str *currentlexstr;
@@ -286,7 +289,6 @@ lexval readlex(str **lexstr)
 					if( !strcmp("abstract", (*lexstr)->s) ) return ABSTRACT;
 					if( !strcmp("version", (*lexstr)->s) ) return VERSION;
 					if( !strcmp("highlight", (*lexstr)->s) ) return HIGHLIGHT;
-					if( !strcmp("override", (*lexstr)->s) ) return OVERRIDE;
 					if( !strcmp("group", (*lexstr)->s) ) return GROUP;
 					if( !strcmp("new", (*lexstr)->s) ) return NEW;
 					if( !strcmp("style", (*lexstr)->s) ) return STYLE;
@@ -306,6 +308,8 @@ lexval readlex(str **lexstr)
                     if( !strcmp("cycle", (*lexstr)->s) ) return CYCLE;
                     if( !strcmp("visible", (*lexstr)->s) ) return VISIBLE;
                     if( !strcmp("invisible", (*lexstr)->s) ) return INVISIBLE;
+                    if( !strcmp("defaultstyle", (*lexstr)->s) ) return DEFAULTSTYLE;
+                    if( !strcmp("cyclestyle", (*lexstr)->s) ) return CYCLICSTYLE;
                     return ID;
 				}
 				ch = getch();
@@ -548,19 +552,11 @@ int numberingRow(int flat, int row) //kk
 	return flat? col: 0;
 }
 
-int overrideCounter = 0;
-
-int dontOverride() 
-{	return overrideCounter != 1;
-}
-
 int  numberingCount = 0;
 void numbering()
 {	int row = 1, flat = 0;
-	if( dontOverride() )
-	{	if( numberingCount > 0 )
-			error("There should be only one node numbering (unless using 'override')");
-	}
+	if( numberingCount > 0 )
+			error("There should be only one node numbering");
 	else
 	{	// reset numbering --- yes because we need to see if individual nodes are renumbered
 		numberingCount = 0;
@@ -811,16 +807,6 @@ void summarizeMissingFlagDefinitions()
     }
 }
 
-int checkOverride(char *e)
-{	if( overrideCounter >= 1 )
-	{	error("You cannot override %s (unless you use the override command)", e);
-		return 1;
-	}
-	return 0;
-}
-
-int skipnexttime = 0; // must be preserved between files
-
 void nodeorarrow(int visible)
 {
     if( lex2->l == LARROW || lex2->l == RARROW )
@@ -880,7 +866,6 @@ int parse(char *filename, char *bp)
 
 	while( lex1->l != EndOfFile )
     {	if( 0 ) printf(":: %s :: %s :: %s\n", lexvalue(lex1), lexvalue(lex2), lexvalue(lex3));
-        if( overrideCounter > 0 ) overrideCounter--;
         switch( lex1->l )
         {   case VISIBLE:
                 getlex();
@@ -902,43 +887,44 @@ int parse(char *filename, char *bp)
                 defineCycleNodes();
                 break;
 
-            case OVERRIDE:
-                if( checkOverride("override") ) break;
-                overrideCounter = 2; // so overrideCounter should be =1 next time the switch is called
-                break;
-
-            case TITLE: case AUTHOR: case DATE: case VERSION: case ABSTRACT: case DIRECTION:
+            case TITLE: case AUTHOR: case DATE: case VERSION: case ABSTRACT: case DIRECTION: case DEFAULTSTYLE: case CYCLICSTYLE:
                 if( lex2->l != ID )
                     fprintf(stderr, "%s should be followed by a string but is followed by reserved word %s, which will be treated as a string\n", lex1->s, lexvalue(lex2));
                 if( lex1->l == TITLE )
-                {	if( dontOverride() && *title ) error("Multiple titles");
+                {    if( *title ) error("Multiple titles");
                     title = lex2->s;
                     if( verboseOption ) fprintf(stderr, "|    Title '%s'\n", title);
+                }
+                if( lex1->l == DEFAULTSTYLE )
+                {    if( *defaultStyle ) error("Multiple defaultstyles");
+                    defaultStyle = lex2->s;
+                    if( verboseOption ) fprintf(stderr, "|    defaultstyle '%s'\n", defaultStyle);
+                }
+                if( lex1->l == CYCLICSTYLE )
+                {    if( *cyclicStyle ) error("Multiple cyclicstyles");
+                    cyclicStyle = lex2->s;
+                    if( verboseOption ) fprintf(stderr, "|    cyclicstyle '%s'\n", cyclicStyle);
                 }
                 if( lex1->l == AUTHOR )
                 {	if( !newauthor(lex2->s) )
                     error("Repeated author name in document author listings");
                 }
                 if( lex1->l == DATE )
-                {	if( dontOverride() && *date ) error("Multiple dates");
+                {	if( *date ) error("Multiple dates");
                     date = lex2->s;
                 }
                 if( lex1->l == VERSION )
                 {	// fprintf(stderr, "Was %s becoming version %s\n", version, lex2->s);
-                    if( dontOverride() && *version )
-                    {   error("Multiple versions need 'override' to be allowed");
-                        break;
-                    }
                     if( verboseOption ) fprintf(stderr, "|    File %s defines version '%s'\n", filename, lex2->s);
                     if( showVersionsOption && !verboseOption ) fprintf(stderr, "Defines version '%s'\n", lex2->s);
                     appendVersions(version = lex2->s);
                 }
                 if( lex1->l == ABSTRACT )
-                {	if( dontOverride() && *abstract ) error("Multiple abstracts");
+                {	if( *abstract ) error("Multiple abstracts");
                     abstract = lex2->s;
                 }
                 if( lex1->l == DIRECTION )
-                {	if( dontOverride() && *direction )
+                {	if( *direction )
                     {	fprintf(stderr, strcmp(direction, lex2->s)?
                                 "Warning: Too many drawing directions, %s, %s etc. (%s will be used)":
                                 "Warning: Repeated drawing direction, %s", direction, lex2->s, lex2->s);
@@ -997,7 +983,7 @@ int parse(char *filename, char *bp)
                 break;
 
             case TAGS: // expect two strings
-                if( checkOverride("tags") ) break;
+                if( *startTag.tagString || *endTag.tagString ) warning("Changing tags is generaly a bad idea");
                 getlex();
                 //fprintf(stderr, "tag followed by two strings, %s %s\n", lex1->s, lex2->s);
                 if( lex1->l != ID && lex2->l != ID )
@@ -1010,7 +996,6 @@ int parse(char *filename, char *bp)
                 break;
 
             case REF:
-                if( checkOverride("ref") ) break;
                 getlex();
                 newnode(1, &lex1);
                 str *thenodetoref = lex1;
@@ -1025,7 +1010,6 @@ int parse(char *filename, char *bp)
 
             case HIGHLIGHT:  // highlight node [cascade] [is <color>]
                 // highlight <color> [cascade] is <description> .... oops this means node names can't be colors :-(
-                if( checkOverride("highlight") ) break;
                 getlex();
                 str *thenodetoflag = lex1; // maybe a color or a node name
                 // fprintf(stderr, "wasString=%d on %s\n", thenodetoflag->wasString, thenodetoflag->s);
@@ -1078,7 +1062,6 @@ int parse(char *filename, char *bp)
                 break;
 
             case GROUP:
-                if( checkOverride("group") ) break;
                 getlex();
                 //fprintf(stderr, "got a group ...\n");
                 nl = parsenodelist(0, 1, 0);
@@ -1120,7 +1103,6 @@ int parse(char *filename, char *bp)
 
             case NOTE:  // EITHER note [author string [;]] idlist string
                 // OR     note idlist [author string [;]] is string string
-                if( checkOverride("note") ) break;
                 getlex();
                 nl = parsenodelist(0, 1, 1);
                 if( nl == NULL ) error("Expected a node or arrow after 'note'");
@@ -1180,7 +1162,6 @@ int parse(char *filename, char *bp)
 				makenewstyle = 1;
 				// fall through
 			case STYLE:
-				if( checkOverride("style") ) break;
 				getlex();
 				//fprintf(stderr, "got a style ...\n");
 				nl = parsenodelist(0, !makenewstyle, 0);
@@ -1236,7 +1217,6 @@ int parse(char *filename, char *bp)
                 break;
 
 			case ID:
-				if( checkOverride("nodes or arrows") ) break;
 				switch( lex2->l )
 				{ 	case IS: // id1 is id3
 						newnode(1, &lex1);
@@ -1275,11 +1255,11 @@ int parse(char *filename, char *bp)
 				// just ignore it (it should only occur between statements)
 				break;
 
-			default: error("Unexpected %s [e1]", lexvalue(lex1)); 
+			default: error("Unexpected %s [error e1]", lexvalue(lex1));
 				break;
 		}
 		getlex();
 	}
-	return !skipnexttime;
+	return 1; // OK exit
 }
 

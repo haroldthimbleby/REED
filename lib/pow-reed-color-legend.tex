@@ -1,9 +1,12 @@
 \setbox0=\hbox{\colorflag{white}}%
 \dimen0 = \ht0 \advance \dimen0 by 1ex \ht0 = \dimen0
-\begin{tabular}{@{}clp{3.75in}}
-\vphantom{\copy0}\colorflag{blue}&blue used 10 times&Version 3 uses blue to highlight the impact of critical new evidence introduced by the Abbott engineer. Only one node was explicitly highlighted blue, but the REED tool is used to automatically cascade the blue highlight to all affected evidence.\\ 
-\colorflag{red}&red used 2 times&Specific, relevant computer problems as already admitted in evidence. Use of non-forensic tools like Excel (which, for instance, allows rows of data to be deleted \emph{without leaving any record of changing the data\/}) used to process the evidence. In short, any evidence highlighted in red is unreliable.\\ 
-\colorflag{white}&white used 4 times&No information available (yet). This may or may not be considered a problem after relevant evidence is provided.\\ 
-\colorflag{yellow}&yellow used 3 times&Problems that have not yet been resolved. Concerns need to be addressed in cross-examination.\\ 
+% to fix for textwidth...
+\newdimen \colwid \colwid = \textwidth \advance \colwid by -1.2in
+\newdimen \headwid \headwid = \textwidth \advance \headwid by -1in
+\begin{tabular}{@{}cp{1.45cm}p{\colwid}}
+\vphantom{\copy0}\colorflag{blue}&\hbox{blue} \hbox{used 11 times}&Version 3 uses blue to highlight the impact of critical new evidence introduced by the Abbott engineer. Only one node was explicitly highlighted blue, but the REED tool is used to automatically cascade the blue highlight to all affected evidence.\\ 
+\colorflag{red}&\hbox{red} \hbox{used 2 times}&Specific, relevant computer problems as already admitted in evidence. Use of non-forensic tools like Excel (which, for instance, allows rows of data to be deleted \emph{without leaving any record of changing the data\/}) used to process the evidence. In short, any evidence highlighted in red is unreliable.\\ 
+\colorflag{white}&\hbox{white} \hbox{used 6 times}&No evidence is available yet. This may or may not be considered a problem after further information is provided.\\ 
+\colorflag{yellow}&\hbox{yellow} \hbox{used 4 times}&Evidential problems that have not yet been resolved. Concerns need to be addressed in cross-examination.\\ 
  \end{tabular}
 

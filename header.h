@@ -24,8 +24,6 @@ extern void latexxrefs(FILE *opfd);
 extern void hash(char *file);
 extern void printfiledata(FILE *opfd);
 
-extern void appendVersions(char *version);
-
 typedef enum { None, String, Node, Arrow, Annotation } type;
 
 enum flagcolor { noflag, aqua, black, blue, fuchsia, gray, green,
@@ -39,10 +37,11 @@ extern int norefs;
 typedef enum {
             DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK, NOREFS,
 			IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS, INTRODUCTION, CONCLUSION,
-			GROUP, STYLE, NEW, OVERRIDE, REF, // these don't require a string
+			GROUP, STYLE, NEW,  REF, // these don't require a string
 			ID,// assumes the string s is initialised
-            INVISIBLE, VISIBLE,
+            INVISIBLE, VISIBLE, DEFAULTSTYLE, CYCLICSTYLE,
             TAGS, LATEXDEFINITIONS, HTMLDEFINITIONS, CYCLE
+    // removed: OVERRIDE,
 		 } lexval;
 
 typedef struct tmpstr { 
@@ -127,6 +126,9 @@ extern int flagcascade[];
 
 extern char *version;
 
+extern char *defaultStyle;
+extern char *cyclicStyle;
+
 extern void saveCheckRtrans(str *claims, str *u, str *v);
 extern void checkAllRtrans();
 extern void findComponents();
@@ -143,6 +145,10 @@ typedef struct {
 extern tag startTag, endTag;
 extern tag setTag(char *string);
 extern int versionstrcmp(char *a, char *b);
+extern char *lastVersion();
+extern void appendVersions(char *version);
+extern void allVersionsSeparator(FILE *opfd, char *separator);
+extern int isVersion(char *v);
 extern void checkIS();
 extern int errcount;
 extern void checkNumbering();

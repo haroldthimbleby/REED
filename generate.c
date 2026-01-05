@@ -2,16 +2,17 @@
 #include "notes.h"
 
 char *flagstyle = "fillcolor=%s; style=filled; penwidth=2; shape=note; ";
-char *defaultstyle = "fillcolor=\"gray90\"; style=filled; shape=ellipse; fontname=\"Helvetica\"; ";
 
 int darkcolor(int fc)
 {   return fc == purple || fc == navy || fc == maroon || fc == red || fc == blue || fc == black || fc == green || fc == gray || fc == teal || fc == olive;
 }
 
 rownodes *cols = NULL;
-extern char *title, *date, *version, *abstract, *direction;
+extern char *title, *date, *version, *abstract, *direction, *defaultStyle;
 extern void summarizeMissingFlagDefinitions();
 str *latexdefinitions, *htmldefinitions, *introduction, *conclusion;
+
+char *cyclicStyle = "peripheries=3;fontcolor=\"white\";color=\"firebrick1\",fillcolor=\"fireBrick1\"; style=\"filled,dashed\";";
 
 void xmlconverted(FILE *opfd, char *content)
 {	for( char *s = content; *s; s++ )
@@ -75,7 +76,6 @@ void xmlstyle(char *style) // to convert Graphviz styles into XML
 	if( c == copy(quoted, c, &s) )
 	{	quoted = c == '"' || c == '\'';
 		copy(quoted, c, &s);
-	;
 	}
 }
 
@@ -207,7 +207,8 @@ void printColor(FILE *opfd, char *scheme, int index, int c)
 
 void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 { 	fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
-	myfprintf(opfd, "label=\"");
+    if( *defaultStyle ) fprintf(opfd, "graph [%s];\nnode [%s];\nedge [%s];\n", defaultStyle, defaultStyle, defaultStyle);
+    myfprintf(opfd, "label=\"");
 	if( *title ) myfprintf(opfd, "%j", title);
  	if( *version ) myfprintf(opfd, "\n%j", version);
  	if( *date ) myfprintf(opfd, "%s%j", *title || *version? ", ": "", date);
@@ -322,7 +323,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
                     myfprintf(opfd, "fontcolor=\"white\";");
 			}
             if( t->s->cyclic )
-                myfprintf(opfd, "peripheries=3;");
+                myfprintf(opfd, cyclicStyle);
             if( !t->s->visible )
                 myfprintf(opfd, "style=invis;");
             fprintf(opfd, "];\n");
@@ -575,20 +576,26 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 }
 
 void styleReplace(str *target, char *styleName, str *replace)
-{   // scan target for occurences styleName and replace with replace->s
+{   // scan target for occurences of styleName and replace with replace->s
     //fprintf(stderr, "replace %s\n  in |%s|\n  with |%s|\n", styleName, target->s, replace->s);
     int len = strlen(styleName);
     for( char *s = target->s; *s; s++ )
     {   if( !strncmp(s, styleName, len) )
         {
             //fprintf(stderr, "replace %s\n  in |%s|\n  with |%s|\n", styleName, target->s, replace->s);
+
+            // expand match region...
+            // ignore leading spaces
+            while( s > target->s && s[-1] == ' ' ) { s--; len++; }
             *s = (char) 0;
             //fprintf(stderr, ">>> |%s|\n", &s[len]);
-            str *appending = newstr(&s[len]);
+            // ignore trailing spaces
+            while( s[len] && s[len] == ' ' ) len++;
+
+            str *appending = newstr(&s[len]); // old C
             //fprintf(stderr, ">>> |%s|\n", appending->s);
             appendstr(target, replace);
             //fprintf(stderr, "  making |%s|\n", target->s);
-            //fprintf(stderr, ">>> |%s|\n", appending->s);
             //fprintf(stderr, "  WAS check: |%s|\n", &s[len]);
             appendstr(target, appending);
             //fprintf(stderr, "  then   |%s|\n", target->s);
@@ -630,11 +637,58 @@ int versionstrcmp(char *a, char *b)
     return 0;
 }
 
+extern int versionCount;
+void fixVersions(char *targetVersion)
+{   if( !strcmp(targetVersion, "") ) return;
+
+    if( !isVersion(targetVersion) )
+    {   if( versionCount <= 0 )
+            warning("No versions are defined");
+        else
+        {   fprintf(stderr, "Available versions are:\n   ");
+            allVersionsSeparator(stderr, "\n   ");
+        }
+        nolineerror("v='%s' is not a defined version", targetVersion);
+        exit(1);
+    }
+
+    //fprintf(stderr, "Generating version v=%s\n", targetVersion);
+    for( node *t = nodeList; t != NULL; t = t->next )
+    {   if( t->s->nodeversion != NULL )
+        {   // fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
+            if( !strcmp(t->s->nodeversion, "") )
+                t->s->visible = 1;
+            else
+            if( t->s->nodeversion == undefinedVersion || versionstrcmp(targetVersion, t->s->nodeversion) > 0 )
+            {   fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
+                fprintf(stderr, "  - so make %s INvisible\n", t->s->s);
+                t->s->visible = 0;
+            }
+            else
+            {   // fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion,versionstrcmp(targetVersion, t->s->nodeversion) );
+                // fprintf(stderr, "  - so make %s visible\n", t->s->s);
+                t->s->visible = 1;
+            }
+        }
+        else
+        {
+            fprintf(stderr, "? %s nodeversion=NULL\n", t->s->s);
+            t->s->visible = 0;
+        }
+    }
+}
+
 void generateFiles(char *targetVersion, char *filename)
 {
     // printf("Styles are:\n");
 	// for( node *u = stylelist; u != NULL; u = u->next )
 	//	printf("  %s = %s\n", u->s->style->s, u->s->s);
+
+    if( !*targetVersion || !strcmp(targetVersion, "") )
+    {   targetVersion = lastVersion();
+        if( strcmp(targetVersion, "") )
+            fprintf(stderr, "Version defaulted to v='%s'\n", targetVersion);
+    }
 
     checkIS();
     checkNumbering();
@@ -711,25 +765,7 @@ void generateFiles(char *targetVersion, char *filename)
     summarizeMissingFlagDefinitions();
 
     // work out which files are visible in this version...
-
-    fprintf(stderr, "Generating files for version v=%s\n", targetVersion);
-    for( node *t = nodeList; t != NULL; t = t->next )
-        if( t->s->nodeversion != NULL )
-        {  //fprintf(stderr, "%s v=%s versionstrcmp=%d :", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
-            if( t->s->nodeversion == undefinedVersion || versionstrcmp(targetVersion, t->s->nodeversion) > 0 )
-            {   //fprintf(stderr, " - so make %s INvisible!\n", t->s->s);
-                t->s->visible = 0;
-            }
-            else
-            {   //fprintf(stderr, " - so make %s visible!\n", t->s->s);
-                t->s->visible = 1;
-            }
-        }
-        else
-        {
-            fprintf(stderr, "%s nodeversion=NULL\n", t->s->s);
-            t->s->visible = 0;
-        }
+    fixVersions(targetVersion);
 
     makefiles(targetVersion, filename);
 }

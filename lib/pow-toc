@@ -1,6 +1,7 @@
 title "Theory of Change insights\nfrom the Princess of Wales REED case study"
 direction BT
 #date "26 January 2025"
+norefs
 
 e -> disciplinary <- a1
 t -> disciplinary
@@ -48,7 +49,7 @@ management -> io2
 management -> o1
 t-> barriermanagement
 
-rows TOC (
+layout TOC (
 	"Inputs" (e a1 a2 a3 etc au)
 	"Activities needed" (t b)
 	"Barriers to overcome" (c barriermanagement)
@@ -87,8 +88,10 @@ au -> audit
 au -> w
 au -> b
 
-o1 <-> "Staff satisfaction"
-style o1 <-> "Staff satisfaction" is "minlen=3"
+o1 -> "Staff satisfaction" -> o1
+style (o1 -> "Staff satisfaction" -> o1) is "minlen=3"
 io1 -> "Staff satisfaction"
 d1 -> "Staff satisfaction"
 d2 -> "Staff satisfaction"
+
+cycle ( "Staff satisfaction" o1 )

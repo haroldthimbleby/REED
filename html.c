@@ -2,11 +2,10 @@
 #include "notes.h"
 extern char *flagdefinitions[], *flagcolors[];
 extern int flagsused[], flagsusedaftercascades[];
-
+extern void allVersions(FILE *opfd);
 extern int needSwap(str *u, str *v);
 extern int needArrowSwap(arrow *u, arrow *v);
-extern int versionCount; 
-extern str *listOfVersions;
+extern int versionCount;
 extern void HTMLprintfiledata(FILE *opfd);
 extern void HTMLtranslate(FILE *opfd, str *context, char *note); // translate Latex and HTML to HTML, and include <<id>> notation
 
@@ -383,9 +382,11 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	
 	fprintf(opfd, "<h2>Quick overview &mdash; ");
 	if( versionCount > 0 )
-		fprintf(opfd, "%sersion%s: %s", 
-			versionCount > 1? "combined v": "v", versionCount == 1? "": "s", listOfVersions->s);
-	else
+    {	fprintf(opfd, "%sersion%s: ",
+                versionCount > 1? "combined v": "v", versionCount == 1? "": "s");
+        allVersions(opfd);
+    }
+    else
 		fprintf(opfd, "Single version");
 	fprintf(opfd, "</h2>\n<p/>\n");
 
@@ -536,17 +537,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 	//	myfprintf(opfd, "\n<h2>No highlighted nodes</h2>\n");
 	
 	if( nonotes ) 
-	{	fprintf(opfd, "<h1>No notes provided</h1>\n");
-		for( node *t = nodeList; t != NULL; t = t->next )
-			if( t->s->note == NULL )
-			{	myfprintf(opfd, "<h2>Node ");
-				printrank(opfd, t->s, version);
-				myfprintf(opfd, " %t", t->s->is != NULL? t->s->is->s: t->s->s);
-				if( t->s->is != NULL )
-					myfprintf(opfd, " [%t]", t->s->s);
-				fprintf(opfd, "<h2/>");
-			} 
-	}
+		fprintf(opfd, "<h2>(no notes provided)</h2>\n");
 
     // wrap up keyword list to loop back to start...
     if( allkeywords != NULL )

@@ -1,13 +1,16 @@
-In[1140]:=
 (* 
-This file reads in lib/pow-reed.nb and uses the definitions to generate a highlighted graph
-showing betweenness centrality for the REED graph.
+      This file reads in lib/pow-reed.nb and uses the definitions there to generate a highlighted graph
+      showing betweenness centrality for the REED graph to be used by REED.tex
 
-This depends on running reed -m lib/pow-reed to generate the file lib/pow-reed.nb
+      This depends on running reed -m lib/pow-reed to generate the Mathematia file lib/pow-reed.nb
 *)
 
 pad = "     ";
+
+SetDirectory[NotebookDirectory[]];
+Print["Running Mathematica in ", Directory[]];
 dataFile = "lib/pow-reed.nb";
+
 Print["Make betweenness graph used by reed.tex paper\n", pad, dataFile, " defines:"];
 
 Get[dataFile];
@@ -22,6 +25,7 @@ expandRule[u_ -> v_] :=
     If[Head[vl] === List, vl, {vl}]
   ]
 ];
+
 expandedEdges = Flatten@Map[expandRule, edges];
 
 (* make the expanded edges dashed or dotted, whatever *)
@@ -32,49 +36,41 @@ fixCompoundEdges[u_ -> v_] :=
           If[Head[vl] === List, vl, {vl}]
         ]
    ];
-styledEdges = (# -> Dashed) & /@ DeleteCases[Flatten@Map[fixCompoundEdges, edges], zap@_];
+   
+arrowSize = 0.015;
+arrowColor = Gray;
+
+styledEdges = (# -> Directive[Opacity[1], arrowColor, Thick, Dashed, Arrowheads[arrowSize]]) & /@ DeleteCases[Flatten@Map[fixCompoundEdges, edges], zap@_];
+PrependTo[styledEdges, _ -> Directive[Opacity[1],arrowColor, Thick, Arrowheads[arrowSize]]];
 
 g = Graph@expandedEdges;
 
-vlist = VertexList[expandedEdges];
+bg = Map[
+         Module[{b, g, vSize},
+                g = Subgraph[expandedEdges,#];
+                b = BetweennessCentrality[g];
+                vSize = Thread[VertexList[g] -> Rescale[Rescale[b], {0, 1}, {If[Length@b == 3, .15, .2], 2}]];
+                Graph[g,
+                      VertexStyle -> Map[# -> Darker[Red]&, VertexList[g]],
+                      EdgeStyle -> styledEdges,
+                      EdgeShapeFunction -> Function[{path,endPoints},
+                                                    {Arrowheads[If[Length@b==3, .15, .0175]],
+                                                     Arrow[path, {0,(endPoints[[2]]/.vSize)/2}]}
+                                                   ],
+                      VertexSize -> vSize,
+                      VertexLabels -> {"7"->Placed[Style[Column[{"PrecisionWeb","database"},Center],24,Bold,Black],{0.55,1.25}]}
+                     ]
+         ]&,
+            WeaklyConnectedComponents[expandedEdges]
+        ];
 
-bg = Map[Module[{b, g},
-     b = BetweennessCentrality[g = Subgraph[expandedEdges, #]];
-     HighlightGraph[g, Map[Style[#, Darker[Red]] &, VertexList[g]], 
-     EdgeStyle->styledEdges,
-      VertexSize -> 
-       Thread[VertexList[g] -> 
-         Rescale[Rescale[b], {0, 1}, {If[Length@b == 3, .05, .2], 2}]],
-      VertexLabels -> {"7" -> Placed[Style["PrecisionWeb\ndatabase", 20, Bold, Black], 
-                                     {0.55,1.25}
-                                    ]}]
-     ] &, WeaklyConnectedComponents[expandedEdges]];
+betweennessplot = Grid[{{Show[bg[[1]], ImageSize->1000], Show[bg[[2]], ImageSize->200]}}];
 
-betweennessplot = 
- Show[
-      {Show[bg[[1]], ImageSize -> 1000], 
-       Show[bg[[2]], ImageSize -> 50]
-      }
-     ];
-   
-(* new layout next! *)
-betweennessplot = Grid[{{Show[bg[[1]], ImageSize->1000], Show[bg[[2]], ImageSize->200]}}]
-
+format = "jpg";
+ 	
 If[True,
-	Print["Exported: ", Export["betweenness.png", betweennessplot]];
-	Print["Exported: ", Export["betweenness1.png", Show[bg[[1]], ImageSize->1000]]];
-	Print["Exported: ", Export["betweenness2.png", Show[bg[[2]], ImageSize->200]]],
+    Print["Exported: ", Export["betweenness1."<>format, Show[bg[[1]], ImageSize->1000]]];
+	Print["Exported: ", Export["betweenness2."<>format, Show[bg[[2]], ImageSize->200]]],
+	
 	betweennessplot
 ]
-
-During evaluation of In[1140]:= Make betweenness graph used by reed.tex paper
-     lib/pow-reed.nb defines:
-During evaluation of In[1140]:=       title=Princess of Wales Hospital blood glucometer case
-      authors=Harold Thimbleby
-      version=v3
-      date=10 September 2025
-      and: communities, edges, groups, highlights, keywords, notes, vertexNames
-Out[1167]= 
-During evaluation of In[1140]:= Exported: betweenness.png
-During evaluation of In[1140]:= Exported: betweenness1.png
-During evaluation of In[1140]:= Exported: betweenness2.png

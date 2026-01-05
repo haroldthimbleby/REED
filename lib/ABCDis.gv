@@ -1,5 +1,6 @@
 digraph {
   compound=true;
+  bgcolor="transparent";
   color=red;
   labelloc=t;
   fontname="Helvetica";
@@ -7,10 +8,10 @@ digraph {
   label="";
   rankdir="LR";
 
-  "D" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="The IT department";];
-  "C" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="C";];
-  "B" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="B";];
-  "A" [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; label="A";];
+  "D" [URL="#D"; label="The IT department";];
+  "C" [URL="#C"; label="C";];
+  "B" [URL="#B"; label="B";];
+  "A" [URL="#A"; label="A";];
 
   "A"->"B";
   "A"->"D";

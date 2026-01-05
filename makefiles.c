@@ -28,7 +28,7 @@ void generated(char *filename, char *suffix, char *reason)
         appendcstr(cmd, filename);
         if( *suffix )
             appendcstr(cmd, suffix);
-        if( verboseOption ) fprintf(stderr, "|--");
+        if( verboseOption ) fprintf(stderr, "| -- ");
         if( 1 || verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
         system(cmd->s);
     }

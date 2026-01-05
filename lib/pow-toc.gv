@@ -1,5 +1,6 @@
 digraph {
   compound=true;
+  bgcolor="transparent";
   color=red;
   labelloc=t;
   fontname="Helvetica";
@@ -15,34 +16,34 @@ digraph {
 {rank=same; "Consequential benefits ";"io1";"io2";}
 {rank=same; "End benefits           ";"o1";"invis";"Staff satisfaction";}
 
-  "w" [fillcolor="/rdylgn8/4";color="/rdylgn8/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Reliable IT\nwith effective IT warranties";];
-  "t" [fillcolor="/rdylgn8/2";color="/rdylgn8/2";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Better\ntraining";];
-  "o1" [fillcolor="/rdylgn8/7";color="/rdylgn8/7";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Better patient care";];
-  "management" [fillcolor="/rdylgn8/4";color="/rdylgn8/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Better\nIT management";];
-  "io2" [fillcolor="/rdylgn8/6";color="/rdylgn8/6";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Significant\nsavings";];
-  "io1" [fillcolor="/rdylgn8/6";color="/rdylgn8/6";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="More staff\navailable";];
-  "invis" [fillcolor="/rdylgn8/7";color="/rdylgn8/7";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="invis";style=invis;];
-  "etc" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; label="Other equipment,\nIT, middleware, etc";];
-  "e" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; label="Qualified\ntrainers";];
-  "disciplinary" [fillcolor="/rdylgn8/4";color="/rdylgn8/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="IT competence and awareness\n in disciplinary processes";];
-  "d2" [fillcolor="/rdylgn8/5";color="/rdylgn8/5";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Less\nlitigation";];
-  "d1" [fillcolor="/rdylgn8/5";color="/rdylgn8/5";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Fewer\ndisciplinaries";];
-  "c" [fillcolor="/rdylgn8/3";color="/rdylgn8/3";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Assumption IT is reliable";];
-  "barriermanagement" [fillcolor="/rdylgn8/3";color="/rdylgn8/3";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Under-skilled IT management\nUnder-skilled IT tech & support  ";];
-  "b" [fillcolor="/rdylgn8/2";color="/rdylgn8/2";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Better\nprocurement";];
-  "audit" [fillcolor="/rdylgn8/4";color="/rdylgn8/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Testing\nand audit culture";];
-  "au" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; label="External\noversight";];
-  "a3" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; label="Databases";];
-  "a2" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; label="Point of care\nequipment";];
-  "a1" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; label="Hospital computer\noperators";];
-  "Tangible objectives    " [shape=box; fontname=Helvetica; label="Tangible objectives    ";shape=cds;fontname="Monaco";];
-  "Staff satisfaction" [fillcolor="/rdylgn8/7";color="/rdylgn8/7";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="Staff satisfaction";];
-  "Inputs                 " [shape=box; fontname=Helvetica; label="Inputs                 ";shape=cds;fontname="Monaco";];
-  "End benefits           " [shape=box; fontname=Helvetica; label="End benefits           ";shape=cds;fontname="Monaco";];
-  "Direct benefits        " [shape=box; fontname=Helvetica; label="Direct benefits        ";shape=cds;fontname="Monaco";];
-  "Consequential benefits " [shape=box; fontname=Helvetica; label="Consequential benefits ";shape=cds;fontname="Monaco";];
-  "Barriers to overcome   " [shape=box; fontname=Helvetica; label="Barriers to overcome   ";shape=cds;fontname="Monaco";];
-  "Activities needed      " [shape=box; fontname=Helvetica; label="Activities needed      ";shape=cds;fontname="Monaco";];
+  "w" [fillcolor="/rdylgn8/4";color="/rdylgn8/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#w"; label="Reliable IT\nwith effective IT warranties";];
+  "t" [fillcolor="/rdylgn8/2";color="/rdylgn8/2";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#t"; label="Better\ntraining";];
+  "o1" [fillcolor="/rdylgn8/7";color="/rdylgn8/7";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#o1"; label="Better patient care";];
+  "management" [fillcolor="/rdylgn8/4";color="/rdylgn8/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#management"; label="Better\nIT management";];
+  "io2" [fillcolor="/rdylgn8/6";color="/rdylgn8/6";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#io2"; label="Significant\nsavings";];
+  "io1" [fillcolor="/rdylgn8/6";color="/rdylgn8/6";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#io1"; label="More staff\navailable";];
+  "invis" [fillcolor="/rdylgn8/7";color="/rdylgn8/7";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#invis"; label="invis";style=invis;];
+  "etc" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; URL="#etc"; label="Other equipment,\nIT, middleware, etc";];
+  "e" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; URL="#e"; label="Qualified\ntrainers";];
+  "disciplinary" [fillcolor="/rdylgn8/4";color="/rdylgn8/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#disciplinary"; label="IT competence and awareness\n in disciplinary processes";];
+  "d2" [fillcolor="/rdylgn8/5";color="/rdylgn8/5";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#d2"; label="Less\nlitigation";];
+  "d1" [fillcolor="/rdylgn8/5";color="/rdylgn8/5";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#d1"; label="Fewer\ndisciplinaries";];
+  "c" [fillcolor="/rdylgn8/3";color="/rdylgn8/3";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#c"; label="Assumption IT is reliable";];
+  "barriermanagement" [fillcolor="/rdylgn8/3";color="/rdylgn8/3";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#barriermanagement"; label="Under-skilled IT management\nUnder-skilled IT tech & support  ";];
+  "b" [fillcolor="/rdylgn8/2";color="/rdylgn8/2";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#b"; label="Better\nprocurement";];
+  "audit" [fillcolor="/rdylgn8/4";color="/rdylgn8/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#audit"; label="Testing\nand audit culture";];
+  "au" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; URL="#au"; label="External\noversight";];
+  "a3" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; URL="#a3"; label="Databases";];
+  "a2" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; URL="#a2"; label="Point of care\nequipment";];
+  "a1" [fillcolor="/rdylgn8/1";color="/rdylgn8/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; URL="#a1"; label="Hospital computer\noperators";];
+  "Tangible objectives    " [shape=box; fontname=Helvetica; URL="#Tangible objectives    "; label="Tangible objectives    ";shape=cds;fontname="Monaco";];
+  "Staff satisfaction" [fillcolor="/rdylgn8/7";color="/rdylgn8/7";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#Staff satisfaction"; label="Staff satisfaction";];
+  "Inputs                 " [shape=box; fontname=Helvetica; URL="#Inputs                 "; label="Inputs                 ";shape=cds;fontname="Monaco";];
+  "End benefits           " [shape=box; fontname=Helvetica; URL="#End benefits           "; label="End benefits           ";shape=cds;fontname="Monaco";];
+  "Direct benefits        " [shape=box; fontname=Helvetica; URL="#Direct benefits        "; label="Direct benefits        ";shape=cds;fontname="Monaco";];
+  "Consequential benefits " [shape=box; fontname=Helvetica; URL="#Consequential benefits "; label="Consequential benefits ";shape=cds;fontname="Monaco";];
+  "Barriers to overcome   " [shape=box; fontname=Helvetica; URL="#Barriers to overcome   "; label="Barriers to overcome   ";shape=cds;fontname="Monaco";];
+  "Activities needed      " [shape=box; fontname=Helvetica; URL="#Activities needed      "; label="Activities needed      ";shape=cds;fontname="Monaco";];
 
   "Consequential benefits "->"End benefits           " [style=invis; ];
   "Direct benefits        "->"Consequential benefits " [style=invis; ];
@@ -53,7 +54,8 @@ digraph {
   "d2"->"Staff satisfaction";
   "d1"->"Staff satisfaction";
   "io1"->"Staff satisfaction";
-  "o1"->"Staff satisfaction" [minlen=3; dir=both;];
+  "Staff satisfaction"->"o1" [minlen=3; ];
+  "o1"->"Staff satisfaction" [minlen=3; ];
   "au"->"b";
   "au"->"w";
   "au"->"audit";

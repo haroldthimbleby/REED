@@ -1,5 +1,6 @@
-new notes data structure ...
-to handle possible multiple authors
+work out how to do deletions per version
+
+new notes data structure ...to handle possible multiple authors
 
 reimplement in Rust!
 

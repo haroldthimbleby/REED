@@ -215,12 +215,19 @@ void usage(char *process)
     exit(0);
 }
 
+extern int versionCount;
 char *parseversion(char *name, char *value)
 {	if( strcmp(name, "v") )
 		nolineerror("** only v=<value> skip versions option implemented\n");
 	else
-		return value;
-	return NULL;
+    {   if( !strcmp(value, "") )
+        {   nolineerror("v='' no version defined");
+            exit(1);
+        }
+        fprintf(stderr, "Generate version '%s'\n", value);
+        return value;
+    }
+    return NULL;
 }
 
 extern char *keywordtopull, *whichPull;
@@ -360,7 +367,6 @@ int main(int argc, char *argv[])
         else if( !optionsOption && (bp = index(argv[i], '=')) != NULL )
         {   bp[0] = (char) 0;
             targetVersion = parseversion(newstr(argv[i])->s, &bp[1]);
-            fprintf(stderr, "Generate version %s\n", targetVersion);
         }
         else
         if( (fp = fopen(openedfile = argv[i], "r")) != NULL )

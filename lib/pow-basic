@@ -1,3 +1,5 @@
+norefs
+new style setfont is "fontname=\"Helvetica\""
 
 Nurses -> nurserecords -> computerrecords
 
@@ -7,7 +9,9 @@ computerrecords is "Computerized\npatient\nrecords"
 
 style Nurses -> nurserecords is "penwidth=5;minlen=3"
 
-style nurserecords <-> computerrecords is "dir=both;style=dotted;color=red;penwidth=5;minlen=3;fontname=\"Helvetica-Bold\";fontcolor=red;fontsize=16;label=\"Discrepancies\n \";minlen=5"
+style (nurserecords <- computerrecords computerrecords <- nurserecords) is "dir=both;style=dotted;color=red;penwidth=5;minlen=3;fontname=\"Helvetica-Bold\";fontcolor=red;fontsize=16;label=\"Discrepancies\n \";minlen=5"
 
-style Nurses is "shape=circle;fillcolor=gray90;style=filled"
-rows ((Nurses nurserecords computerrecords))
+style Nurses is "setfont;shape=circle;fillcolor=gray90;style=filled"
+style nurserecords is setfont
+style computerrecords is setfont
+layout ((Nurses nurserecords computerrecords))

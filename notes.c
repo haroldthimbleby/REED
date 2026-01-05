@@ -25,14 +25,50 @@ checks
 
 authorList *authors = NULL, *endofAuthorlist;
 
-int versionCount = 0; 
-str *listOfVersions = NULL;
-	
+int versionCount = 0;
+struct versionList { str *v; struct versionList *next; } *versions = NULL;
+
+void allVersions(FILE *opfd)
+{   allVersionsSeparator(opfd, "; ");
+}
+
+void allVersionsSeparator(FILE *opfd, char *separator)
+{   char *sep = "";
+    for( struct versionList *vl = versions; vl != NULL; vl = vl->next )
+    {   fprintf(opfd, "%s%s", sep, vl->v->s);
+        sep = separator;
+    }
+    fprintf(opfd, "\n");
+}
+
+int isVersion(char *v)
+{   for( struct versionList *vl = versions; vl != NULL; vl = vl->next )
+        if( !strcmp(v, vl->v->s) ) return 1;
+    return 0;
+}
+
+char *lastVersion()
+{   struct versionList *vl = versions;
+    if( !versionCount || vl == NULL ) return "";
+    while( vl->next != NULL )
+    {   vl = vl->next;
+    }
+    return vl->v->s;
+}
+
 void appendVersions(char *version)
-{	versionCount++;
-	if( listOfVersions == NULL ) listOfVersions = newstr("");
-	if( strlen(listOfVersions->s) > 0 ) appendcstr(listOfVersions, "; ");
-	listOfVersions = appendcstr(listOfVersions, version);
+{	struct versionList **vl = &versions;
+    while( *vl != NULL )
+    {   if( !strcmp((*vl)->v->s, version) ) return;
+        if( versionstrcmp((*vl)->v->s, version) < 0 ) break;
+        vl = &(*vl)->next;
+    }
+    //fprintf(stderr, "put new node [%s] before this one [%s]\n", version, *vl == NULL? "NULL": (*vl)->v->s);
+    struct versionList *appendThis = (struct versionList *) safealloc(sizeof(struct versionList));
+    appendThis->next = *vl;
+    appendThis->v = newstr(version);
+    *vl = appendThis;
+    versionCount++;
 }
 
 int needSwap(str *u, str *v)
@@ -116,10 +152,14 @@ void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip)
 			{	if( !flagLegends )
 				{	myfprintf(opfd, "\\setbox0=\\hbox{\\colorflag{white}}%%\n\
 \\dimen0 = \\ht0 \\advance \\dimen0 by 1ex \\ht0 = \\dimen0\n");
-					myfprintf(opfd, "\\begin{tabular}{@{}%sclp{3.75in}%s}\n", vbar, vbar);
+                    myfprintf(opfd, "%% to fix for textwidth...\n\
+\\newdimen \\colwid \\colwid = \\textwidth \\advance \\colwid by -1.2in\n\
+\\newdimen \\headwid \\headwid = \\textwidth \\advance \\headwid by -1in\n\
+\\begin{tabular}{@{}%scp{1.45cm}p{\\colwid}%s}\n", vbar, vbar);
 					if( hasHeading )
                     {   extern char *title;
-                        myfprintf(opfd, "%s\n\\multicolumn{3}{@{}|l|}{\\bf %s", hbar, heading);
+                        myfprintf(opfd, "%s\n\\multicolumn{3}{@{}|p{\\headwid}|}", hbar);
+                        myfprintf(opfd, "{\\bf %s", heading);
                         if( *title ) myfprintf(opfd, " for %s", title);
                         myfprintf(opfd, "} \\\\ \\hline\n");
                     }
@@ -128,10 +168,10 @@ void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip)
 				if( flagLegends == 1 )
 					myfprintf(opfd, "\\vphantom{\\copy0}");
 				myfprintf(opfd, "\\colorflag{%s}&", flagcolors[i]);
-				myfprintf(opfd, "%s ", flagcolors[i]);
+				myfprintf(opfd, "\\hbox{%s} ", flagcolors[i]);
 				if( !flagsusedaftercascades[i] ) myfprintf(opfd, "\\bf not used&");
-				else myfprintf(opfd, "used %d time%s&", flagsusedaftercascades[i], flagsusedaftercascades[i] == 1? "": "s");
-				myfprintf(opfd, "%s", flagdefinitions[i]); 
+				else myfprintf(opfd, "\\hbox{used %d time%s}&", flagsusedaftercascades[i], flagsusedaftercascades[i] == 1? "": "s");
+				myfprintf(opfd, "%s", flagdefinitions[i]);
 				if( hasHeading && flagsusedaftercascades[i] != flagsused[i] )
 				{	myfprintf(opfd, "\\\\&&\\scriptsize (%s used explicitly ", flagcolors[i]);
 					if( flagsused[i] == 1 )
@@ -169,23 +209,23 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
               "\\usepackage{graphicx}\n"
               "\\usepackage{hyperref}\n"
               "\\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}"
-            );
+              );
 
     myfprintf(opfd, "\n%s\n", latexdefinitions->s);
 
-	myfprintf(opfd, "\\title{%t%t%t%t}\\author{", title,
-			*title? "\\\\": "", *version? "Version ": "", version);
+    myfprintf(opfd, "\\title{%t%t%t%t}\\author{", title,
+              *title? "\\\\": "", *version? "Version ": "", version);
 
-	while( authors != NULL )
-	{	myfprintf(opfd, "%t", authors->author);
-		if( authors->next != NULL ) 
-			fprintf(opfd, authors->next->next == NULL? " \\& ": ", ");
-		authors = authors->next;
-	}
+    while( authors != NULL )
+    {	myfprintf(opfd, "%t", authors->author);
+        if( authors->next != NULL )
+            fprintf(opfd, authors->next->next == NULL? " \\& ": ", ");
+        authors = authors->next;
+    }
 
-	fprintf(opfd, "}\n\\date{%s}\n\\begin{document} \\maketitle\n", date);
+    fprintf(opfd, "}\n\\date{%s}\n\\begin{document} \\maketitle\n", date);
 
-	fprintf(opfd, "\\def\\colorflag#1{\\fboxrule=0.3pt\n\\fboxsep=0pt\n\
+    fprintf(opfd, "\\def\\colorflag#1{\\fboxrule=0.3pt\n\\fboxsep=0pt\n\
 \\hbox{\\vrule height 2.2ex width 1pt\n\
 \\raise 1ex\\hbox{\\fbox{\\color{#1}\\hbox{\\vrule width .5ex height 1ex depth 0ex}}}%%\n\
 \\hskip -.6pt\\raise .9ex\\hbox{\\fbox{\\color{#1}\\hbox{\\vrule width .5ex height 1ex depth 0ex}}}%%\n\
@@ -194,70 +234,73 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 
     fprintf(opfd, "\\setlength{\\fboxsep}{1.5pt}\n"); // for from: to: here: annotations
 
-	if( *abstract )
-	{	myfprintf(opfd, "\n\\begin{abstract}\n");
+    if( *abstract )
+    {	myfprintf(opfd, "\n\\begin{abstract}\n");
         summariseLaTeXkeywords(opfd);
-		LaTeXtranslate(opfd, version, abstract, NULL);
+        LaTeXtranslate(opfd, version, abstract, NULL);
         myfprintf(opfd, "\n\\end{abstract}\n");
-	}
+    }
 
     myfprintf(opfd, "\n%s\n", introduction->s);
 
-	// sort notes into order using bubble sort
-	int swapped = 0;
-	do
-	{	
-		//for( node *t = nodeList; t != NULL; t = t->next )
-		//	fprintf(stderr, "%d.%d (%s)   ", t->s->rankx, t->s->ranky, t->s->s);
-		//fprintf(stderr, "\n");
+    // sort notes into order using bubble sort
+    int swapped = 0;
+    do
+    {
+        //for( node *t = nodeList; t != NULL; t = t->next )
+        //	fprintf(stderr, "%d.%d (%s)   ", t->s->rankx, t->s->ranky, t->s->s);
+        //fprintf(stderr, "\n");
 
-		swapped = 0;
-		for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
-			if( needSwap((*t)->s, (*t)->next->s) ) 
-			{	//fprintf(stderr, "  swap *t: %d.%d & (*t)->next: %d.%d\n", (*t)->s->rankx, (*t)->s->ranky, (*t)->next->s->rankx, (*t)->next->s->ranky);
-				node *u = *t;
-				*t = (*t)->next;
-				//fprintf(stderr, "  A now u: %d.%d & t: %d.%d\n", u->s->rankx, u->s->ranky, (*t)->s->rankx, (*t)->s->ranky);
-				u->next = (*t)->next;
-				//fprintf(stderr, "  B now u->next: %d.%d & t: %d.%d\n", u->next->s->rankx, u->next->s->ranky, (*t)->s->rankx, (*t)->s->ranky);
-				(*t)->next = u;
-				//fprintf(stderr, "  C now u: %d.%d & t: %d.%d\n", u->s->rankx, u->s->ranky, (*t)->s->rankx, (*t)->s->ranky);
-				swapped = 1;
-				//for( node *t = nodeList; t != NULL; t = t->next )
-				//	fprintf(stderr, "%d.%d - ", t->s->rankx, t->s->ranky);
-				//fprintf(stderr, "\n");
-				//break;
-			}
-	} while( swapped );
-	
-	//fprintf(stderr, "\\section*{Notes}\n");
-	int nonotes = 0, anyflags = 0, anynodes = 0, anynotes = 0, anyarrows = 0, anyarrownotes = 0;
-	for( node *t = nodeList; t != NULL; t = t->next )
-	{	anynodes++;
-		if( t->s->flag ) anyflags++;
-		//fprintf(stderr, "%s - %d\n", t->s->s, (int) t->s->note);
-		if( t->s->note == NULL ) // && !t->s->isstyle ) // styles don't have notes
-		{ 	if( nonotes == 0 )
-			{ 	fprintf(stderr, "Warning: No notes provided for these nodes:\n");
-				nonotes = 1;
-			}
-			myfprintf(stderr, "         - %t", t->s->s);
-			if( t->s->flag != noflag )
-				fprintf(stderr, "         - Node with %s highlight has no notes", flagcolor(t->s->flag));
-			myfprintf(stderr, "\n");
-			nonotes = 1;
-		} else anynotes++;
-	}
+        swapped = 0;
+        for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
+            if( needSwap((*t)->s, (*t)->next->s) )
+            {	//fprintf(stderr, "  swap *t: %d.%d & (*t)->next: %d.%d\n", (*t)->s->rankx, (*t)->s->ranky, (*t)->next->s->rankx, (*t)->next->s->ranky);
+                node *u = *t;
+                *t = (*t)->next;
+                //fprintf(stderr, "  A now u: %d.%d & t: %d.%d\n", u->s->rankx, u->s->ranky, (*t)->s->rankx, (*t)->s->ranky);
+                u->next = (*t)->next;
+                //fprintf(stderr, "  B now u->next: %d.%d & t: %d.%d\n", u->next->s->rankx, u->next->s->ranky, (*t)->s->rankx, (*t)->s->ranky);
+                (*t)->next = u;
+                //fprintf(stderr, "  C now u: %d.%d & t: %d.%d\n", u->s->rankx, u->s->ranky, (*t)->s->rankx, (*t)->s->ranky);
+                swapped = 1;
+                //for( node *t = nodeList; t != NULL; t = t->next )
+                //	fprintf(stderr, "%d.%d - ", t->s->rankx, t->s->ranky);
+                //fprintf(stderr, "\n");
+                //break;
+            }
+    } while( swapped );
 
-	for( arrow *a = arrowList; a != NULL; a = a->next )
-		anyarrows++;
-	for( arrow *t = noteArrowList; t != NULL; t = t->next )
-		anyarrownotes++;
-	fprintf(opfd, "\\section*{Quick overview}\n{\\large\\sf\\noindent \\begin{tabular}{@{}|rlcrl|}\\hline \n");
-	if( versionCount > 0 )
-		fprintf(opfd, "\\multicolumn{5}{@{}|l|}{%sersion%s: %s}\\\\\\hline\n", 
-			versionCount > 1? "Combined v": "V", versionCount == 1? "": "s", listOfVersions->s);
-	else
+    //fprintf(stderr, "\\section*{Notes}\n");
+    int nonotes = 0, anyflags = 0, anynodes = 0, anynotes = 0, anyarrows = 0, anyarrownotes = 0;
+    for( node *t = nodeList; t != NULL; t = t->next )
+    {	anynodes++;
+        if( t->s->flag ) anyflags++;
+        //fprintf(stderr, "%s - %d\n", t->s->s, (int) t->s->note);
+        if( t->s->note == NULL ) // && !t->s->isstyle ) // styles don't have notes
+        { 	if( nonotes == 0 )
+        { 	fprintf(stderr, "Warning: No notes provided for these nodes:\n");
+            nonotes = 1;
+        }
+            myfprintf(stderr, "         - %t", t->s->s);
+            if( t->s->flag != noflag )
+                fprintf(stderr, "         - Node with %s highlight has no notes", flagcolor(t->s->flag));
+            myfprintf(stderr, "\n");
+            nonotes = 1;
+        } else anynotes++;
+    }
+
+    for( arrow *a = arrowList; a != NULL; a = a->next )
+        anyarrows++;
+    for( arrow *t = noteArrowList; t != NULL; t = t->next )
+        anyarrownotes++;
+    fprintf(opfd, "\\section*{Quick overview}\n{\\large\\sf\\noindent \\begin{tabular}{@{}|rlcrl|}\\hline \n");
+    if( versionCount > 0 )
+    {   fprintf(opfd, "\\multicolumn{5}{@{}|l|}{%sersion%s: ",
+                versionCount > 1? "Combined v": "V", versionCount == 1? "": "s");
+        allVersions(opfd);
+        fprintf(opfd, ")}\\\\\\hline\n");
+    }
+    else
 		fprintf(opfd, "\\multicolumn{5}{@{}|l|}{Single version}\\\\\n");
 	fprintf(opfd, " %d & node%s & --- & %d & highlighted\\\\&&& %d & with notes\\\\\n\n    %d & arrow%s & --- & %d & with notes\\\\\\hline\n\\end{tabular}\n", 
 		anynodes, anynodes==1? "": "s", anyflags, anynotes, anyarrows, anyarrows==1? "": "s", anyarrownotes);
@@ -306,18 +349,18 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
         for( component = 1; component <= numberOfComponents; component++ )
         {   anynotes = 0; // per component
             for( node *t = nodeList; t != NULL; t = t->next )
-                if( t->s->note != NULL && t->s->component == component )
+                if( t->s->visible && t->s->note != NULL && t->s->component == component )
                 {	if( !anynotes )
-                {    myfprintf(opfd, "\\hypertarget{component%d-narrative}{\\section*{Node narrative evidence", component);
-                    if( numberOfComponents > 1 )
-                        myfprintf(opfd, " for component %d", component);
-                    myfprintf(opfd, "}}\n");
-                    myfprintf(opfd, "\\begin{description}\n");
-                    for( int c = 1; c <= numberOfComponents; c++ )
-                        if( c != component )
-                            myfprintf(opfd, "\\item[$\\rightarrow$] \\hyperlink{component%d-narrative}{All narrative for component %d}\n", c, c);
-                    myfprintf(opfd, "\\end{description}\n");
-                }
+                    {   myfprintf(opfd, "\\hypertarget{component%d-narrative}{\\section*{Node narrative evidence", component);
+                        if( numberOfComponents > 1 )
+                            myfprintf(opfd, " for component %d", component);
+                        myfprintf(opfd, "}}\n");
+                        myfprintf(opfd, "\\begin{description}\n");
+                        for( int c = 1; c <= numberOfComponents; c++ )
+                            if( c != component )
+                                myfprintf(opfd, "\\item[$\\rightarrow$] \\hyperlink{component%d-narrative}{All narrative for component %d}\n", c, c);
+                        myfprintf(opfd, "\\end{description}\n");
+                    }
                     anynotes = 1;
                     myfprintf(opfd, "\n\n\\hypertarget{%s}{\\subsection*{", t->s->s);
                     if( t->s->flag != noflag )
@@ -325,8 +368,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 
                     myfprintf(opfd, "Node ");
                     printrank(opfd, t->s, version);
-                    myfprintf(opfd, " %T",
-                              t->s->is != NULL? t->s->is->s: t->s->s);
+                    myfprintf(opfd, " %T", t->s->is != NULL? t->s->is->s: t->s->s);
 
                     if( t->s->group != NULL )
                         myfprintf(opfd, "\\\\\\hskip 2em --- (Group: %t) ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
@@ -381,6 +423,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 	for( arrow *t = noteArrowList; t != NULL; t = t->next )
 	{ 	if( !arrownotes )
 			myfprintf(opfd, "\\section*{Arrow narrative evidence}\n");
+        if( !t->u->visible || !t->v->visible ) continue;
 		arrownotes = 1;
 		myfprintf(opfd,"\\subsection*{Arrow ");
 		if( t->arrowis != NULL )

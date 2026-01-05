@@ -1,5 +1,6 @@
 digraph {
   compound=true;
+  bgcolor="transparent";
   color=red;
   labelloc=t;
   fontname="Helvetica";
@@ -11,14 +12,14 @@ digraph {
 {rank=same; "Internal interference? ";"C";}
 {rank=same; "Signed off by IT       ";"D";}
 
-  "Undetected cyberattack " [shape=box; fontname=Helvetica; label="Undetected cyberattack ";shape=cds;fontname="Monaco";];
-  "Sources of data        " [shape=box; fontname=Helvetica; label="Sources of data        ";shape=cds;fontname="Monaco";];
-  "Signed off by IT       " [shape=box; fontname=Helvetica; label="Signed off by IT       ";shape=cds;fontname="Monaco";];
-  "Internal interference? " [shape=box; fontname=Helvetica; label="Internal interference? ";shape=cds;fontname="Monaco";];
-  "D" [fillcolor="/rdylgn5/4";color="/rdylgn5/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="4\nThe IT department";];
-  "C" [fillcolor="/rdylgn5/3";color="/rdylgn5/3";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="3\nC";];
-  "B" [fillcolor="/rdylgn5/2";color="/rdylgn5/2";style=filled;fontcolor=black;shape=box; fontname=Helvetica; label="2\nB";];
-  "A" [fillcolor="/rdylgn5/1";color="/rdylgn5/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; label="1\nA";];
+  "Undetected cyberattack " [shape=box; fontname=Helvetica; URL="#Undetected cyberattack "; label="Undetected cyberattack ";shape=cds;fontname="Monaco";];
+  "Sources of data        " [shape=box; fontname=Helvetica; URL="#Sources of data        "; label="Sources of data        ";shape=cds;fontname="Monaco";];
+  "Signed off by IT       " [shape=box; fontname=Helvetica; URL="#Signed off by IT       "; label="Signed off by IT       ";shape=cds;fontname="Monaco";];
+  "Internal interference? " [shape=box; fontname=Helvetica; URL="#Internal interference? "; label="Internal interference? ";shape=cds;fontname="Monaco";];
+  "D" [fillcolor="/rdylgn5/4";color="/rdylgn5/4";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#D"; label="The IT department";];
+  "C" [fillcolor="/rdylgn5/3";color="/rdylgn5/3";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#C"; label="C";];
+  "B" [fillcolor="/rdylgn5/2";color="/rdylgn5/2";style=filled;fontcolor=black;shape=box; fontname=Helvetica; URL="#B"; label="B";];
+  "A" [fillcolor="/rdylgn5/1";color="/rdylgn5/1";style=filled;fontcolor=white;shape=box; fontname=Helvetica; URL="#A"; label="A";];
 
   "Internal interference? "->"Signed off by IT       " [style=invis; ];
   "Undetected cyberattack "->"Internal interference? " [style=invis; ];
