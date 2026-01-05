@@ -81,7 +81,7 @@ rsm: lib/darzi
 	reed -g lib/darzi
 	echo darzi: fix arrow to arc upwards
 	sed 's/"b2"->"b4"/&:n/' lib/darzi.gv > tmp
-	mv tmp darzi.gv
+	mv tmp lib/darzi.gv
 	dot -Tpdf lib/darzi.gv > lib/darzi.pdf
 	mv lib/darzi.pdf "/Users/harold/Desktop/Blindspots Darzi report"
 	
