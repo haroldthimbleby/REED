@@ -63,6 +63,7 @@
 "    highlight id is color!Highlight node id with color\n"
 "    htmldefinitions id!Insert id at start of <body> in HTML file; multiple htmldefinitions append to id\n"
 "    latexdefinitions id!Insert id at start of Latex file; multiple latexdefinitions append to id \n"
+"    latexEOF id|Insert id at end of Latex file (e.g., for references, appendices, etc); multiple latexEOFs append to id \n"
 "    layout [ TOC ] ( { id ( id++ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling\n"
 "    new style id1 is id2!Define id1 as a style, using Dot syntax for id2!(e.g., new style blue18 is \"fontcolor=blue; fontsize=18\")\n"
 "    node-or-arrow [ is id ]!Create nodes or arrows, with optional display name id\n"
