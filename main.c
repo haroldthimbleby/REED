@@ -123,6 +123,8 @@ int basenameOption = 0,
     pullOption = 0,
     versionOption = 0,
     allColorsOption = 0,
+    listidsOption = 0,
+    listissOption = 0,
     keywordsOption = 0;
 
 char *outputbasename = ""; // no basename is zero length string
@@ -166,12 +168,14 @@ structOption options[] =
     {"-o", "open generated files automatically", &openOption, 1},
     {"-pdf", "generate a .pdf file*- representing the REED graph", &generatePDFOption, 1},
     {"-pick", "<color> restrict generated files to just this color", &matchedpullOption, 1},
-    {"-pick", "<keyword> restrict generated files to notes with this keyword*-Abbreviate with ... (so xyz... matches any keyphrases starting xyz)", &matchedpullOption, 1},
+    {"-pick", "<keyword> restrict generated files to notes with this keyword*- Abbreviation notation: use ... so xyz... matches any keyphrases starting xyz", &matchedpullOption, 1},
     {"-pick+", "<color> does -pick and also explains this color on standard output", &matchedpullPlusOption, 1},
     {"-raw", "start in raw mode (skipping text until a start tag)*- only use -raw with -tags flag", &rawOption, 0},
     {"-rules", "summarise HTML <-> Latex rules", &showRulesOption, 0},
-	{"-s", "show REED file signatures", &showSignatures, 0},
+    {"-s", "list nodes and their full names, sorted by node id", &listidsOption, 0}, 
+    {"-ss", "list nodes and their full names, sorted by full names", &listissOption, 0},
     {"-sep", "draw a separator line before processing any files (useful with -watch)", &separatorOption, 0},
+    {"-sig", "show REED file signatures", &showSignatures, 0},
     {"-svg", "generate a .svg file*- representing the REED graph", &generateSVGOption, 1},
     {"-syntax", "summarise REED syntax", &syntaxOption, 0},
 	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption, 0},
@@ -432,7 +436,9 @@ int main(int argc, char *argv[])
     if( versionOption )
         fprintf(stderr, "%s version 2.2 compiled %s, %s\n", argv[0], __TIME__, __DATE__);
 
-    if( !syntaxOption && !showRulesOption && !opened && !allColorsOption && !versionOption )
+    listnodes(); // does stuff if listnodesOption set
+
+    if( !syntaxOption && !showRulesOption && !opened && !allColorsOption && !versionOption && !listidsOption )
         usage(argv[0]);
 
     return 0;

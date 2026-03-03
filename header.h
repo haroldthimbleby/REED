@@ -19,6 +19,10 @@ void *safealloc(size_t size);
 
 extern int parse(char *filename, char *bp);
 
+extern void listnodes();
+extern int listidsOption;
+extern int listissOption;
+
 extern void latexxrefs(FILE *opfd);
 
 extern void hash(char *file);
@@ -40,7 +44,7 @@ typedef enum {
 			GROUP, STYLE, NEW,  REF, // these don't require a string
 			ID,// assumes the string s is initialised
             INVISIBLE, VISIBLE, DEFAULTSTYLE, CYCLICSTYLE,
-            TAGS, LATEXDEFINITIONS, HTMLDEFINITIONS, CYCLE
+            TAGS, LATEXDEFINITIONS, LATEXENDOFFILE, HTMLDEFINITIONS, CYCLE
     // removed: OVERRIDE,
 		 } lexval;
 
@@ -69,7 +73,7 @@ extern void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip);
 typedef struct rownode { str *node; int label; struct rownode *right, *down; } rownodes;
 
 extern char *undefinedVersion;
-extern str *latexdefinitions, *htmldefinitions, *introduction, *conclusion;
+extern str *latexdefinitions, *latexendoffile, *htmldefinitions, *introduction, *conclusion;
 extern str *newstr(char *s);
 
 extern str *appendch(str *d, char c);
