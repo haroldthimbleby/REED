@@ -22,6 +22,7 @@ extern int parse(char *filename, char *bp);
 extern void listnodes();
 extern int listidsOption;
 extern int listissOption;
+extern int listBothOption;
 
 extern void latexxrefs(FILE *opfd);
 
@@ -89,7 +90,7 @@ extern void strpad(str **s, int d); // pad to length d with spaces
 extern str *appendstr(str *d, str *e); // append a string to a string
 
 typedef struct
-{    char *option, *usage;
+{    char *option, *args, *usage;
     int *optionFlag;
     int needGraphViz;
 } structOption;

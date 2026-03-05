@@ -9,14 +9,23 @@
 
 void listnodes()
 {
+    if( listBothOption )
+        listidsOption = listissOption = 1;
+
     if( !listidsOption && !listissOption ) return;
 
+    if( nodeList == NULL )
+    {   fprintf(stderr, "No nodes have been specified, so nothing to list.\n");
+        return;
+    }
+
     if( listidsOption )
-    {   int swapped = 0;
+    {   fprintf(stderr, "Sorted by id:\n\n");
+        int swapped = 0;
         do
         {   swapped = 0;
             for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
-                if( strcmp((*t)->s->s, (*t)->next->s->s) > 0 )
+                if( strcasecmp((*t)->s->s, (*t)->next->s->s) > 0 )
                 {   node *u = *t;
                     *t = (*t)->next;
                     u->next = (*t)->next;
@@ -41,7 +50,8 @@ void listnodes()
     }
 
     if( listissOption )
-    {   int swapped = 0;
+    {   fprintf(stderr, "Sorted by full name (where defined):\n\n");
+        int swapped = 0;
         do
         {   swapped = 0;
             for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
@@ -50,7 +60,7 @@ void listnodes()
                 u = (*t)->s->is == NULL? (*t)->s->s: (*t)->s->is->s;
                 v = (*t)->next->s->is == NULL? (*t)->next->s->s: (*t)->next->s->is->s;
 
-                if( strcmp(u, v) > 0 )
+                if( strcasecmp(u, v) > 0 )
                 {   node *u = *t;
                     *t = (*t)->next;
                     u->next = (*t)->next;

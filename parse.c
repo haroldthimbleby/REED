@@ -48,7 +48,7 @@ const int numberOfColors = sizeof(flagcolors)/sizeof(char *)-1;
 int alreadyShownAllColors = 0;
 void showAllColors()
 {   if( alreadyShownAllColors++ ) return;
-    fprintf(stderr, "Available highlighting colors are:\n   ");
+    fprintf(stderr, "Available highlighting color names are:\n   ");
     for( int i = 1; i <= numberOfColors; i++ )
         fprintf(stderr, "%s ", flagcolor(i));
     fprintf(stderr, "\n");
@@ -213,6 +213,7 @@ struct { lexval l; char *symbol; } lexes[] =
     { DIRECTION, "<direction>"},
     { TAGS, "<tags>"},
     { LATEXDEFINITIONS, "<latexdefinitions>"},
+    { LATEXENDOFFILE, "<latexEOF>"},
     { HTMLDEFINITIONS, "<htmldefinitions>"},
     { INTRODUCTION, "<introduction>"},
     { CONCLUSION, "<conclusion>"},
@@ -281,35 +282,36 @@ lexval readlex(str **lexstr)
 			{	appendch(*lexstr, ch);
 				if( !isalnum(nextch()) && nextch() != '_' ) 
 				{	*lexstr = canonicalise(*lexstr);
-					if( !strcmp("is", (*lexstr)->s) ) return IS;
-					if( !strcmp("note", (*lexstr)->s) ) return NOTE;
-					if( !strcmp("title", (*lexstr)->s) ) return TITLE;
-					if( !strcmp("author", (*lexstr)->s) ) return AUTHOR;
-					if( !strcmp("date", (*lexstr)->s) ) return DATE;
-					if( !strcmp("abstract", (*lexstr)->s) ) return ABSTRACT;
-					if( !strcmp("version", (*lexstr)->s) ) return VERSION;
-					if( !strcmp("highlight", (*lexstr)->s) ) return HIGHLIGHT;
-					if( !strcmp("group", (*lexstr)->s) ) return GROUP;
-					if( !strcmp("new", (*lexstr)->s) ) return NEW;
-					if( !strcmp("style", (*lexstr)->s) ) return STYLE;
-					if( !strcmp("numbering", (*lexstr)->s) ) return NUMBERING;
-					if( !strcmp("layout", (*lexstr)->s) ) return ROWS;
-					if( !strcmp("ref", (*lexstr)->s) ) return REF;
-                    if( !strcmp("direction", (*lexstr)->s) ) return DIRECTION;
-                    if( !strcmp("tags", (*lexstr)->s) ) return TAGS;
-                    if( !strcmp("introduction", (*lexstr)->s) ) return INTRODUCTION;
-                    if( !strcmp("conclusion", (*lexstr)->s) ) return CONCLUSION;
-                    if( !strcmp("latexdefinitions", (*lexstr)->s) ) return LATEXDEFINITIONS;
-                    if( !strcmp("htmldefinitions", (*lexstr)->s) ) return HTMLDEFINITIONS;
-                    if( !strcmp("check", (*lexstr)->s) ) return CHECK;
-                    if( !strcmp("keywords", (*lexstr)->s) ) return KEYWORDS;
-                    if( !strcmp("keyword", (*lexstr)->s) ) return KEYWORDS;
-                    if( !strcmp("norefs", (*lexstr)->s) ) return NOREFS;
-                    if( !strcmp("cycle", (*lexstr)->s) ) return CYCLE;
-                    if( !strcmp("visible", (*lexstr)->s) ) return VISIBLE;
-                    if( !strcmp("invisible", (*lexstr)->s) ) return INVISIBLE;
-                    if( !strcmp("defaultstyle", (*lexstr)->s) ) return DEFAULTSTYLE;
-                    if( !strcmp("cyclestyle", (*lexstr)->s) ) return CYCLICSTYLE;
+					if( !strcasecmp("is", (*lexstr)->s) ) return IS;
+					if( !strcasecmp("note", (*lexstr)->s) ) return NOTE;
+					if( !strcasecmp("title", (*lexstr)->s) ) return TITLE;
+					if( !strcasecmp("author", (*lexstr)->s) ) return AUTHOR;
+					if( !strcasecmp("date", (*lexstr)->s) ) return DATE;
+					if( !strcasecmp("abstract", (*lexstr)->s) ) return ABSTRACT;
+					if( !strcasecmp("version", (*lexstr)->s) ) return VERSION;
+					if( !strcasecmp("highlight", (*lexstr)->s) ) return HIGHLIGHT;
+					if( !strcasecmp("group", (*lexstr)->s) ) return GROUP;
+					if( !strcasecmp("new", (*lexstr)->s) ) return NEW;
+					if( !strcasecmp("style", (*lexstr)->s) ) return STYLE;
+					if( !strcasecmp("numbering", (*lexstr)->s) ) return NUMBERING;
+					if( !strcasecmp("layout", (*lexstr)->s) ) return ROWS;
+					if( !strcasecmp("ref", (*lexstr)->s) ) return REF;
+                    if( !strcasecmp("direction", (*lexstr)->s) ) return DIRECTION;
+                    if( !strcasecmp("tags", (*lexstr)->s) ) return TAGS;
+                    if( !strcasecmp("introduction", (*lexstr)->s) ) return INTRODUCTION;
+                    if( !strcasecmp("conclusion", (*lexstr)->s) ) return CONCLUSION;
+                    if( !strcasecmp("latexDefinitions", (*lexstr)->s) ) return LATEXDEFINITIONS;
+                    if( !strcasecmp("latexFinal", (*lexstr)->s) ) return LATEXENDOFFILE;
+                    if( !strcasecmp("htmlDefinitions", (*lexstr)->s) ) return HTMLDEFINITIONS;
+                    if( !strcasecmp("check", (*lexstr)->s) ) return CHECK;
+                    if( !strcasecmp("keywords", (*lexstr)->s) ) return KEYWORDS;
+                    if( !strcasecmp("keyword", (*lexstr)->s) ) return KEYWORDS;
+                    if( !strcasecmp("norefs", (*lexstr)->s) ) return NOREFS;
+                    if( !strcasecmp("cycle", (*lexstr)->s) ) return CYCLE;
+                    if( !strcasecmp("visible", (*lexstr)->s) ) return VISIBLE;
+                    if( !strcasecmp("invisible", (*lexstr)->s) ) return INVISIBLE;
+                    if( !strcasecmp("defaultStyle", (*lexstr)->s) ) return DEFAULTSTYLE;
+                    if( !strcasecmp("cycleStyle", (*lexstr)->s) ) return CYCLICSTYLE;
                     return ID;
 				}
 				ch = getch();
@@ -843,8 +845,9 @@ int parse(char *filename, char *bp)
 	 lex1 = newstr("");
 	 lex2 = newstr("");
 	 lex3 = newstr("");
-     latexdefinitions = newstr("");
-     htmldefinitions = newstr("");
+    latexdefinitions = newstr("");
+    latexendoffile = newstr("");
+    htmldefinitions = newstr("");
      introduction = newstr("");
      conclusion = newstr("");
 
@@ -968,6 +971,16 @@ int parse(char *filename, char *bp)
                 else {
                     appendcstr(latexdefinitions, "\n");
                     appendstr(latexdefinitions, lex2);
+                    getlex();
+                }
+                break;
+
+            case LATEXENDOFFILE:
+                if( lex2->l != ID )
+                    error("latexendoffile should be followed by a string of Latex");
+                else {
+                    appendcstr(latexendoffile, "\n");
+                    appendstr(latexendoffile, lex2);
                     getlex();
                 }
                 break;

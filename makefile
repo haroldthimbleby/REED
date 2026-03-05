@@ -1,10 +1,10 @@
-SOURCES = cascade.c main.c notes.c parse.c generate.c makefiles.c properties.c printerror.c hash.c html.c translate.c keywords.c pull.c
+SOURCES = cascade.c main.c notes.c parse.c generate.c makefiles.c properties.c printerror.c hash.c html.c translate.c keywords.c pull.c listnodes.c
 
 OBJECTS = $(SOURCES:.c=.o)
 
 TARGET = reed
 
-WEBSITE = ../REED-paper/REED-paper-web-site
+WEBSITE = ../REED-paper/REED-web-site
 
 run: reed
 
@@ -69,7 +69,7 @@ both:
 	dot -Tpdf lib/pow-reed.gv > ../REED-paper/figures/fig6-reedv3.pdf
 	cp lib/pow-reed-xrefs.aux ../REED-paper/auxfiles
 	
-auxfiles:
+auxfiles: lib/pow-reed.tex
 	grab lib/pow-reed.tex "/Node v2-1.1 Wrong XceedPros/" "/v2-3.1 Police summary/" > ../REED-paper/auxfiles/node-examplev2.tex
 	grab lib/pow-reed.tex "/Arrow  E/" "/unreliable/" > ../REED-paper/auxfiles/arrow-examplev2.tex
 	grab lib/pow-reed.tex "/Node v3-2.2 Unsupervised Abbott engineer/" "/manual edits to PrecisionWeb/" > ../REED-paper/auxfiles/narrative-examplev3.tex
@@ -117,8 +117,14 @@ $(WEBSITE)/fig5-reedv2.pdf: $(WEBSITE)/../figures/fig5-reedv2.pdf
 $(WEBSITE)/fig6-reedv3.pdf: $(WEBSITE)/../figures/fig6-reedv3.pdf
 	cp $^ $@
 
+lib/pow-reed.tex: lib/pow-reed
+	reed -l lib/pow-reed
+
 narrative: lib/pow-reed.tex
-	cd lib; pdflatex pow-reed.tex
+	cp lib/pow-reed.tex ../REED-paper
+	cd ../REED-paper; pdflatex pow-reed.tex; bibtex pow-reed
+	cd ../REED-paper; pdflatex pow-reed.tex; bibtex pow-reed
+	cd ../REED-paper; pdflatex pow-reed.tex; bibtex pow-reed
 	echo Generated lib/pow-reed.pdf
-	cp lib/pow-reed.pdf $(WEBSITE)/narrative.pdf 
+	cp ../REED-paper/pow-reed.pdf $(WEBSITE)/narrative.pdf
 

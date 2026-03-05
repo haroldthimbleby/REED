@@ -125,6 +125,9 @@ int basenameOption = 0,
     allColorsOption = 0,
     listidsOption = 0,
     listissOption = 0,
+    listBothOption = 0,
+    flagsOption = 0,
+    summariseOption = 0,
     keywordsOption = 0;
 
 char *outputbasename = ""; // no basename is zero length string
@@ -143,50 +146,121 @@ tag setTag(char *str)
     return tmp;
 }
 
-// the final 0/1 is to generate a .gv file
+// the final 0/1 is to specify generating a .gv file
 // for instance, a .gv file is needed to generate PDF
 structOption options[] =
-{	{"-#", "show comments, if any", &commentOption, 0},
-    {"-basename", "<path/file.ext> set name of generated files (replacing .ext with .gv, .html, .pdf, etc)", &basenameOption, 0},
-    {"-c", "show weakly connected components", &componentsOption, 0},
-    {"-allcolors", "list all colors that are available for highlighting", &allColorsOption, 0},
-    {"-colors", "list all colors used on standard output", &colorsOption, 0},
-    {"-colors+", "does -colors and also lists meanings of all colors used on standard output", &colorsPlusOption, 0},
-    {"-F", "highlight flags in drawing*- unfortunately due to a Graphviz bug, this breaks up any groups", &flagOption, 1},
-	{"-f", "show textual descriptions of flag colors in REED drawing", &flagTextOption, 1},
-	{"-g", "generate a GraphViz .gv file*- default option if nothing else chosen*- See https://graphviz.org", &graphvizOption, 1},
-    {"-go", "as -g, but also open the .gv file", &goOption, 1},
-	{"-h", "generate an interactive .html REED file", &htmlOption, 0},
-    {"-ho", "as -h, but also open the .html file", &hoOption, 0},
-    {"-ids", "show full names & ids", &IDsOption, 0},
-    {"-insert", "<text> insert this text to process before next file", &handleInsert, 0},
-    {"-json", "generate a JSON .js file*- generated from the .gv file, so contains everything", &JSONOption, 1},
-    {"-keywords", "list all keywords used", &keywordsOption, 0},
-    {"-l", "generate a Latex REED file*- also generates some useful Latex definition files", &latexOption, 0},
-    {"-m", "generate a Mathematica .nb file*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
-    {"-n", "show node IDs in graph drawing", &showIDsOption, 1},
-    {"-o", "open generated files automatically", &openOption, 1},
-    {"-pdf", "generate a .pdf file*- representing the REED graph", &generatePDFOption, 1},
-    {"-pick", "<color> restrict generated files to just this color", &matchedpullOption, 1},
-    {"-pick", "<keyword> restrict generated files to notes with this keyword*- Abbreviation notation: use ... so xyz... matches any keyphrases starting xyz", &matchedpullOption, 1},
-    {"-pick+", "<color> does -pick and also explains this color on standard output", &matchedpullPlusOption, 1},
-    {"-raw", "start in raw mode (skipping text until a start tag)*- only use -raw with -tags flag", &rawOption, 0},
-    {"-rules", "summarise HTML <-> Latex rules", &showRulesOption, 0},
-    {"-s", "list nodes and their full names, sorted by node id", &listidsOption, 0}, 
-    {"-ss", "list nodes and their full names, sorted by full names", &listissOption, 0},
-    {"-sep", "draw a separator line before processing any files (useful with -watch)", &separatorOption, 0},
-    {"-sig", "show REED file signatures", &showSignatures, 0},
-    {"-svg", "generate a .svg file*- representing the REED graph", &generateSVGOption, 1},
-    {"-syntax", "summarise REED syntax", &syntaxOption, 0},
-	{"-t", "transpose node numbering*- swap row and column node numbering", &transposeOption, 0},
-    {"-tags", "<start> <end> only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: tags \"start\" \"end\"", &handleTags, 0},
-    {"-v", "verbose mode", &verboseOption, 0},
-    {"-version", "state the version number reed", &versionOption, 0},
-    {"-w", "what versions are used in these files?*- helpful to know if using the v= flag", &showVersionsOption, 0},
-    {"-watch", "run reed when any file changes (nice with -o)", &handleWatch, 0},
-	{"-x", "generate an .xml file*- representing all REED data for import into other applications", &xmlOption, 0},
-	{"--", "treat all further parameters as filenames*- if you want to have no restrictions on filenames (they otherwise cannot be flags)", &optionsOption, 0}
+// usage replaces:
+// * with <space>-- (so *- becomes <space>---) or newline and an indent
+// [...] with \texttt{...} or nothing
+// # replaced with \# or #
+{	{"-#", "", "show comments, if any", &commentOption, 0},
+    {"-basename", "<path/file.ext>", "set pathname for generated files (replacing [.ext] with [.gv], [.html], [.pdf], etc)", &basenameOption, 0},
+    {"-c", "", "show weakly connected components", &componentsOption, 0},
+    {"-allcolors", "", "list all colors that are available for highlighting", &allColorsOption, 0},
+    {"-colors", "", "list all colors used", &colorsOption, 0},
+    {"-colors+", "", "lists all colors like [-colors] but also gives the meanings of all colors used", &colorsPlusOption, 0},
+    {"-F", "", "highlight flags in graph drawing*- unfortunately due to a GraphViz bug, this breaks up any groups", &flagOption, 1},
+	{"-f", "", "show textual descriptions of flag colors in REED drawing", &flagTextOption, 1},
+    {"-flags", "", "show all flag definitions", &flagsOption, 0},
+	{"-g", "", "generate a GraphViz [.gv] file*- default option if nothing else chosen*- See [https://graphviz.org]", &graphvizOption, 1},
+    {"-go", "", "as [-g] but also open the [.gv] file", &goOption, 1},
+	{"-h", "", "generate an interactive [.html] REED file", &htmlOption, 0},
+    {"-ho", "", "as [-h] but also open the [.html] file", &hoOption, 0},
+    {"-ids", "", "show full names and IDs in graph", &IDsOption, 0},
+    {"-insert", "<text>", "insert this text to process before next file", &handleInsert, 0},
+    {"-json", "", "generate a JSON [.js] file with all information from the REED files processed", &JSONOption, 1},
+    {"-keywords", "", "list all keywords used", &keywordsOption, 0},
+    {"-l", "", "generate a Latex REED file*- also generates some useful Latex definition files", &latexOption, 0},
+    {"-m", "", "generate a Mathematica [.nb] file*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
+    {"-n", "", "show node IDs in graph drawing", &showIDsOption, 1},
+    {"-o", "", "open generated files automatically", &openOption, 1},
+    {"-pdf", "", "generate a [.pdf] file*- representing the REED graph", &generatePDFOption, 1},
+    {"-pick", "<color>", "restrict generated files to just this color", &matchedpullOption, 1},
+    {"-pick", "<keyword>", "restrict generated files to notes with this keyword*- Abbreviation notation: use [...] so [xyz...] matches any keywords or phrases starting xyz", &matchedpullOption, 1},
+    {"-pick+", "<color>", "does [-pick] and also explains this color on standard output", &matchedpullPlusOption, 1},
+    {"-raw", "", "start in raw mode (skipping text until a start tag)*- only use [-raw] with [-tags] flag", &rawOption, 0},
+    {"-rules", "", "summarise HTML-Latex rules", &showRulesOption, 0},
+    {"-s", "", "list nodes and their full names, sorted by node ID", &listidsOption, 0},
+    {"-ss", "", "list nodes and their full names, sorted by full names", &listissOption, 0},
+    {"-sss", "", "list nodes and their full names, sorted by both node ID and full names", &listBothOption, 0},
+    {"-sep", "", "draw a separator line before processing any files (useful with [-watch])", &separatorOption, 0},
+    {"-sig", "", "show REED file signatures", &showSignatures, 0},
+    {"-summarise", "", "summarise REED syntax and command line flags to Latex file REEDsummary.tex", &summariseOption, 0},
+    {"-svg", "", "generate a [.svg] file*- representing the REED graph", &generateSVGOption, 1},
+    {"-syntax", "", "summarise REED syntax", &syntaxOption, 0},
+	{"-t", "", "transpose node numbering*- swap row and column node numbering", &transposeOption, 0},
+    {"-tags", "<start> <end>", "only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: [tags <start> <end>]", &handleTags, 0},
+    {"-v", "", "verbose mode", &verboseOption, 0},
+    {"-version", "", "state the version number of reed command", &versionOption, 0},
+    {"-w", "", "what versions are used in these files?*- helpful to know if using the [v=] flag", &showVersionsOption, 0},
+    {"-watch", "", "run reed when any file changes (nice with [-o] flag)", &handleWatch, 0},
+	{"-x", "", "generate an [.xml] file*- representing all REED data for import into other applications", &xmlOption, 0},
+	{"--", "", "treat all further parameters as filenames*- if you want to have no restrictions on filenames as they otherwise cannot be flags", &optionsOption, 0}
 };
+
+void summariseFeatures()
+{   FILE *fd;
+    char *summaryFile = "REEDsummary.tex";
+
+    fd = fopen(summaryFile, "wx");
+    if( fd == NULL )
+    {   fprintf(stderr, "%s can't be written or already exists\n", summaryFile);
+        return;
+    }
+
+    fprintf(stderr, "Writing %s to summarise REED features\n", summaryFile);
+
+    fprintf(fd, "\\section{REED command line flags summary}\n");
+
+    fprintf(fd, "\\begin{description}\\raggedright\n");
+    for( int i = 0; i < sizeof options/sizeof(structOption); i++ )
+    {   fprintf(fd, "\\item[\\tt ");
+        for( char *s = options[i].option; *s; s++ )
+            if( *s == '#') fprintf(fd, "\\#");
+            else fprintf(fd, "%c", *s);
+        if( *options[i].args )
+            fprintf(fd, " %s", options[i].args);
+        fprintf(fd, "]~\\\\ ");
+        for( char *s = options[i].usage; *s; s++ )
+            fprintf(fd, *s == '*'? " --":
+                    *s == '['? "\\texttt{":
+                    *s == ']'? "}": "%c", *s);
+        fprintf(fd, ".\n\n");
+    }
+    fprintf(fd, "\\end{description}\n");
+
+    fprintf(fd, "\\section{REED syntax summary}\n{\\tt\\noindent\n");
+    int roman = 0;
+    for( char *s = syntaxSummary; *s; s++ )
+        switch( *s )
+        {
+            case '#':
+                if( !roman )
+                {   roman = 1;
+                    fprintf(fd, "{\\rm ");
+                }
+            case '{':
+            case '}':
+                fprintf(fd, "\\%c", *s); break;
+            case ' ':
+                fprintf(fd, "~"); break;
+            case '!':
+                roman = 1;
+                fprintf(fd, "\\\\\n\\hbox to 3em{}{\\rm "); break;
+            case '\\':
+                fprintf(fd, "\\textbackslash\\@"); break;
+            case '\n':
+                if( roman ) fprintf(fd, "}");
+                roman = 0;
+                fprintf(fd, "\\\\\\@\n"); break;
+            default:
+                fprintf(fd, "%c", *s); break;
+        }
+    if( roman ) fprintf(fd, "}");
+    roman = 0;
+    fprintf(fd, "}\n");
+    fclose(fd);
+}
 
 int setSomeInterestingOption = 0;
 
@@ -199,7 +273,7 @@ int setOption(char *argvi)
                 return *options[o].optionFlag = 1;
             }
     if( !optionsOption && argvi[0] == '-' )
-        nolineerror("Flag %s not recognised", argvi);
+        nolineerror("Flag '%s' not recognised", argvi);
 	return 0;
 }
 
@@ -208,9 +282,13 @@ void usage(char *process)
     fprintf(stderr, "       filenames... process files, each according to preceding flags\n");
     for( int o = 0; o < sizeof options/sizeof(structOption); o++ )
 	{	fprintf(stderr, "       %s ", options[o].option);
+        if( *options[o].args )
+            fprintf(stderr, "%s ", options[o].args );
 		for( char *s = options[o].usage; *s; s++ )
 			if( *s == '*' )
 				fprintf(stderr, "\n             ");
+            else if( *s == '[' || *s == ']' )
+                continue;
 			else
 				fputc(*s, stderr);
 		fprintf(stderr, "\n");
@@ -436,10 +514,15 @@ int main(int argc, char *argv[])
     if( versionOption )
         fprintf(stderr, "%s version 2.2 compiled %s, %s\n", argv[0], __TIME__, __DATE__);
 
-    listnodes(); // does stuff if listnodesOption set
+    listnodes(); // does stuff if -s -ss or -sss used
 
-    if( !syntaxOption && !showRulesOption && !opened && !allColorsOption && !versionOption && !listidsOption )
+    if( summariseOption )
+        summariseFeatures();
+
+    if( flagsOption )
         usage(argv[0]);
+    else if( !syntaxOption && !showRulesOption && !opened && !allColorsOption && !versionOption && !listidsOption )
+        fprintf(stderr, "Use -flags to list all flag options\n");
 
     return 0;
 }
