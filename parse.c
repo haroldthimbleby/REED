@@ -43,7 +43,7 @@ int flagsused[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
 int flagsusedaftercascades[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
 int flagcascade[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
 
-const int numberOfColors = sizeof(flagcolors)/sizeof(char *)-1;
+int numberOfColors = sizeof(flagcolors)/sizeof(char *)-1;
 
 int alreadyShownAllColors = 0;
 void showAllColors()
@@ -193,6 +193,7 @@ struct { lexval l; char *symbol; } lexes[] =
     { RBRA, ")" },
     { SEMI, ";" },
     { LARROW, "<-" },
+    { COLON, ":" },
     { RARROW, "->" },
     { ID, "identifier or string" },
     { IS, "<is>" },
@@ -204,7 +205,6 @@ struct { lexval l; char *symbol; } lexes[] =
     { VERSION, "<version>" },
     { HIGHLIGHT, "<highlight>" },
     { GROUP, "<group>" },
-    { NEW, "<new>" },
     { STYLE, "<style>" },
     { CYCLE, "<cycle>"},
     { EndOfFile, "end of file" },
@@ -267,6 +267,10 @@ void removetrailingblanks(str *t)
 	lastnonblank[1] = '\0';
 }
 
+int isIDchar(char ch) // ch is a letter, digit, underline, dot --- a valid character for an ID
+{   return isalnum(ch) || ch == '.' || ch == '_';
+}
+
 lexval readlex(str **lexstr)
 {	*lexstr = newstr("");
 	(*lexstr)->lineno = lineno;
@@ -277,41 +281,41 @@ lexval readlex(str **lexstr)
         while( isblank(ch) || ch == '\n' ) // skip blanks
 			ch = getch();
 
-		if( isalnum(ch) )
+		if( isIDchar(ch) )
 		{	for(;;)
 			{	appendch(*lexstr, ch);
-				if( !isalnum(nextch()) && nextch() != '_' ) 
+				if( !isIDchar(nextch()) )
 				{	*lexstr = canonicalise(*lexstr);
-					if( !strcasecmp("is", (*lexstr)->s) ) return IS;
-					if( !strcasecmp("note", (*lexstr)->s) ) return NOTE;
-					if( !strcasecmp("title", (*lexstr)->s) ) return TITLE;
-					if( !strcasecmp("author", (*lexstr)->s) ) return AUTHOR;
-					if( !strcasecmp("date", (*lexstr)->s) ) return DATE;
-					if( !strcasecmp("abstract", (*lexstr)->s) ) return ABSTRACT;
-					if( !strcasecmp("version", (*lexstr)->s) ) return VERSION;
-					if( !strcasecmp("highlight", (*lexstr)->s) ) return HIGHLIGHT;
-					if( !strcasecmp("group", (*lexstr)->s) ) return GROUP;
-					if( !strcasecmp("new", (*lexstr)->s) ) return NEW;
-					if( !strcasecmp("style", (*lexstr)->s) ) return STYLE;
-					if( !strcasecmp("numbering", (*lexstr)->s) ) return NUMBERING;
-					if( !strcasecmp("layout", (*lexstr)->s) ) return ROWS;
-					if( !strcasecmp("ref", (*lexstr)->s) ) return REF;
-                    if( !strcasecmp("direction", (*lexstr)->s) ) return DIRECTION;
-                    if( !strcasecmp("tags", (*lexstr)->s) ) return TAGS;
-                    if( !strcasecmp("introduction", (*lexstr)->s) ) return INTRODUCTION;
-                    if( !strcasecmp("conclusion", (*lexstr)->s) ) return CONCLUSION;
-                    if( !strcasecmp("latexDefinitions", (*lexstr)->s) ) return LATEXDEFINITIONS;
-                    if( !strcasecmp("latexFinal", (*lexstr)->s) ) return LATEXENDOFFILE;
-                    if( !strcasecmp("htmlDefinitions", (*lexstr)->s) ) return HTMLDEFINITIONS;
+                    if( !strcasecmp("abstract", (*lexstr)->s) ) return ABSTRACT;
+                    if( !strcasecmp("author", (*lexstr)->s) ) return AUTHOR;
+                    if( !strcasecmp("date", (*lexstr)->s) ) return DATE;
                     if( !strcasecmp("check", (*lexstr)->s) ) return CHECK;
-                    if( !strcasecmp("keywords", (*lexstr)->s) ) return KEYWORDS;
-                    if( !strcasecmp("keyword", (*lexstr)->s) ) return KEYWORDS;
-                    if( !strcasecmp("norefs", (*lexstr)->s) ) return NOREFS;
+                    if( !strcasecmp("conclusion", (*lexstr)->s) ) return CONCLUSION;
                     if( !strcasecmp("cycle", (*lexstr)->s) ) return CYCLE;
-                    if( !strcasecmp("visible", (*lexstr)->s) ) return VISIBLE;
+                    if( !strcasecmp("definitions.latex", (*lexstr)->s) ) return LATEXDEFINITIONS;
+                    if( !strcasecmp("definitions.latexend", (*lexstr)->s) ) return LATEXENDOFFILE;
+                    if( !strcasecmp("definitions.html", (*lexstr)->s) ) return HTMLDEFINITIONS;
+                    if( !strcasecmp("direction", (*lexstr)->s) ) return DIRECTION;
+                    if( !strcasecmp("group", (*lexstr)->s) ) return GROUP;
+                    if( !strcasecmp("highlight", (*lexstr)->s) ) return HIGHLIGHT;
+                    if( !strcasecmp("influences", (*lexstr)->s) ) return RARROW; // it's a synonym
+                    if( !strcasecmp("introduction", (*lexstr)->s) ) return INTRODUCTION;
                     if( !strcasecmp("invisible", (*lexstr)->s) ) return INVISIBLE;
-                    if( !strcasecmp("defaultStyle", (*lexstr)->s) ) return DEFAULTSTYLE;
-                    if( !strcasecmp("cycleStyle", (*lexstr)->s) ) return CYCLICSTYLE;
+                    if( !strcasecmp("is", (*lexstr)->s) ) return IS;
+                    if( !strcasecmp("keyword", (*lexstr)->s) ) return KEYWORDS;
+                    if( !strcasecmp("keywords", (*lexstr)->s) ) return KEYWORDS;
+                    if( !strcasecmp("layout", (*lexstr)->s) ) return ROWS;
+                    if( !strcasecmp("numbering", (*lexstr)->s) ) return NUMBERING;
+                    if( !strcasecmp("norefs", (*lexstr)->s) ) return NOREFS;
+                    if( !strcasecmp("note", (*lexstr)->s) ) return NOTE;
+                    if( !strcasecmp("ref", (*lexstr)->s) ) return REF;
+                    if( !strcasecmp("tags", (*lexstr)->s) ) return TAGS;
+                    if( !strcasecmp("style", (*lexstr)->s) ) return STYLE;
+                    if( !strcasecmp("style.default", (*lexstr)->s) ) return DEFAULTSTYLE;
+                    if( !strcasecmp("style.new", (*lexstr)->s) ) return NEWSTYLE;
+                    if( !strcasecmp("title", (*lexstr)->s) ) return TITLE;
+                    if( !strcasecmp("version", (*lexstr)->s) ) return VERSION;
+                    if( !strcasecmp("visible", (*lexstr)->s) ) return VISIBLE;
                     return ID;
 				}
 				ch = getch();
@@ -323,6 +327,7 @@ lexval readlex(str **lexstr)
 			case ')': return RBRA;
 			case '*': return STAR;
 			case ';': return SEMI;
+            case ':': return COLON;
 			case '<':  // can start <-, <->, and <<<
 				if( nextch() == '<' ) // start of <<<? (herestring)
                 {	char c;
@@ -1127,8 +1132,10 @@ int parse(char *filename, char *bp)
                 //if( !isnode ) printf("->%s", nl->v->s);
                 //printf(" (%s) --- lex1 = %s; lex2 = %s\n", sort, lexvalue(lex1), lexvalue(lex2));
 
+                metadata(nl);
+
                 if( lex1->l == IS ) // expect: title note
-                {    getlex();
+                {   getlex();
                     if( lex1->l != ID ) { error("Expected %s name after 'is'", sort); getlex(); break; }
                     if( nl->u->is ) error("Multiple 'is' names for %s %s --- previously %s", sort, nl->u->s, nl->u->is->s);
                     //else if( isnode ) fprintf(stderr, "... %s is %s\n", nl->u->s, lex1->s);
@@ -1170,9 +1177,8 @@ int parse(char *filename, char *bp)
                     defineArrowNote(nl->u, nl->v, lex1, NULL, &keywordlist);
                 break;
 
-			case NEW:
-				getlex();
-				makenewstyle = 1;
+			case NEWSTYLE:
+                makenewstyle = 1;
 				// fall through
 			case STYLE:
 				getlex();
@@ -1243,7 +1249,7 @@ int parse(char *filename, char *bp)
 						getlex();
 						getlex();
 						break;
-					case LARROW: case RARROW:
+                    case LARROW: case RARROW:
 						whilearrow(&arrowList, 1);
 						break;
                     default: // an isolated node

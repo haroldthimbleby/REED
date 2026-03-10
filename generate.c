@@ -10,7 +10,7 @@ int darkcolor(int fc)
 rownodes *cols = NULL;
 extern char *title, *date, *version, *abstract, *direction, *defaultStyle;
 extern void summarizeMissingFlagDefinitions();
-str *latexdefinitions, *htmldefinitions, *introduction, *conclusion;
+str *latexdefinitions, *latexendoffile, *htmldefinitions, *introduction, *conclusion;
 
 char *cyclicStyle = "peripheries=3;fontcolor=\"white\";color=\"firebrick1\",fillcolor=\"fireBrick1\"; style=\"filled,dashed\";";
 
@@ -42,7 +42,7 @@ void xmlattribute(FILE *opfd, char *indent, char *tag, char *content)
 
 void xmlintattribute(FILE *opfd, char *indent, char *tag, int content)
 {
-    myfprintf(opfd, "%s<%s>\n    %s%d", indent, tag, indent, content);
+     myfprintf(opfd, "%s<%s>\n    %s%d", indent, tag, indent, content);
      myfprintf(opfd, "\n%s</%s>\n", indent, tag);
 }
 
@@ -94,7 +94,7 @@ void xml(FILE *opfd)
  	if( *date ) xmlattribute(opfd, "", "date", date);
  	if( *direction ) xmlattribute(opfd, "", "direction", direction);
 	
-	for( int i = 1; i < 8; i++ ) // gets them in alphabetical order
+    for( int i = 1; i <= numberOfColors; i++ ) // gets them in alphabetical order
 		{	if( *flagdefinitions[i] )
 			{	myfprintf(opfd, "<highlightDefinition color=\"%s\">", flagcolors[i]);
 				xmlconverted(opfd, flagdefinitions[i]); 
@@ -105,13 +105,21 @@ void xml(FILE *opfd)
 	for( node *t = nodeList; t != NULL; t = t->next )
 	{
 		myfprintf(opfd, "<node id=\"%s\">\n", t->s->s);
-			xmlattribute(opfd, "    ", "version", t->s->nodeversion);
-			if(  t->s->is != NULL )
-				xmlattribute(opfd, "    ", "label", t->s->is->s);
-			xmlhighlight(opfd, "    ", t->s->flag,  t->s->cascade);
-			if( t->s->note != NULL ) 
-				xmlattribute(opfd, "    ", "note", t->s->note->s);
-            xmlintattribute(opfd, "    ", "component", t->s->component);
+        xmlattribute(opfd, "    ", "version", t->s->nodeversion);
+        if(  t->s->is != NULL )
+            xmlattribute(opfd, "    ", "label", t->s->is->s);
+        xmlhighlight(opfd, "    ", t->s->flag,  t->s->cascade);
+        if( t->s->note != NULL )
+            xmlattribute(opfd, "    ", "note", t->s->note->s);
+        xmlintattribute(opfd, "    ", "component", t->s->component);
+
+        if( t->s->metadata != NULL )
+        {   fprintf(opfd, "    <metadata>\n");
+            for( metadataList *ml = t->s->metadata; ml != NULL; ml = ml->next )
+                    fprintf(opfd, "        <property name=\"%s\" value=\"%s\"/>\n", ml->property, ml->value);
+            fprintf(opfd, "    </metadata>\n");
+        }
+
 			for( arrow *a = arrowList; a != NULL; a = a->next )
 				if( a->u == t->s )
 				{	myfprintf(opfd, "    <arrow to=\"%s\"", a->v->s);
@@ -207,7 +215,8 @@ void printColor(FILE *opfd, char *scheme, int index, int c)
 
 void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 { 	fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
-    if( *defaultStyle ) fprintf(opfd, "graph [%s];\nnode [%s];\nedge [%s];\n", defaultStyle, defaultStyle, defaultStyle);
+    if( *defaultStyle )
+        fprintf(opfd, "graph [%s];\nnode [%s];\nedge [%s];\n", defaultStyle, defaultStyle, defaultStyle);
     myfprintf(opfd, "label=\"");
 	if( *title ) myfprintf(opfd, "%j", title);
  	if( *version ) myfprintf(opfd, "\n%j", version);
@@ -405,8 +414,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 }
 
 void connectedComponents()
-{
-	int current = 0;
+{   int current = 0;
 	for( arrow *t = arrowList; t != NULL; t = t->next )
 		if( !t->expanded && t->component == current )
 		{
@@ -424,54 +432,54 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 
     myfprintf(opfd, "title=\"%m\";\n", title);
 
-	myfprintf(opfd, "authors=\"");
-	while( authors != NULL )
-	{	myfprintf(opfd, "%m", authors->author);
-		if( authors->next != NULL ) 
-			fprintf(opfd, ", ");
-		authors = authors->next;
-	}
-	myfprintf(opfd, "\";\n");
+    myfprintf(opfd, "authors=\"");
+    while( authors != NULL )
+    {	myfprintf(opfd, "%m", authors->author);
+        if( authors->next != NULL )
+            fprintf(opfd, ", ");
+        authors = authors->next;
+    }
+    myfprintf(opfd, "\";\n");
 
     myfprintf(opfd, "version=\"%m\";\n", version);
     myfprintf(opfd, "date=\"%m\";\n", date);
 
-	myfprintf(opfd, "edges={");
-	char *commarise = "", *ccommarise = "";
-	for( arrow *t = arrowList; t != NULL; t = t->next )
-	{	/* if( t->u->isgroup && t->v->isgroup)
-			fprintf(stderr, "! ? ? ! ?\n");
-		else if( t->u->isgroup )
-		{	str *thegroup = t->u->group;
-			for( node *u = nodeList; u != NULL; u = u->next )
-			if( u->s != t->v && u->s->group == thegroup )
-			{	myfprintf(stderr, "%s\n\"%m\" -> \"%m\" (* %t -> %t *)", commarise, u->s->s, t->v->s, u->s->is->s, t->v->is->s);
-			}
-		}
-		else if( t->v->isgroup )
-		{	str *thegroup = t->v->group;
-			for( node *u = nodeList; u != NULL; u = u->next )
-			if( u->s != t->u && u->s->group == thegroup )
-			{	myfprintf(stderr, "%s\n\"%m\" -> \"%m\"", commarise, t->u->s, u->s->s);
-			}
-		}
-		else 
-		*/
-		myfprintf(opfd, "%s\n   \"%m\" -> \"%m\"", commarise, t->u->s, t->v->s);
-		commarise = ",";
-	}	
+    myfprintf(opfd, "edges={");
+    char *commarise = "", *ccommarise = "";
+    for( arrow *t = arrowList; t != NULL; t = t->next )
+    {	/* if( t->u->isgroup && t->v->isgroup)
+         fprintf(stderr, "! ? ? ! ?\n");
+         else if( t->u->isgroup )
+         {	str *thegroup = t->u->group;
+         for( node *u = nodeList; u != NULL; u = u->next )
+         if( u->s != t->v && u->s->group == thegroup )
+         {	myfprintf(stderr, "%s\n\"%m\" -> \"%m\" (* %t -> %t *)", commarise, u->s->s, t->v->s, u->s->is->s, t->v->is->s);
+         }
+         }
+         else if( t->v->isgroup )
+         {	str *thegroup = t->v->group;
+         for( node *u = nodeList; u != NULL; u = u->next )
+         if( u->s != t->u && u->s->group == thegroup )
+         {	myfprintf(stderr, "%s\n\"%m\" -> \"%m\"", commarise, t->u->s, u->s->s);
+         }
+         }
+         else
+         */
+        myfprintf(opfd, "%s\n   \"%m\" -> \"%m\"", commarise, t->u->s, t->v->s);
+        commarise = ",";
+    }
     myfprintf(opfd, "\n};\n");
 
     myfprintf(opfd, "vertexNames={\n");
     commarise = "";
-	for( node *t = nodeList; t != NULL; t = t->next )
-		if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID ) 
-		{	myfprintf(opfd, "%s   \"%m\"->\"", commarise, t->s->s);
-			if( showIDsOption ) myfprintf(opfd, "[%m] ", t->s->s);
-			printrank(opfd, t->s, version);
-			myfprintf(opfd, " %m\"", t->s->is != NULL? t->s->is->s: t->s->s); // was % ....
-			commarise = ",\n";
-		}
+    for( node *t = nodeList; t != NULL; t = t->next )
+        if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
+        {	myfprintf(opfd, "%s   \"%m\"->\"", commarise, t->s->s);
+            if( showIDsOption ) myfprintf(opfd, "[%m] ", t->s->s);
+            printrank(opfd, t->s, version);
+            myfprintf(opfd, " %m\"", t->s->is != NULL? t->s->is->s: t->s->s); // was % ....
+            commarise = ",\n";
+        }
     myfprintf(opfd, "};\n");
 
     myfprintf(opfd, "keywords={\n");
@@ -510,28 +518,28 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     myfprintf(opfd,"};\n");
 
     myfprintf(opfd, "communities={");
-	if(1 )
-	{ccommarise = "";
-	for( int c = 1; c <= numberOfComponents; c++ )
-	{	fprintf(opfd, "%s{", ccommarise);
-		ccommarise = ",\n  ";
-		commarise = "";
-		for( node *t = nodeList; t != NULL; t = t->next )
-			if( t->s->component == c )
-			{	myfprintf(opfd, "%s\"%m\"", commarise, t->s->s);
-				commarise = ",";
-			}
-		fprintf(opfd, "}");
-	}
-	}
-	myfprintf(opfd, "\n};\n");
+    if(1 )
+    {ccommarise = "";
+        for( int c = 1; c <= numberOfComponents; c++ )
+        {	fprintf(opfd, "%s{", ccommarise);
+            ccommarise = ",\n  ";
+            commarise = "";
+            for( node *t = nodeList; t != NULL; t = t->next )
+                if( t->s->component == c )
+                {	myfprintf(opfd, "%s\"%m\"", commarise, t->s->s);
+                    commarise = ",";
+                }
+            fprintf(opfd, "}");
+        }
+    }
+    myfprintf(opfd, "\n};\n");
 
     char *outercomma = "";
     myfprintf(opfd, "groups={");
     for( node *t = nodeList; t != NULL; t = t->next )
         if( t->s->isgroup &&
-            !(flagOption && t->s->flag != noflag) // bug in graphviz means we can't have both
-        )
+           !(flagOption && t->s->flag != noflag) // bug in graphviz means we can't have both
+           )
         {   char *comma = "";
             myfprintf(opfd, "%s{\"name\"->\"%S\", \"nodes\"->{", outercomma, t->s->s);
             outercomma = ",\n";
@@ -542,7 +550,7 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
                     fprintf(opfd, "%s\"%s\"", comma, u->s->s);
                     comma = ", ";
                 }
-           myfprintf(opfd, "},\n\"label\"->\"");
+            myfprintf(opfd, "},\n\"label\"->\"");
             if( !t->s->plain )
             {   int print = printrank(opfd, t->s, version);
                 if( showIDsOption )
@@ -554,58 +562,93 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
             }
             else
             {    if( showIDsOption )
-                {    if( !t->s->plain && *version ) fprintf(opfd, "-");
-                    myfprintf(opfd, "(%j)\\n", t->s->s);
-                }
-                else if( !t->s->plain && *version )
-                    myfprintf(opfd, "\n");
+            {   if( !t->s->plain && *version ) fprintf(opfd, "-");
+                myfprintf(opfd, "(%j)\\n", t->s->s);
+            }
+            else if( !t->s->plain && *version )
+                myfprintf(opfd, "\n");
             }
             myfprintf(opfd, "%S", t->s->is != NULL? t->s->is->s: t->s->s);
             if( flagTextOption )
-                {    if( t->s->flag != noflag )
-                        myfprintf(opfd, "\n\nHighlighted %j", flagcolor(t->s->flag));
-                }
+            {    if( t->s->flag != noflag )
+                myfprintf(opfd, "\n\nHighlighted %j", flagcolor(t->s->flag));
+            }
             myfprintf(opfd, "\"}");
         }
     myfprintf(opfd, "};\n");
 
-    myfprintf(opfd, "Print[\"      title=\", title, \n\"\n      authors=\", authors, \n\"\n      version=\", version, \n\"\n      date=\", date, \n\"\n      and: communities, edges, groups, highlights, keywords, notes, vertexNames\"];\n");
+    myfprintf(opfd, "metadata={");
+    for( node *t = nodeList; t != NULL; t = t->next )
+    {   ccommarise = "";
+        if( t->s->metadata != NULL )
+        {   commarise = "";
+            myfprintf(opfd, "%s{\"%j\", {", ccommarise, t->s->s);
+            for( metadataList *ml = t->s->metadata; ml != NULL; ml = ml->next )
+            {   myfprintf(opfd, "%s\"%j\"->\"%j\"", commarise, ml->property, ml->value);
+                commarise = ", ";
+            }
+            myfprintf(opfd, "}}\n", t->s->s);
+            ccommarise = "\n,";
+        }
+    }
+    myfprintf(opfd, "};\n");
+
+    myfprintf(opfd, "Print[\"      title=\", title, \n\"\n      authors=\", authors, \n\"\n      version=\", version, \n\"\n      date=\", date, \n\"\n      and: communities, edges, groups, highlights, keywords, metadata, notes, vertexNames\"];\n");
 
     // to close off Notebook[{Cell[BoxData["...",
     //myfprintf(opfd, ", \"Input\"]]}];\n");
 }
 
-void styleReplace(str *target, char *styleName, str *replace)
-{   // scan target for occurences of styleName and replace with replace->s
-    //fprintf(stderr, "replace %s\n  in |%s|\n  with |%s|\n", styleName, target->s, replace->s);
+void styleReplace(str **target, char *styleName, char *replace)
+{   // scan target for occurrences of styleName and replace with replace
+    if( !strlen(replace) ) return; // nothing to do
+
     int len = strlen(styleName);
-    for( char *s = target->s; *s; s++ )
+    if( !len ) return; // nothing to do (and would fail if it tried!)
+
+    for( char *s = (*target)->s; *s; s++ )
     {   if( !strncmp(s, styleName, len) )
         {
-            //fprintf(stderr, "replace %s\n  in |%s|\n  with |%s|\n", styleName, target->s, replace->s);
+            fprintf(stderr, "replace [%s]@%d in [%s] with [%s]\n", styleName, len, (*target)->s, replace);
 
-            // expand match region...
-            // ignore leading spaces
-            while( s > target->s && s[-1] == ' ' ) { s--; len++; }
             *s = (char) 0;
-            //fprintf(stderr, ">>> |%s|\n", &s[len]);
-            // ignore trailing spaces
-            while( s[len] && s[len] == ' ' ) len++;
 
-            str *appending = newstr(&s[len]); // old C
-            //fprintf(stderr, ">>> |%s|\n", appending->s);
-            appendstr(target, replace);
-            //fprintf(stderr, "  making |%s|\n", target->s);
-            //fprintf(stderr, "  WAS check: |%s|\n", &s[len]);
-            appendstr(target, appending);
-            //fprintf(stderr, "  then   |%s|\n", target->s);
+            // now target has 3 substrings:
+            //  (*target)->s is a null terminated string before the text to replace
+            //  &target[s] (which is now nulled) .. &target[s+len-1] is substring to replace
+            //  then &s[len+1] is a null terminated string after the repacement
+            // so...
+
+            char *pre = (*target)->s; //fprintf(stderr, "pre: |%s|\n", pre); fflush(stderr);
+            char *post = &s[len]; //fprintf(stderr, "post: |%s|\n", post); fflush(stderr);
+
+            fprintf(stderr, "[%s]%s[%s] where %s->%s\n",pre,styleName,post,styleName,replace); fflush(stderr);
+
+            fprintf(stderr, "--->[%s]--->", newstr(pre)->s); fflush(stderr);
+
+            *target = strlen(pre)? appendcstr(newstr(pre), replace): newstr(replace);
+
+            int offset = strlen((*target)->s); //fprintf(stderr, "offset: %d\n", offset); fflush(stderr);
+            fprintf(stderr, "C"); fflush(stderr);
+
+            if( strlen(post) )
+                *target = appendcstr(*target, post);
+            fprintf(stderr, "D"); fflush(stderr);
+
+            //fprintf(stderr, "\nfinal: [%s] with ", (*target)->s); fflush(stderr);
+
+            // now fix s to right place, since we've relocated the string s pointed to
+            s = &(*target)->s[offset];
+            fprintf(stderr, "full string: [%s]\n", (*target)->s); fflush(stderr);
+            fprintf(stderr, "rest of string: [%s]\n", s); fflush(stderr);
         }
     }
+    fprintf(stderr, "finally: [%s]\n", (*target)->s); fflush(stderr);
 }
 
 int versionstrcmp(char *a, char *b)
 // like strcmp
-// but runs of digits are integers
+// but runs of digits are integers which are compared
 // uppercase before lower case for each letter
 {
     int cmp = 0;
@@ -618,15 +661,14 @@ int versionstrcmp(char *a, char *b)
                 bn = 10*bn+*b++-'0';
             //fprintf(stderr, "..  %d <> %d\n", an, bn);
             if( an == bn ) continue;
-                return bn-an;
+            return bn-an;
         }
         if( *a == *b ) { a++; b++; continue; }
         if( isalpha(*a) && isalpha(*b) )
-        {
-            if( tolower(*a) == tolower(*b) )
-            {
-                if( isupper(*a) ) return 1;
-                return -1;
+        {   if( tolower(*a) == tolower(*b) )
+            {   if( isupper(*a) && !isupper(*b) ) return 1;
+                if( !isupper(*a) && isupper(*b) ) return -1;
+                return 0;
             }
             return tolower(*b)-tolower(*a);
         }
@@ -682,7 +724,7 @@ void generateFiles(char *targetVersion, char *filename)
 {
     // printf("Styles are:\n");
 	// for( node *u = stylelist; u != NULL; u = u->next )
-	//	printf("  %s = %s\n", u->s->style->s, u->s->s);
+	//	printf("  style %s is '%s'\n", u->s->style->s, u->s->s);
 
     if( !*targetVersion || !strcmp(targetVersion, "") )
     {   targetVersion = lastVersion();
@@ -694,6 +736,7 @@ void generateFiles(char *targetVersion, char *filename)
     checkNumbering();
 
 	// now everything collected, replace use of style nodes with the style values themselves
+    // node is: typedef struct tmpnode { str *s; struct tmpnode *next; } node;
     for( node *t = nodeList; t != NULL; t = t->next )
     {	if( (t->s->rankx || t->s->ranky) && t->s->noderef && *t->s->noderef )
         {   fprintf(stderr, "Warning: node %s has references set by ref (%s) and numbering (", t->s->s, t->s->noderef);
@@ -702,20 +745,24 @@ void generateFiles(char *targetVersion, char *filename)
             fprintf(stderr, ")\n");
         }
 
+        // for each node t...
         if( t->s->style != NULL && !t->s->style->isstyle )
         {	//printf("%s has style [%s] ", t->s->s, t->s->style->s);
-            //printf(" .. and that istyle = %d\n", t->s->style->isstyle);
+            //printf(" .. and that isstyle = %d\n", t->s->style->isstyle);
             for( node *u = stylelist; u != NULL; u = u->next )
             {	//printf("compare %s (node) ..with.. %s (style)\n", t->s->style->s, u->s->style->s);
                 if( strlen(t->s->style->s) == 0 ) continue;
-                if(  t->s->style->s == u->s->style->s )
+                if( !strcmp(t->s->style->s, u->s->style->s) )
                 {
                     //printf("  set %s in %s\n", t->s->style->s, t->s->s);
                     //printf("  to style %s\n**\n", u->s->s);
+                    fprintf(stderr, "== [%s] where %s -> %s\n", t->s->style->s, u->s->style->s, u->s->s);
                     t->s->style = u->s;
                 }
                 else
-                    styleReplace(t->s->style, u->s->style->s, u->s);
+                {   fprintf(stderr, "** [%s] where %s -> %s\n", t->s->style->s, u->s->style->s, u->s->s); fflush(stderr);
+                    styleReplace(&t->s->style, u->s->style->s, u->s->s);
+                }
             }
         }
     }
@@ -753,7 +800,7 @@ void generateFiles(char *targetVersion, char *filename)
     int swapped = 0;
     do
     {    swapped = 0;
-        for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
+         for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
             if( strcmp((*t)->s->s, (*t)->next->s->s) < 0 )
             {    node *u = *t;
                 *t = (*t)->next;

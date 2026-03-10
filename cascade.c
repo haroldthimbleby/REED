@@ -52,7 +52,7 @@ void markComponent(str *t, int component)
 	}
 }
 
-void mypadstring(FILE *opfd, char *str, int max)
+void mypadstring(FILE *opfd, const char *str, int max)
 {   int pad = max-strlen(str);
     for( int i = 0; i < pad; i++ )
         fputc(' ', opfd);
@@ -65,7 +65,7 @@ char *nodename(str *s)
         return s->s;
 }
 
-void findCycles()
+void findCycles() // also computes in and out degrees
 {   // we don't rely on findComponents in case it's got bugs or interactions with findCycles somehow :-)
     // besides, each component may have more than one cycle
     // initially, all nodes have ->cyclePhase set to 0
@@ -85,9 +85,9 @@ void findCycles()
 
     // create a path length NxN matrix m
     int huge = N+1;
-    int **m = (int**) safealloc((N+1) * sizeof(int*));
+    int **m = (int**) safeCalloc(N+2, sizeof(int*));
     for( int i = 0; i < N; i++ )
-    {   m[i] = (int*) safealloc((N+1) * sizeof(int));
+    {   m[i] = (int*) safeCalloc(N+2, sizeof(int));
         for( int j = 0; j < N; j++ )
             m[i][j] = huge;
     }
@@ -95,7 +95,7 @@ void findCycles()
 
     struct cycles
     { str *s; int cycle; }
-    *cycles = (struct cycles*) safealloc(N * sizeof(struct cycles*));
+    *cycles = (struct cycles*) safeCalloc(N+2, sizeof(struct cycles*));
 
     {   int i = 0;
         for( node *t = nodeList; t != NULL; t = t->next )
@@ -110,6 +110,44 @@ void findCycles()
     {   // arrow goes from a->u to a->v
         //fprintf(stderr, "arrow goes from %s to %s\n", cycles[a->u->nodeNumber].s->s, cycles[a->v->nodeNumber].s->s);
         m[a->u->nodeNumber][a->v->nodeNumber] = 1;
+        a->u->outDegree++;
+        a->v->inDegree++;
+    }
+
+    if( transitOption ) // summarise degrees
+    {
+        int transits = 0;
+        for( node *t = nodeList; t != NULL; t = t->next )
+        {   if( t->s->inDegree == 1 && t->s->outDegree == 1 )
+            {   if( !transits )
+                {   transits = 1;
+                    fprintf(stderr, "Transit nodes (in degree = out degree = 1):\n");
+                }
+                fprintf(stderr, "    ");
+                if( t->s->is != NULL )
+                    myfprintf(stderr, "%N (", t->s->is->s);
+                fprintf(stderr, "%s", t->s->s);
+                if( t->s->is != NULL )
+                    fprintf(stderr, ")");
+                fprintf(stderr, "\n");
+            }
+        }
+        int noInfluence = 0;
+        for( node *t = nodeList; t != NULL; t = t->next )
+        {   if( t->s->outDegree == 0 )
+            {   if( !noInfluence )
+                {   noInfluence = 1;
+                    fprintf(stderr, "Nodes with no influence (out degree = 0):\n");
+                }
+                fprintf(stderr, "    ");
+                if( t->s->is != NULL )
+                    myfprintf(stderr, "%N (", t->s->is->s);
+                fprintf(stderr, "%s", t->s->s);
+                if( t->s->is != NULL )
+                    fprintf(stderr, ")");
+                fprintf(stderr, "\n");
+            }
+        }
     }
 
     if( 0 )
@@ -181,7 +219,7 @@ void findComponents() // weakly connected components
         for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
             if( (*t)->s->is != NULL && (*t)->next->s->is != NULL &&
                strcmp((*t)->s->is->s, (*t)->next->s->is->s) > 0 )
-            {    node *u = *t;
+            {   node *u = *t;
                 *t = (*t)->next;
                 u->next = (*t)->next;
                 (*t)->next = u;

@@ -16,6 +16,7 @@ extern void debug(int n);
 extern void showAllColors();
 
 void *safealloc(size_t size);
+void *safeCalloc(size_t count, size_t size);
 
 extern int parse(char *filename, char *bp);
 
@@ -23,6 +24,8 @@ extern void listnodes();
 extern int listidsOption;
 extern int listissOption;
 extern int listBothOption;
+
+extern int numberOfColors;
 
 extern void latexxrefs(FILE *opfd);
 
@@ -42,12 +45,18 @@ extern int norefs;
 typedef enum {
             DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK, NOREFS,
 			IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS, INTRODUCTION, CONCLUSION,
-			GROUP, STYLE, NEW,  REF, // these don't require a string
+			GROUP, STYLE,  REF, // these don't require a string
 			ID,// assumes the string s is initialised
-            INVISIBLE, VISIBLE, DEFAULTSTYLE, CYCLICSTYLE,
-            TAGS, LATEXDEFINITIONS, LATEXENDOFFILE, HTMLDEFINITIONS, CYCLE
+            COLON, INVISIBLE, VISIBLE, DEFAULTSTYLE, CYCLICSTYLE, INFLUENCES,
+            TAGS, LATEXDEFINITIONS, LATEXENDOFFILE, HTMLDEFINITIONS, CYCLE, NEWSTYLE
     // removed: OVERRIDE,
 		 } lexval;
+
+typedef struct tmpmetadata {
+    struct tmpmetadata *next;
+    char *property, *value;
+    int count; // for reporting property repetitions
+} metadataList;
 
 typedef struct tmpstr { 
 	char *s; char *styleName; lexval l; type t; 
@@ -67,6 +76,8 @@ typedef struct tmpstr {
     int keywordsOK;
     int wasString;
     int visible;
+    int inDegree, outDegree;
+    metadataList *metadata;
 } str;
 
 extern void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip);
@@ -75,7 +86,7 @@ typedef struct rownode { str *node; int label; struct rownode *right, *down; } r
 
 extern char *undefinedVersion;
 extern str *latexdefinitions, *latexendoffile, *htmldefinitions, *introduction, *conclusion;
-extern str *newstr(char *s);
+extern str *newstr(const char *s);
 
 extern str *appendch(str *d, char c);
 
@@ -95,7 +106,7 @@ typedef struct
     int needGraphViz;
 } structOption;
 
-extern int verboseOption, graphvizOption, openOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption, IDsOption,
+extern int verboseOption, graphvizOption, openOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption, IDsOption, transitOption,
 	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption, goOption, hoOption, keywordsOption;
 
 extern void generateFiles(char *targetVersion, char *filename);
@@ -106,7 +117,9 @@ typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct 
 		enum flagcolor flag;
         int visible;
 	} arrow;
-	
+
+extern void metadata(arrow *nl);
+
 extern void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd);
 
 typedef struct tmpnode { str *s; struct tmpnode *next; } node;
@@ -185,6 +198,3 @@ extern void linkkeyword(FILE *opfd, struct keywordlist *t, char *debug);
 extern void noteaddkeywordtolist(str *keyword, struct keywordlist **keywords);
 
 extern int keywordcmp(char *keyword, char *pattern);
-
-
-extern const int numberOfColors;

@@ -107,7 +107,7 @@ int newauthor(char *author) // add author to REED author list
 	}
 	
 	// then append authors in same order they are mentioned in the file
-	p = (authorList*) malloc(sizeof(authorList));
+	p = (authorList*) safealloc(sizeof(authorList));
 	if( authors == NULL ) // first author
 	{	p->author = author;
 		p->next = NULL;
@@ -455,7 +455,9 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 			} 
 	}
     myfprintf(opfd, "\n%s\n", conclusion->s);
-	fprintf(opfd, "\n\n\\end{document}\n");
+    myfprintf(opfd, "\n%s\n", latexendoffile->s);
+
+	fprintf(opfd, "\n\\end{document}\n");
 }
 
 // collapse white space containing newlines to just the newlines
@@ -483,7 +485,7 @@ void defineArrowNote(str *u, str *v, str *theNote, str *theIs, struct keywordlis
 		if( t->u == u && t->v == v )
 			error("arrow %s -> %s note being redefined", t->u->s, t->v->s);
 
-	arrow *a = (arrow*) malloc(sizeof(arrow));
+	arrow *a = (arrow*) safealloc(sizeof(arrow));
 	a->next = noteArrowList;
 	a->arrownote = collapseblanks(theNote);
     a->keywords = *keywordlist;

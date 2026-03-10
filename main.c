@@ -1,27 +1,36 @@
 #include "header.h"
 #include "notes.h"
 
-void *safealloc(size_t n)
-{	char *p = (char *) malloc(n);
-	if( p == NULL )
-    	fatalError("** run out of memory (safealloc in main.c)");
-	return p;
+extern void allmetadata();
+
+void *safealloc(size_t size)
+{   void *p = (void *) malloc(size);
+    if( p == NULL )
+        fatalError("** run out of memory (safealloc %d in main.c)", size);
+    return p;
 }
 
-void *saferealloc(char *p, size_t n)
-{	p = (char *) realloc(p, n);
+void *safeCalloc(size_t count, size_t size)
+{   void *p = (void *) calloc(count, size);
+    if( p == NULL )
+        fatalError("** run out of memory (safeCalloc %d in main.c)", size);
+    return p;
+}
+
+void *saferealloc(char *p, size_t size)
+{	p = (void *) realloc(p, size);
 	if( p == NULL )
-		fatalError("** run out of memory (realloc in main.c)");
+		fatalError("** run out of memory (realloc %d in main.c)", size);
 	return p;
 }
 
 char *undefinedVersion = "node version not set!";
 
-str *newstr(char *s)
-{	// we could treat "" specially .... if( !len ) return s; // return "" directly
-	str *new = (str*) safealloc(sizeof(str));
+str *newstr(const char *s)
+{	str *new = (str*) safealloc(sizeof(str));
     new->s = (char*) safealloc(strlen(s)+1);
-    strcpy(new->s, s);
+    (void) strcpy(new->s, s);
+    //fprintf(stderr, "ok\n"); fflush(stderr);
     new->t = None;
 	new->l = ID;
 	new->is = new->note = new->style = new->group = new->exampleGroupMember = NULL;
@@ -38,6 +47,8 @@ str *newstr(char *s)
     new->keywordsOK = 1;
     new->wasString = 0;
     new->visible = 1;
+    new->metadata = NULL;
+    new->inDegree = new->outDegree = 0;
 	return new;
 } 
 
@@ -50,43 +61,41 @@ str *copystr(str *s)
 }
 
 str *appendch(str *d, char c)
-{	char ch[] = "x";
-	ch[0] = c;
+{	// ch[] = "x";
+	//ch[0] = c;
+    //fprintf(stderr, "appendch %s + %c = ", d->s, c);
 	d->s = saferealloc(d->s, strlen(d->s)+2);
-	strlcat(d->s, ch, strlen(d->s)+2);
+    char *cp = d->s;
+    while( *cp ) cp++;
+    cp[0] = c;
+    cp[1] = (char) 0;
+	//strlcat(d->s, ch, strlen(d->s)+2);
+    //fprintf(stderr, "[%s]\n", d->s);
 	return d;
 }
 
 void strpad(str **s, int d)
-{
-	//printf(" pad %s to %d\n", (*s)->s, d);
+{   //printf(" pad %s to %d\n", (*s)->s, d);
 	while( strlen((*s)->s) < d )
 		*s = appendch(*s, ' ');
 }
 
 str *appendstr(str *d, str *e)
 {   appendcstr(d, e->s);
-//    d->s = saferealloc(d->s, strlen(d->s)+strlen(e->s)+2);
-//	strlcat(d->s, e->s, strlen(d->s)+strlen(e->s)+1);
 	return d;
 }
 
-str *appendcstr(str *d, char *e) // appends in situ
-{	d->s = saferealloc(d->s, strlen(d->s)+strlen(e)+2);
-	//strlcat(d->s, e, strlen(d->s)+strlen(e)+2);
-    char *s = d->s;
-    while( *s ) s++;
+str *appendcstr(str *d, char *e) // appends in situ, so old *d is changed
+{   char *oldds = d->s;
+    char *s = d->s = saferealloc(oldds, strlen(d->s)+strlen(e)+2);
+    free(oldds);
+	while( *s ) s++;
     while( (*s++ = *e++) );
 	return d;
 }
 
-str *newappendcstr(str *d, char *e) // appends to a new string
-{	str *new = newstr("");
-	int leng = strlen(d->s)+strlen(e)+2;
-	new->s = (char*) safealloc(leng);
-	strlcpy(new->s, d->s, leng);
-	strlcat(new->s, e, leng);
-	return new;
+str *newappendcstr(str *d, char *e) // appends to a new string, so old *d not changed
+{	return appendcstr(newstr(d->s), e);
 }
 
 int basenameOption = 0,
@@ -99,6 +108,7 @@ int basenameOption = 0,
     transposeOption = 0,
     commentOption = 0,
     mathematicaOption = 0,
+    transitOption = 0,
     showSignatures = 0,
     xmlOption = 0,
     latexOption = 0,
@@ -153,7 +163,7 @@ structOption options[] =
 // * with <space>-- (so *- becomes <space>---) or newline and an indent
 // [...] with \texttt{...} or nothing
 // # replaced with \# or #
-{	{"-#", "", "show comments, if any", &commentOption, 0},
+{	{"-#", "", "show comments in the REED file, useful if comments are used as reminders", &commentOption, 0},
     {"-basename", "<path/file.ext>", "set pathname for generated files (replacing [.ext] with [.gv], [.html], [.pdf], etc)", &basenameOption, 0},
     {"-c", "", "show weakly connected components", &componentsOption, 0},
     {"-allcolors", "", "list all colors that are available for highlighting", &allColorsOption, 0},
@@ -162,22 +172,22 @@ structOption options[] =
     {"-F", "", "highlight flags in graph drawing*- unfortunately due to a GraphViz bug, this breaks up any groups", &flagOption, 1},
 	{"-f", "", "show textual descriptions of flag colors in REED drawing", &flagTextOption, 1},
     {"-flags", "", "show all flag definitions", &flagsOption, 0},
-	{"-g", "", "generate a GraphViz [.gv] file*- default option if nothing else chosen*- See [https://graphviz.org]", &graphvizOption, 1},
+	{"-g", "", "generate a GraphViz [.gv] file*- default option if nothing else chosen*- See [https://graphviz.org] for details", &graphvizOption, 1},
     {"-go", "", "as [-g] but also open the [.gv] file", &goOption, 1},
 	{"-h", "", "generate an interactive [.html] REED file", &htmlOption, 0},
     {"-ho", "", "as [-h] but also open the [.html] file", &hoOption, 0},
     {"-ids", "", "show full names and IDs in graph", &IDsOption, 0},
     {"-insert", "<text>", "insert this text to process before next file", &handleInsert, 0},
-    {"-json", "", "generate a JSON [.js] file with all information from the REED files processed", &JSONOption, 1},
+    {"-json", "", "generate a JSON [.js] file with all information from the GraphViz diagram", &JSONOption, 1},
     {"-keywords", "", "list all keywords used", &keywordsOption, 0},
     {"-l", "", "generate a Latex REED file*- also generates some useful Latex definition files", &latexOption, 0},
-    {"-m", "", "generate a Mathematica [.nb] file*- representing the REED graph as a series of expressions", &mathematicaOption, 0},
+    {"-m", "", "generate a Mathematica [.nb] file representing the REED graph as a series of expressions", &mathematicaOption, 0},
     {"-n", "", "show node IDs in graph drawing", &showIDsOption, 1},
     {"-o", "", "open generated files automatically", &openOption, 1},
-    {"-pdf", "", "generate a [.pdf] file*- representing the REED graph", &generatePDFOption, 1},
+    {"-pdf", "", "generate a [.pdf] file representing the REED graph", &generatePDFOption, 1},
     {"-pick", "<color>", "restrict generated files to just this color", &matchedpullOption, 1},
-    {"-pick", "<keyword>", "restrict generated files to notes with this keyword*- Abbreviation notation: use [...] so [xyz...] matches any keywords or phrases starting xyz", &matchedpullOption, 1},
-    {"-pick+", "<color>", "does [-pick] and also explains this color on standard output", &matchedpullPlusOption, 1},
+    {"-pick", "<keyword>", "restrict generated files to notes with this keyword. Keyword can be abbreviated: use [...] so [xyz...] matches keywords or phrases starting [xyz]", &matchedpullOption, 1},
+    {"-pick+", "<color>", "same as [-pick] but also explains this color meaning", &matchedpullPlusOption, 1},
     {"-raw", "", "start in raw mode (skipping text until a start tag)*- only use [-raw] with [-tags] flag", &rawOption, 0},
     {"-rules", "", "summarise HTML-Latex rules", &showRulesOption, 0},
     {"-s", "", "list nodes and their full names, sorted by node ID", &listidsOption, 0},
@@ -185,34 +195,44 @@ structOption options[] =
     {"-sss", "", "list nodes and their full names, sorted by both node ID and full names", &listBothOption, 0},
     {"-sep", "", "draw a separator line before processing any files (useful with [-watch])", &separatorOption, 0},
     {"-sig", "", "show REED file signatures", &showSignatures, 0},
-    {"-summarise", "", "summarise REED syntax and command line flags to Latex file REEDsummary.tex", &summariseOption, 0},
+    {"-summarise", "", "summarise REED syntax and command line flags to in Latex standard output", &summariseOption, 0},
     {"-svg", "", "generate a [.svg] file*- representing the REED graph", &generateSVGOption, 1},
     {"-syntax", "", "summarise REED syntax", &syntaxOption, 0},
-	{"-t", "", "transpose node numbering*- swap row and column node numbering", &transposeOption, 0},
+	{"-t", "", "transpose node numbering*- swap row and column node numbers", &transposeOption, 0},
     {"-tags", "<start> <end>", "only process REED information written between these tags*- you can change tags between files*- and also set tags within a REED file by: [tags <start> <end>]", &handleTags, 0},
+    {"-transit", "", "list transit nodes and nodes with no influence", &transitOption, 0},
     {"-v", "", "verbose mode", &verboseOption, 0},
-    {"-version", "", "state the version number of reed command", &versionOption, 0},
+    {"-version", "", "state the version number of the REED command", &versionOption, 0},
     {"-w", "", "what versions are used in these files?*- helpful to know if using the [v=] flag", &showVersionsOption, 0},
-    {"-watch", "", "run reed when any file changes (nice with [-o] flag)", &handleWatch, 0},
+    {"-watch", "", "run REED when any used file changes (nice with [-o] flag)", &handleWatch, 0},
 	{"-x", "", "generate an [.xml] file*- representing all REED data for import into other applications", &xmlOption, 0},
 	{"--", "", "treat all further parameters as filenames*- if you want to have no restrictions on filenames as they otherwise cannot be flags", &optionsOption, 0}
 };
+
+void sayVersion(int inLatex, FILE *fd)
+{   if( inLatex )
+        fprintf(fd, "The following summary was generated automatically by using \\texttt{reed~-summarise}, running ");
+    fprintf(fd, "%s version 2.3. Compiled %s, %s.\n", "REED", __TIME__, __DATE__);
+}
 
 void summariseFeatures()
 {   FILE *fd;
     char *summaryFile = "REEDsummary.tex";
 
-    fd = fopen(summaryFile, "wx");
+    fd = stdout; // fopen(summaryFile, "wx");
+    summaryFile = "standard output";
+
     if( fd == NULL )
     {   fprintf(stderr, "%s can't be written or already exists\n", summaryFile);
         return;
     }
 
-    fprintf(stderr, "Writing %s to summarise REED features\n", summaryFile);
+    fprintf(stderr, "Writing Latex to %s to summarise REED features\n", summaryFile);
 
     fprintf(fd, "\\section{REED command line flags summary}\n");
+    sayVersion(1, fd);
 
-    fprintf(fd, "\\begin{description}\\raggedright\n");
+    fprintf(fd, "\\vskip 5mm\\begin{description}\\raggedright\n");
     for( int i = 0; i < sizeof options/sizeof(structOption); i++ )
     {   fprintf(fd, "\\item[\\tt ");
         for( char *s = options[i].option; *s; s++ )
@@ -229,7 +249,9 @@ void summariseFeatures()
     }
     fprintf(fd, "\\end{description}\n");
 
-    fprintf(fd, "\\section{REED syntax summary}\n{\\tt\\noindent\n");
+    fprintf(fd, "\\section{REED syntax summary}\n");
+    sayVersion(1, fd);
+    fprintf(fd, "\\vskip 5mm\n{\\tt\\noindent\\hbox{}");
     int roman = 0;
     for( char *s = syntaxSummary; *s; s++ )
         switch( *s )
@@ -244,7 +266,10 @@ void summariseFeatures()
                 fprintf(fd, "\\%c", *s); break;
             case ' ':
                 fprintf(fd, "~"); break;
+            case '|':
+                fprintf(fd, "\\texttt{|}"); break;
             case '!':
+                if( roman ) fprintf(fd, "}");
                 roman = 1;
                 fprintf(fd, "\\\\\n\\hbox to 3em{}{\\rm "); break;
             case '\\':
@@ -252,14 +277,18 @@ void summariseFeatures()
             case '\n':
                 if( roman ) fprintf(fd, "}");
                 roman = 0;
-                fprintf(fd, "\\\\\\@\n"); break;
+                fprintf(fd, "\\\\\n\\hbox{}"); break;
+            case '<':
+                fprintf(fd, roman? "\\texttt{": "<"); break;
+            case '>':
+                fprintf(fd, roman? "}": ">"); break;
             default:
                 fprintf(fd, "%c", *s); break;
         }
     if( roman ) fprintf(fd, "}");
     roman = 0;
     fprintf(fd, "}\n");
-    fclose(fd);
+    // fclose(fd); // not for stdout :-)
 }
 
 int setSomeInterestingOption = 0;
@@ -468,7 +497,7 @@ int main(int argc, char *argv[])
             hash(openedfile);
 
             if( rawOption && !hasHadTagsOption )
-                    nolineerror("Using -raw makes no sense unless -tags has been set, because in raw mode nothing will be processed until a begin tag is found");
+                nolineerror("Using -raw makes no sense unless -tags has been set, because in raw mode nothing will be processed until a begin tag is found");
 
             processedFileName = openedfile;
             if( !parse(openedfile, bp) ) // return 0 means a fatal error
@@ -493,8 +522,11 @@ int main(int argc, char *argv[])
         showAllColors();
     if( !opened )
         fprintf(stderr, "** %s did not process any files\n", argv[0]);
+
     findComponents(); // find components before generating HTML, Latex, etc
     findCycles();
+    allmetadata();
+
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
     {   if( !setSomeInterestingOption ) graphvizOption = 1; // effectively set -g if nothing else
 
@@ -511,8 +543,7 @@ int main(int argc, char *argv[])
             summarisekeywords(stderr);
     }
 
-    if( versionOption )
-        fprintf(stderr, "%s version 2.2 compiled %s, %s\n", argv[0], __TIME__, __DATE__);
+    if( versionOption ) sayVersion(0, stderr);
 
     listnodes(); // does stuff if -s -ss or -sss used
 
@@ -521,7 +552,7 @@ int main(int argc, char *argv[])
 
     if( flagsOption )
         usage(argv[0]);
-    else if( !syntaxOption && !showRulesOption && !opened && !allColorsOption && !versionOption && !listidsOption )
+    else if( !summariseOption && !syntaxOption && !showRulesOption && !opened && !allColorsOption && !versionOption && !listidsOption )
         fprintf(stderr, "Use -flags to list all flag options\n");
 
     return 0;

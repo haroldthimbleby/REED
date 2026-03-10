@@ -13,10 +13,11 @@ extern char *title, *date, *version, *abstract, *direction;
 extern void dot(FILE *opfd, char *title, char *version, char *date, char *direction);
 extern void mathematica(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract);
 extern void xml(FILE *opfd);
+extern void terminate(char *fmt, ...);
 
 void stopiferror()
 {   if( errcount > 0 )
-        fatalError("Stopped due to error%s", errcount>1? "s": "");
+        terminate("Stopped due to error%s", errcount>1? "s": "");
 }
 
 void generated(char *filename, char *suffix, char *reason)
@@ -53,7 +54,7 @@ void makefiles(char *targetVersion, char *filename)
         generateSVGOption ||
         goOption
        )
-            graphvizOption = 1;
+        graphvizOption = 1;
 
     if( graphvizOption ) // also true if a .gv file is needed for PDF, JSON, etc
     {    // try: $ dot -Tps graph1.gv -o graph1.ps
@@ -78,8 +79,7 @@ void makefiles(char *targetVersion, char *filename)
         appendcstr(cmd, ".gv > ");
         appendstr(cmd, base);
         appendcstr(cmd, ".js");
-        if( verboseOption ) fprintf(stderr, "|--");
-        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        if( verboseOption ) fprintf(stderr, "|-- System:  %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".js", "JSON file of the REED graph");
     }
@@ -90,8 +90,7 @@ void makefiles(char *targetVersion, char *filename)
         appendcstr(cmd, ".gv > ");
         appendstr(cmd, base);
         appendcstr(cmd, ".pdf");
-        if( verboseOption ) fprintf(stderr, "|--");
-        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        if( verboseOption ) fprintf(stderr, "|-- System:  %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".pdf", "PDF file of the REED graph");
     }
@@ -102,8 +101,7 @@ void makefiles(char *targetVersion, char *filename)
         appendcstr(cmd, ".gv > ");
         appendstr(cmd, base);
         appendcstr(cmd, ".svg");
-        if( verboseOption ) fprintf(stderr, "|--");
-        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        if( verboseOption ) fprintf(stderr, "|-- System:  %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".svg", "SVG file of the REED graph");
     }
