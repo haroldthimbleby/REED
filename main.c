@@ -88,7 +88,7 @@ str *appendstr(str *d, str *e)
 str *appendcstr(str *d, char *e) // appends in situ, so old *d is changed
 {   char *oldds = d->s;
     char *s = d->s = saferealloc(oldds, strlen(d->s)+strlen(e)+2);
-    free(oldds);
+    //free(oldds);
 	while( *s ) s++;
     while( (*s++ = *e++) );
 	return d;

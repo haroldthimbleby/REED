@@ -1,4 +1,4 @@
-SOURCES = cascade.c main.c notes.c parse.c generate.c makefiles.c properties.c printerror.c hash.c html.c translate.c keywords.c pull.c listnodes.c
+SOURCES = cascade.c main.c notes.c parse.c generate.c makefiles.c properties.c printerror.c hash.c html.c translate.c keywords.c pull.c listnodes.c metadata.c
 
 OBJECTS = $(SOURCES:.c=.o)
 
@@ -6,13 +6,15 @@ TARGET = reed
 
 WEBSITE = ../REED-paper/REED-web-site
 
+CC = cc
+
 run: reed
 
 %.o: %.c header.h notes.h
-	$(CC) -c $< $(CFLAGS) 
+	$(CC) -c -g -fsanitize=address -O1 $< $(CFLAGS)
 
 $(TARGET) : $(OBJECTS)
-	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) -g -fsanitize=address -O1 $^ $(LDFLAGS) -o $@
 
 main.o: SyntaxCode.c header.h notes.h
 
@@ -21,16 +23,20 @@ SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 	git add SyntaxCode.c SyntaxOutline.tex
 	git commit -m "Updated SyntaxOutline.tex and SyntaxCode.c (generated from SyntaxOutline.tex)"
 
-paper: inputs betweenness1.jpg betweenness2.jpg
+papernobib: inputs betweenness1.jpg betweenness2.jpg REEDsummary.tex
 	cd ../REED-paper; pdflatex REED.tex
 	echo Generated ../REED-paper/REED.pdf
-	
-paperbib: inputs betweenness1.jpg betweenness2.jpg
+
+REEDsummary.tex: reed
+	reed -summarise > REEDsummary.tex
+
+paper: inputs betweenness1.jpg betweenness2.jpg REEDsummary.tex
 	cd ../REED-paper; pdflatex REED.tex
 	cd ../REED-paper; bibrun
 	cd ../REED-paper; pdflatex REED.tex; pdflatex REED.tex
 	echo Generated ../REED-paper/REED.pdf
-	
+	echo PS use make papernobib to make paper without updating bibliography and reed summary
+
 lib/pow-reed.nb: lib/pow-reed reed
 	reed -m lib/pow-reed
 	
