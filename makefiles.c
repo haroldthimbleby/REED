@@ -58,9 +58,11 @@ void makefiles(char *targetVersion, char *filename)
 
     if( graphvizOption ) // also true if a .gv file is needed for PDF, JSON, etc
     {    // try: $ dot -Tps graph1.gv -o graph1.ps
+        checkarrowlist(201);
         fd = fopen(filename = newappendcstr(base, ".gv")->s, "w");
         if( fd == NULL )
             fatalError("Can't open %s (graphviz file) for writing", filename);
+        checkarrowlist(202);
         dot(fd, title, targetVersion, date, direction);
         fclose(fd);
         generated(filename, "", "dot file of the REED graph");

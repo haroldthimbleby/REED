@@ -423,6 +423,7 @@ int main(int argc, char *argv[])
                 {   processedFileName = bp;
                     break;
                 }
+                checkarrowlist(1012);
                 processedFileName = openedfile;
                 i++; // skip over the insert text
                 handleInsert = 0;
@@ -500,9 +501,10 @@ int main(int argc, char *argv[])
                 nolineerror("Using -raw makes no sense unless -tags has been set, because in raw mode nothing will be processed until a begin tag is found");
 
             processedFileName = openedfile;
+            checkarrowlist(10199);
             if( !parse(openedfile, bp) ) // return 0 means a fatal error
                 break;
-
+            checkarrowlist(10100);
             //fprintf(stderr, "file processed = %s\n", openedfile);
             //free(bp); // we need to keep bp around in case we later generate error messages quoting it
             fclose(fp);
@@ -516,19 +518,23 @@ int main(int argc, char *argv[])
         }
         fprintf(stderr, "\n");
     }
+    checkarrowlist(1010);
     if( showRulesOption )
         explainTranslationRules();
     if( allColorsOption )
         showAllColors();
     if( !opened )
         fprintf(stderr, "** %s did not process any files\n", argv[0]);
-
+    checkarrowlist(101);
     findComponents(); // find components before generating HTML, Latex, etc
+    checkarrowlist(102);
     findCycles();
+    checkarrowlist(103);
     allmetadata();
 
     if( processedFileName != NULL && *processedFileName ) // make dot, latex, etc files after last processed file name
-    {   if( !setSomeInterestingOption ) graphvizOption = 1; // effectively set -g if nothing else
+    {checkarrowlist(104);
+        if( !setSomeInterestingOption ) graphvizOption = 1; // effectively set -g if nothing else
 
         if( keywordtopull )
         {   if( !isakeyword(keywordtopull) )

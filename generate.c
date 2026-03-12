@@ -213,8 +213,22 @@ void printColor(FILE *opfd, char *scheme, int index, int c)
 	// fprintf(stderr, "/%s%d/%d;\n", scheme, index < 3? 3: index > 11? 11: index, c);
 }
 
+extern void checkMemory(char *file, int line)
+{   return;
+    if( strcmp(file, "generate.c") ) return;
+
+    // check arrows are OK
+    fprintf(stderr, "--?? checkarrowlist %s %d --\n", file, line); fflush(stderr);
+    for( arrow *t = arrowList; t != NULL; t = t->next )
+    {   fprintf(stderr, "%%t=%p t->flag=%d\n", t, t->flag); fflush(stderr);
+        fprintf(stderr, "%%flagcolors[%d]=%s\n", t->flag, flagcolors[t->flag]); fflush(stderr);
+    }
+    fprintf(stderr, "--DONE checkarrowlist %s %d --\n", file, line); fflush(stderr);
+}
+
 void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
-{ 	fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
+{ 	checkarrowlist(2);
+    fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
     if( *defaultStyle )
         fprintf(opfd, "graph [%s];\nnode [%s];\nedge [%s];\n", defaultStyle, defaultStyle, defaultStyle);
     myfprintf(opfd, "label=\"");
@@ -249,7 +263,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 				strpad(col->node->is? &col->node->is: &col->node, maxlength);
 				myfprintf(opfd, "\"%S\";", col->node->s);
 				if( col->down != NULL )
-				{	newarrow(&arrowList, col->node, col->down->node, 1);
+				{	newarrow(&arrowList, &col->node, &col->down->node, 1);
 					defineArrowStyle(col->node, col->down->node, newstr("style=invis"));
 				}
 				if( col->node->style == NULL )
@@ -268,6 +282,8 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 		rowcounter++;
 		myfprintf(opfd, "}\n");
 	}
+    checkarrowlist(3);
+
 	// the above generates this (where r1 etc are row labels) for each row arrow:
 	// style (r1 r2 r3 r4 r5) is "shape=cds; fontname=\"Monaco\""
 	// r1->r2->r3->r4->r5
@@ -288,6 +304,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 				myfprintf(opfd, "subgraph \"clusterflag%d\" { \"%s\"; color=%s; bgcolor=%s; shape=circle; label=\"Flagged %s\"; labelloc=\"b\"; fontcolor=\"%s\"; fontsize=12; fontname=\"Helvetica\"; penwidth=2; };\n", flagclustern++, t->s->s, edgecolor, color, color, fontcolor);
 			}
 	}
+    checkarrowlist(4);
 
 	for( node *t = nodeList; t != NULL; t = t->next )
 		if( pullnode(t->s) && t->s->isgroup &&
@@ -308,6 +325,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 
 	//for( node *t = nodeList; t != NULL; t = t->next )
 	//	printf("%s: group=%d, style=%d\n",t->s->s,t->s->isgroup,t->s->isstyle); 
+    checkarrowlist(5);
 
 	for( node *t = nodeList; t != NULL; t = t->next )
 		if( pullnode(t->s) && !t->s->isgroup && !t->s->isstyle && t->s->l != HIGHLIGHT )
@@ -340,7 +358,15 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 	
 	fprintf(opfd, "\n");
 	for( arrow *t = arrowList; t != NULL; t = t->next )
-	{	if( (t->u != NULL && pullnode(t->u)) && (t->v != NULL && pullnode(t->v)) && (t->u->isgroup || t->v->isgroup) )
+	{	//if (!t || !t->u || !t->v) continue;  // early guard
+        //fprintf(stderr, "%%t=%p t->flag=%d\n", t, t->flag); fflush(stderr);
+        //fprintf(stderr, "%%flagcolors[%d]=\n", t->flag); fflush(stderr);
+        //fprintf(stderr, "%s\n", flagcolors[t->flag]); fflush(stderr);
+        if (!t || !t->u || !t->v || !(t->u) || !(t->v)) {
+            fprintf(stderr, "**** Invalid node pointer in arrowList\n");
+            continue;
+        }
+        if( (t->u != NULL && pullnode(t->u)) && (t->v != NULL && pullnode(t->v)) && (t->u->isgroup || t->v->isgroup) )
 		{	myfprintf(opfd, "  \"%S\"->\"%S\" [",
 				t->u->exampleGroupMember == NULL? t->u->s: t->u->exampleGroupMember->s,
 				t->v->exampleGroupMember == NULL? t->v->s: t->v->exampleGroupMember->s);
@@ -386,9 +412,10 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 				}
 			}
 			if( t->arrowStyle != NULL ) 
-			{	printf("still to implement ***???\n");printf("arrowStyle = %s\n",t->arrowStyle->s);
+			{	printf("*** still to implement arrowstylesw ***???\n");
+                //printf("arrowStyle = %s\n",t->arrowStyle->s);
 				//printf("  %s->%s", t->u->s, t->v->s);
-				printf(" free IS %s\n", t->arrowis != NULL? t->arrowis->s: "");
+				//printf(" free IS %s\n", t->arrowis != NULL? t->arrowis->s: "");
 			}
 			for( arrow *a = noteArrowList; a != NULL; a = a->next )
 				if( t->u == a->u && t->v == a->v && a->arrowis != NULL )
@@ -397,12 +424,17 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 					//fprintf(stderr, "BB  %s->%s, %s\n", t->u->s, t->v->s, flagcolors[a->flag]);
 					openbra = "";
 					closebra = "]";
-				}	
-			if( t->flag != noflag )
-			{	myfprintf(opfd, "%scolor=%s;penwidth=4;", openbra, flagcolors[t->flag]);	
-				closebra = "]";
+				}
+           // fprintf(stderr, "arrow %p u=%p v=%p\n", t, t->u, t->v); fflush(stderr);
+           // fprintf(stderr, "arrow visibles %p u=%d v=%d\n", t, t->u->visible, t->v->visible); fflush(stderr);
+            if( t->flag != noflag )
+            {   //fprintf(stderr, "openbra=%s t=%p t->flag=%d\n", openbra, t, t->flag); fflush(stderr);
+                //fprintf(stderr, "flagcolors[%d]=%s\n", t->flag, flagcolors[t->flag]); fflush(stderr);
+                //fprintf(stderr, ".... %scolor=%s;penwidth=4;", openbra, flagcolors[t->flag]); fflush(stderr);
+                fprintf(opfd, "%scolor=%s;penwidth=4;", openbra, flagcolors[t->flag]);
+                closebra = "]";
                 openbra = "";
-			}
+            }
             if( !t->u->visible || !t->v->visible )
             {   myfprintf(opfd, "%sstyle=invis;", openbra);
                 closebra = "]";
@@ -602,15 +634,18 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
 void styleReplace(str **target, char *styleName, char *replace)
 {   // scan target for occurrences of styleName and replace with replace
     if( !strlen(replace) ) return; // nothing to do
-
+    int replacements = 0;
     int len = strlen(styleName);
     if( !len ) return; // nothing to do (and would fail if it tried!)
 
+    //fprintf(stderr, "before for s=%p\n", (*target)->s); fflush(stderr);
     for( char *s = (*target)->s; *s; s++ )
-    {   if( !strncmp(s, styleName, len) )
+    {   //fprintf(stderr, "in for s=%p\n", s); fflush(stderr);
+        //fprintf(stderr, "in for s=[%s]\n", s); fflush(stderr);
+        if( !strncmp(s, styleName, len) )
         {
-            fprintf(stderr, "replace [%s]@%d in [%s] with [%s]\n", styleName, len, (*target)->s, replace);
-
+            //fprintf(stderr, "replace [%s]@%d in [%s] with [%s]\n", styleName, len, (*target)->s, replace);
+            replacements++;
             *s = (char) 0;
 
             // now target has 3 substrings:
@@ -622,28 +657,27 @@ void styleReplace(str **target, char *styleName, char *replace)
             char *pre = (*target)->s; //fprintf(stderr, "pre: |%s|\n", pre); fflush(stderr);
             char *post = &s[len]; //fprintf(stderr, "post: |%s|\n", post); fflush(stderr);
 
-            fprintf(stderr, "[%s]%s[%s] where %s->%s\n",pre,styleName,post,styleName,replace); fflush(stderr);
+            //fprintf(stderr, "[%s]%s[%s] where %s->%s\n",pre,styleName,post,styleName,replace); fflush(stderr);
 
-            fprintf(stderr, "--->[%s]--->", newstr(pre)->s); fflush(stderr);
+            //fprintf(stderr, "--->[%s]--->", newstr(pre)->s); fflush(stderr);
 
             *target = strlen(pre)? appendcstr(newstr(pre), replace): newstr(replace);
 
             int offset = strlen((*target)->s); //fprintf(stderr, "offset: %d\n", offset); fflush(stderr);
-            fprintf(stderr, "C"); fflush(stderr);
-
+            // fprintf(stderr, "offset=%d\n", offset); fflush(stderr);
             if( strlen(post) )
                 *target = appendcstr(*target, post);
-            fprintf(stderr, "D"); fflush(stderr);
 
             //fprintf(stderr, "\nfinal: [%s] with ", (*target)->s); fflush(stderr);
 
             // now fix s to right place, since we've relocated the string s pointed to
-            s = &(*target)->s[offset];
-            fprintf(stderr, "full string: [%s]\n", (*target)->s); fflush(stderr);
-            fprintf(stderr, "rest of string: [%s]\n", s); fflush(stderr);
+            s = &(*target)->s[offset-1]; // because it's about to be incremented at end of for loop
+            //fprintf(stderr, "full string: [%s]\n", (*target)->s); fflush(stderr);
+            //fprintf(stderr, "rest of string: [%s]\n", s); fflush(stderr);
         }
     }
-    fprintf(stderr, "finally: [%s]\n", (*target)->s); fflush(stderr);
+    if( replacements )
+        fprintf(stderr, "%d replacements [of substrings], finally: [%s]\n", replacements, (*target)->s); fflush(stderr);
 }
 
 int versionstrcmp(char *a, char *b)
@@ -725,7 +759,7 @@ void generateFiles(char *targetVersion, char *filename)
     // printf("Styles are:\n");
 	// for( node *u = stylelist; u != NULL; u = u->next )
 	//	printf("  style %s is '%s'\n", u->s->style->s, u->s->s);
-
+    checkarrowlist(7);
     if( !*targetVersion || !strcmp(targetVersion, "") )
     {   targetVersion = lastVersion();
         if( strcmp(targetVersion, "") )
@@ -733,7 +767,10 @@ void generateFiles(char *targetVersion, char *filename)
     }
 
     checkIS();
+    checkarrowlist(8);
     checkNumbering();
+
+    checkarrowlist(9);
 
 	// now everything collected, replace use of style nodes with the style values themselves
     // node is: typedef struct tmpnode { str *s; struct tmpnode *next; } node;
@@ -760,18 +797,17 @@ void generateFiles(char *targetVersion, char *filename)
                     t->s->style = u->s;
                 }
                 else
-                {   fprintf(stderr, "** [%s] where %s -> %s\n", t->s->style->s, u->s->style->s, u->s->s); fflush(stderr);
                     styleReplace(&t->s->style, u->s->style->s, u->s->s);
-                }
             }
         }
     }
+    checkarrowlist(10);
 	// DO THE SAME WITH ARROW STYLES...
 	for( node *u = stylelist; u != NULL; u = u->next )
 		for( arrow *styleda = styledArrowList; styleda != NULL; styleda = styleda->next )
 			if(  u->s->style->s == styleda->arrowStyle->s )
 				styleda->arrowStyle = u->s;
-			
+    checkarrowlist(11);
 //	typedef struct tmparrow { str *u, *v; struct tmparrow *next; } arrow;
 // 	typedef struct tmpnode { str *s; struct tmpnode *next; } node;
 
@@ -784,8 +820,9 @@ void generateFiles(char *targetVersion, char *filename)
 			}
 
     cascade();
+    checkarrowlist(14);
     sortkeywords(&allkeywords);
-
+    checkarrowlist(15);
     if( 0 )
 		for( node *t = nodeList; t != NULL; t = t->next )
 			if( !t->s->pointsTo && !t->s->pointedFrom )

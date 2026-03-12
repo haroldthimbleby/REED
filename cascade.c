@@ -93,13 +93,14 @@ void findCycles() // also computes in and out degrees
     }
     // fprintf(stderr, "allocated m\n");
 
-    struct cycles
-    { str *s; int cycle; }
-    *cycles = (struct cycles*) safeCalloc(N+2, sizeof(struct cycles*));
+    struct cycles { str *s; int cycle; }
+    *cycles = (struct cycles*) safeCalloc(N+2, sizeof(struct cycles));
 
     {   int i = 0;
         for( node *t = nodeList; t != NULL; t = t->next )
-        {   cycles[i].s = t->s;
+        {   if( i < 0 || i > N+1 )
+            fprintf(stderr, "out of range: 0 <= %d <= %d\n", i, N); fflush(stderr);
+            cycles[i].s = t->s;
             cycles[i].cycle = 0;
             i++;
         }
@@ -216,6 +217,7 @@ void findComponents() // weakly connected components
     int swapped = 0;
     do
     {   swapped = 0;
+        checkarrowlist(1);
         for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
             if( (*t)->s->is != NULL && (*t)->next->s->is != NULL &&
                strcmp((*t)->s->is->s, (*t)->next->s->is->s) > 0 )

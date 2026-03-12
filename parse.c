@@ -82,13 +82,26 @@ char *flagcolor(enum flagcolor fc)
 	}
 }
 
+arrow *auxnewarrowstruct()
+{   arrow* a = (arrow*) safealloc(sizeof(arrow));
+    a->u = a->v = a->arrowStyle = a->arrowis = a->arrownote = NULL;
+    a->keywords = NULL;
+    a->force = a->expanded = a->component = a->visible = 0;
+    a->next = NULL;
+    a->flag = noflag;
+    //fprintf(stderr, "a->flag=%d\n",a->flag); fflush(stderr);
+    checkarrowlist(0);
+    return a;
+}
+
 void defineArrowStyle(str *u, str *v, str *theStyle)
-{	for( arrow *t = styledArrowList; t != NULL; t = t->next )
+{	checkarrowlist(10101);
+    for( arrow *t = styledArrowList; t != NULL; t = t->next )
 		if( t->u == u && t->v == v )
 		{	error("arrow %s -> %s style being redefined", t->u->s, t->v->s);
 		}
 
-	arrow *a = (arrow*) safealloc(sizeof(arrow));
+	arrow *a = auxnewarrowstruct();
 	a->next = styledArrowList;
 	a->arrowStyle = theStyle;
 	//fprintf(stderr, "%s->%s styled as %s\n", u->s, v->s, theStyle->s); 
@@ -445,7 +458,7 @@ void newnode(int fixVersion, str **u)
           return;
     	}
 	//fprintf(stderr, "new node %s at %ld\n", (*u)->s, (long) *u);
-	node *new = safealloc(sizeof(node));
+	node *new = (node*) safealloc(sizeof(node));
 	new->next = nodeList;
 	new->s = *u;
     (*u)->nodeversion = fixVersion? version: undefinedVersion;
@@ -454,30 +467,33 @@ void newnode(int fixVersion, str **u)
 	nodeList = new;
 }
 
-void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd)
-{	newnode(1, &u);
-	newnode(1, &v);
+void newarrow(arrow **putonthisarrowlist, str **u, str **v, int forceadd)
+{	checkarrowlist(99012);
+    newnode(1, u);
+    checkarrowlist(990123ee);
+	newnode(1, v);
 
 	// do we already have the arrow?
-	for( arrow *t = *putonthisarrowlist; t != NULL; t = t->next )
+    checkarrowlist(101012);
+    for( arrow *t = *putonthisarrowlist; t != NULL; t = t->next )
 	{
-		if( t->u == u && t->v == v )
-		{	if( !t->force ) 
+		if( t->u == *u && t->v == *v )
+		{	if( !t->force )
 			{	t->force = forceadd;
                 return;
 			}
 			break;
 		}
 	}
-	arrow *new = (arrow*) safealloc(sizeof(arrow));
+    arrow *new = auxnewarrowstruct();
 	new->next = *putonthisarrowlist;
 	new->force = forceadd;
     new->arrowis = NULL;
 
     //fprintf(stderr, "parsed %s -> %s\n", u->s, v->s);
 
-	new->u = u;
-	new->v = v;
+	new->u = *u;
+	new->v = *v;
 	*putonthisarrowlist = new;
 }
 
@@ -489,19 +505,21 @@ void getlex()
 
 void whilearrow(arrow **whicharrowlist, int forceadd)
 {	while( lex2->l == LARROW || lex2->l == RARROW )
-	{	if( lex1->l == HIGHLIGHT || lex3->l == HIGHLIGHT )
+    {   checkarrowlist(71);
+        if( lex1->l == HIGHLIGHT || lex3->l == HIGHLIGHT )
         {   error("highlight cannot be at end of an arrow");
             getlex();
             break;
         }
 		if( lex3->l != ID ) { error("Expected ID after arrow"); getlex(); break; }
 		// myfprintf(stderr, "in whilearrow() read arrow: %s -> %s\n", lex1->s, lex3->s);
-		if( lex2->l == LARROW ) newarrow(whicharrowlist, lex3, lex1, forceadd);
-		else if( lex2->l == RARROW ) newarrow(whicharrowlist, lex1, lex3, forceadd);
+        checkarrowlist(72);
+        //fprintf(stderr, "lex2->l is ", lexvalue(lex2)); fflush(stderr);
+        if( lex2->l == LARROW ) newarrow(whicharrowlist, &lex3, &lex1, forceadd);
+		else if( lex2->l == RARROW ) newarrow(whicharrowlist, &lex1, &lex3, forceadd);
 		else // double arrow
-		{	
-			newarrow(whicharrowlist, lex1, lex3, forceadd);
-		}
+			newarrow(whicharrowlist, &lex1, &lex3, forceadd);
+        checkarrowlist(73);
 		getlex();
 		getlex();
 	}
@@ -710,7 +728,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
                 fprintf(stderr, "single node... %s\n", lex1->s);
 			if( makenodes && lex1->l != HIGHLIGHT )
                 newnode(1, &lex1);
-			t = (arrow*) safealloc(sizeof(arrow));
+            t = auxnewarrowstruct();
 			t->u = lex1;
 			t->v = NULL;
 			t->next = NULL;
@@ -734,7 +752,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
 			}
 			else
 			{	// single node in the list
-				arrow *u = (arrow*) safealloc(sizeof(arrow));
+                arrow *u = auxnewarrowstruct();
 				u->next = t;
 				if( makenodes ) newnode(1, &lex1);
 				u->u = lex1;
@@ -1052,7 +1070,7 @@ int parse(char *filename, char *bp)
                 newnode(1, &thenodetoflag); // was a node name
                 enum flagcolor previousFlag = thenodetoflag->flag;
                 thenodetoflag->flag = red; // default flag color if none is specified
-                enum flagcolor fc;
+                enum flagcolor fc = noflag;
                 thenodetoflag->cascade = cascadeflag;
                 if( lex2->l == IS ) // highlight <node> is form ; now read the color
                 {	if( lex3->l != ID ) error("Expected a color for highlight <node> is <color>");
@@ -1213,7 +1231,7 @@ int parse(char *filename, char *bp)
                         nl->u->styleName = lex1->s;
 						if( makenewstyle )
 						{	if( nl->v != NULL ) error("arrows cannot be style names");
-							node *new = safealloc(sizeof(node));
+							node *new = (node*) safealloc(sizeof(node));
 							new->next = stylelist;
 							new->s = lex1;
 							lex1->style = nl->u;
@@ -1251,6 +1269,7 @@ int parse(char *filename, char *bp)
 						break;
                     case LARROW: case RARROW:
 						whilearrow(&arrowList, 1);
+                        checkarrowlist(1010199);
 						break;
                     default: // an isolated node
 						warning("isolated node with no arrow or 'is': %s", lex1->s);

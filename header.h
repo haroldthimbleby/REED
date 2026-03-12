@@ -5,6 +5,9 @@
 #include <sys/errno.h>
 #include <ctype.h>
 
+#define checkarrowlist(x) (checkMemory(__FILE__,__LINE__))
+extern void checkMemory(char *file, int line);
+
 #define startBlue fprintf(stderr, "\033[94;91m")
 #define beginError fprintf(stderr, "\033[38;91m")
 #define endError   fprintf(stderr, "\033[0m")
@@ -120,7 +123,7 @@ typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct 
 
 extern void metadata(arrow *nl);
 
-extern void newarrow(arrow **putonthisarrowlist, str *u, str *v, int forceadd);
+extern void newarrow(arrow **putonthisarrowlist, str **u, str **v, int forceadd);
 
 typedef struct tmpnode { str *s; struct tmpnode *next; } node;
 
