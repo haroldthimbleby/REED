@@ -1,0 +1,23 @@
+digraph {
+  compound=true;
+  bgcolor="transparent";
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  graph [fontname=Helvetica];
+node [fontname=Helvetica];
+edge [fontname=Helvetica];
+label="Princess of Wales Hospital blood glucometer case
+v2, 10 September 2025.  Yellow nodes only
+
+ ";
+  rankdir="";
+
+  "forensicProblems" [URL="#forensicProblems"; label="v2-5.3\nWritten evidence shows\nforensic methods used\nwere unreliable";fillcolor=yellow; style=filled; penwidth=2; shape=note; ];
+  "6unknown" [URL="#6unknown"; label="v2-2.5\nNo evidence\nexplaining scope\nof Ward PCs";fillcolor=yellow; style=filled; penwidth=2; shape=note; ];
+  "15" [URL="#15"; label="v2-8.1\nNo evidence of\nerror logs\nor audits";fillcolor=yellow; style=filled; penwidth=2; shape=note; ];
+  "14" [URL="#14"; label="v2-7.1\nNo evidence\nof any testing\never performed";fillcolor=yellow; style=filled; penwidth=2; shape=note; ];
+
+  "14"->"15" [label="?",fontname="Helvetica-Bold",fontcolor=red, fontsize=18; color=red; penwidth=2; style=dashed; ];
+}

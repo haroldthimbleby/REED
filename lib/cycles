@@ -9,16 +9,12 @@ layout (
 	(1c 2c 3c 4c)  
 ) 
 
-Evidence -> 1a
-Evidence -> 2a
-Evidence -> 3a
-Evidence -> 4a
 
-new style setfont is "fontname=\"Helvetica\""
-new style normal is "setfont;fontcolor=\"black\";fillcolor=\"gray90\";style=\"filled\";label=<"
-new style warn is "setfont;label=<"
-new style middle  is "<FONT POINT-SIZE='10'><SUB>"
-new style end is "</SUB></FONT>>"
+style.new setfont is "fontname=\"Helvetica\""
+style.new normal is "setfont;fontcolor=\"black\";fillcolor=\"gray90\";style=\"filled\";label=<"
+style.new warn is "setfont;label=<"
+style.new middle  is "<FONT POINT-SIZE='10'><SUB>"
+style.new end is "</SUB></FONT>>"
 
 1a -> 1b -> 1c -> 1a
 style 1a is "warn A middle 1 end"
@@ -45,5 +41,4 @@ style 4c is "normal C middle 4 end"
 3c -> Conclusions
 4c -> Conclusions
 
-style Evidence is setfont
 style Conclusions is setfont

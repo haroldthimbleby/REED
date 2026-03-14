@@ -1,5 +1,5 @@
 norefs
-new style setfont is "fontname=\"Helvetica\""
+style.new setfont is "fontname=\"Helvetica\""
 
 Nurses -> nurserecords -> computerrecords
 

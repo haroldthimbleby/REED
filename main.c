@@ -195,7 +195,7 @@ structOption options[] =
     {"-sss", "", "list nodes and their full names, sorted by both node ID and full names", &listBothOption, 0},
     {"-sep", "", "draw a separator line before processing any files (useful with [-watch])", &separatorOption, 0},
     {"-sig", "", "show REED file signatures", &showSignatures, 0},
-    {"-summarise", "", "summarise REED syntax and command line flags to in Latex standard output", &summariseOption, 0},
+    {"-summarise", "", "put Latex overview of REED syntax and command line flags to standard output", &summariseOption, 0},
     {"-svg", "", "generate a [.svg] file*- representing the REED graph", &generateSVGOption, 1},
     {"-syntax", "", "summarise REED syntax", &syntaxOption, 0},
 	{"-t", "", "transpose node numbering*- swap row and column node numbers", &transposeOption, 0},
@@ -229,7 +229,7 @@ void summariseFeatures()
 
     fprintf(stderr, "Writing Latex to %s to summarise REED features\n", summaryFile);
 
-    fprintf(fd, "\\section{REED command line flags summary}\n");
+    fprintf(fd, "\\section{REED command line flags summary}\\label{flagsSummary}\n");
     sayVersion(1, fd);
 
     fprintf(fd, "\\vskip 5mm\\begin{description}\\raggedright\n");
@@ -249,7 +249,7 @@ void summariseFeatures()
     }
     fprintf(fd, "\\end{description}\n");
 
-    fprintf(fd, "\\section{REED syntax summary}\n");
+    fprintf(fd, "\\section{REED syntax summary}\\label{syntaxSummary}\n");
     sayVersion(1, fd);
     fprintf(fd, "\\vskip 5mm\n{\\tt\\noindent\\hbox{}");
     int roman = 0;

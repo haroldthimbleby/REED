@@ -42,7 +42,7 @@ vertexNames={
    "manual"->"v2-3.2 PrecisionWeb\noperators\nmanual",
    "forensicProblems"->"v2-5.3 Written evidence shows\nforensic methods used\nwere unreliable",
    "backups"->"v2-8.2 No known backups\nthat could have\nprovided evidence",
-   "Abbott_engineer"->"v3-2.2 Unsupervised\nAbbott\nengineer",
+   "Abbott_engineer"->"v2-2.2 Unsupervised\nAbbott\nengineer",
    "9"->"v2-7.2 Main hospital\ndatabases",
    "8"->"v2-6.2 Lots of unknown\ncomplex middleware",
    "7"->"v2-5.2 Abbott\nPrecisionWeb\ndatabase",
@@ -153,6 +153,7 @@ groups={{"name"->"xceedpro", "nodes"->{"18", "17", "16"},
 "label"->"v2-4.1\nPolice handling of\nXceedPro evidence"},
 {"name"->"hospital", "nodes"->{"unknowndatabaselogs", "unknownEdits", "networks", "backups", "9", "8", "7", "6unknown", "6", "5", "4", "10"},
 "label"->"v2-9.1\nHospital IT Systems"}};
+metadata={};
 Print["      title=", title, 
 "
       authors=", authors, 
@@ -161,4 +162,4 @@ Print["      title=", title,
 "
       date=", date, 
 "
-      and: communities, edges, groups, highlights, keywords, notes, vertexNames"];
+      and: communities, edges, groups, highlights, keywords, metadata, notes, vertexNames"];

@@ -1,0 +1,38 @@
+# Check color highlighting works correctly
+norefs
+
+highlight " aqua " is aqua
+highlight " black " is black
+highlight " blue " is blue
+highlight " fuchsia " is fuchsia
+highlight " gray " is gray
+highlight " green " is green
+highlight " lime " is lime
+highlight " maroon " is maroon
+highlight " navy " is navy
+highlight " olive " is olive
+highlight " orange " is orange
+highlight " purple " is purple
+highlight " red " is red
+highlight " silver " is silver
+highlight " teal " is teal
+highlight " white " is white 
+highlight " yellow " is yellow
+
+highlight aqua is "Meaning for aqua"
+highlight black is "Meaning for black"
+highlight blue is "Meaning for blue"
+highlight fuchsia is "Meaning for fuchsia"
+highlight gray is "Meaning for gray"
+highlight green is "Meaning for green"
+highlight lime is "Meaning for lime"
+highlight maroon is "Meaning for maroon"
+highlight navy is "Meaning for navy"
+highlight olive is "Meaning for olive"
+highlight orange is "Meaning for orange"
+highlight purple is "Meaning for purple"
+highlight red is "Meaning for red"
+highlight silver is "Meaning for silver"
+highlight teal is "Meaning for teal"
+highlight white is "Meaning for white"
+highlight yellow is "Meaning for yellow"

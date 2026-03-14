@@ -1,0 +1,187 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      6709,        179]
+NotebookOptionsPosition[      5427,        150]
+NotebookOutlinePosition[      5820,        166]
+CellTagsIndexPosition[      5777,        163]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[TextData[{
+ "Running plotBetweenness . nb directly interleaves ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " output with code, so this file is a normal Mathematica notebook which \
+automatically separates code and output, so making it much easier to test."
+}], "Text",
+ CellChangeTimes->{{3.9738571535017653`*^9, 
+  3.973857219239298*^9}},ExpressionUUID->"bb911d96-00bc-4294-a113-\
+05fa40ae4501"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"SetDirectory", "[", 
+  RowBox[{"NotebookDirectory", "[", "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.973843961329996*^9, 3.973843971062091*^9}},
+ CellLabel->
+  "In[194]:=",ExpressionUUID->"9c0096eb-ce10-43a7-aaba-1d9399e14817"],
+
+Cell[BoxData["\<\"/Users/harold/Desktop/Presumption work.../REED-git\"\>"], \
+"Output",
+ CellChangeTimes->{3.9738439717069273`*^9, 3.976547466711027*^9, 
+  3.976603092666441*^9},
+ CellLabel->
+  "Out[194]=",ExpressionUUID->"b3269220-a26b-487d-89e8-bd27c1a9f7ee"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Get", "[", "\"\<plotBetweenness.nb\>\"", "]"}]], "Input",
+ CellChangeTimes->{{3.973843975902631*^9, 3.9738439842683077`*^9}, {
+  3.973844549407803*^9, 3.973844550256482*^9}, {3.973856443335071*^9, 
+  3.9738564581383533`*^9}},
+ CellLabel->
+  "In[195]:=",ExpressionUUID->"c2cb2fc4-edec-4d09-a655-09588f24be44"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"Running Mathematica in \"\>", 
+   "\[InvisibleSpace]", "\<\"/Users/harold/Desktop/Presumption \
+work.../REED-git\"\>"}],
+  SequenceForm[
+  "Running Mathematica in ", 
+   "/Users/harold/Desktop/Presumption work.../REED-git"],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.973856459508072*^9, 3.973856640173585*^9, 
+  3.973857237803673*^9, 3.976547466730953*^9, 3.9766031586376743`*^9},
+ CellLabel->
+  "During evaluation of \
+In[195]:=",ExpressionUUID->"3b7decbe-098e-4dd8-a075-73ea99219bf1"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"Make betweenness graph used by reed.tex paper\\n\"\>", 
+   "\[InvisibleSpace]", "\<\"     \"\>", 
+   "\[InvisibleSpace]", "\<\"lib/pow-reed.nb\"\>", 
+   "\[InvisibleSpace]", "\<\" defines:\"\>"}],
+  SequenceForm[
+  "Make betweenness graph used by reed.tex paper\n", "     ", 
+   "lib/pow-reed.nb", " defines:"],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.973856459508072*^9, 3.973856640173585*^9, 
+  3.973857237803673*^9, 3.976547466730953*^9, 3.9766031586381187`*^9},
+ CellLabel->
+  "During evaluation of \
+In[195]:=",ExpressionUUID->"6803bd03-4ea6-4f06-adab-351c658db781"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"      title=\"\>", 
+   "\[InvisibleSpace]", "\<\"Princess of Wales Hospital blood glucometer case\
+\"\>", "\[InvisibleSpace]", "\<\"\\n      authors=\"\>", 
+   "\[InvisibleSpace]", "\<\"Harold Thimbleby\"\>", 
+   "\[InvisibleSpace]", "\<\"\\n      version=\"\>", 
+   "\[InvisibleSpace]", "\<\"v3\"\>", 
+   "\[InvisibleSpace]", "\<\"\\n      date=\"\>", 
+   "\[InvisibleSpace]", "\<\"10 September 2025\"\>", 
+   "\[InvisibleSpace]", "\<\"\\n      and: communities, edges, groups, \
+highlights, keywords, notes, vertexNames\"\>"}],
+  SequenceForm[
+  "      title=", "Princess of Wales Hospital blood glucometer case", 
+   "\n      authors=", "Harold Thimbleby", "\n      version=", "v3", 
+   "\n      date=", "10 September 2025", 
+   "\n      and: communities, edges, groups, highlights, keywords, notes, \
+vertexNames"],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.973856459508072*^9, 3.973856640173585*^9, 
+  3.973857237803673*^9, 3.976547466730953*^9, 3.976603158638698*^9},
+ CellLabel->
+  "During evaluation of \
+In[195]:=",ExpressionUUID->"0dc15a42-0cff-4867-b6a6-f6a2d61e9fa0"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"Exported: \"\>", 
+   "\[InvisibleSpace]", "\<\"betweenness1.jpg\"\>"}],
+  SequenceForm["Exported: ", "betweenness1.jpg"],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.973856459508072*^9, 3.973856640173585*^9, 
+  3.973857237803673*^9, 3.976547466730953*^9, 3.976603158716144*^9},
+ CellLabel->
+  "During evaluation of \
+In[195]:=",ExpressionUUID->"3b45c320-afd7-4d1b-ae68-adffc22a3a6e"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"Exported: \"\>", 
+   "\[InvisibleSpace]", "\<\"betweenness2.jpg\"\>"}],
+  SequenceForm["Exported: ", "betweenness2.jpg"],
+  Editable->False]], "Print",
+ CellChangeTimes->{3.973856459508072*^9, 3.973856640173585*^9, 
+  3.973857237803673*^9, 3.976547466730953*^9, 3.976603158733314*^9},
+ CellLabel->
+  "During evaluation of \
+In[195]:=",ExpressionUUID->"ead8d04d-61af-4431-9394-90601511235a"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"If", "[", 
+  RowBox[{"False", ",", "betweennessplot"}], "]"}]], "Input",
+ CellChangeTimes->{{3.973857243779011*^9, 3.973857263505069*^9}, {
+  3.976542783386939*^9, 3.976542794491243*^9}},
+ CellLabel->
+  "In[190]:=",ExpressionUUID->"a9293243-a62c-4149-82c8-af2eca4f278d"]
+},
+WindowSize->{808, 911},
+WindowMargins->{{Automatic, 211}, {Automatic, 0}},
+FrontEndVersion->"14.1 for Mac OS X ARM (64-bit) (July 16, 2024)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"de0de113-0e4e-4aa7-8718-cb86d7413013"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[554, 20, 410, 9, 55, "Text",ExpressionUUID->"bb911d96-00bc-4294-a113-05fa40ae4501"],
+Cell[CellGroupData[{
+Cell[989, 33, 253, 5, 29, "Input",ExpressionUUID->"9c0096eb-ce10-43a7-aaba-1d9399e14817"],
+Cell[1245, 40, 261, 5, 33, "Output",ExpressionUUID->"b3269220-a26b-487d-89e8-bd27c1a9f7ee"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1543, 50, 332, 6, 29, "Input",ExpressionUUID->"c2cb2fc4-edec-4d09-a655-09588f24be44"],
+Cell[CellGroupData[{
+Cell[1900, 60, 544, 13, 23, "Print",ExpressionUUID->"3b7decbe-098e-4dd8-a075-73ea99219bf1"],
+Cell[2447, 75, 631, 14, 41, "Print",ExpressionUUID->"6803bd03-4ea6-4f06-adab-351c658db781"],
+Cell[3081, 91, 1137, 23, 98, "Print",ExpressionUUID->"0dc15a42-0cff-4867-b6a6-f6a2d61e9fa0"],
+Cell[4221, 116, 439, 10, 23, "Print",ExpressionUUID->"3b45c320-afd7-4d1b-ae68-adffc22a3a6e"],
+Cell[4663, 128, 439, 10, 23, "Print",ExpressionUUID->"ead8d04d-61af-4431-9394-90601511235a"]
+}, Open  ]]
+}, Open  ]],
+Cell[5129, 142, 294, 6, 29, "Input",ExpressionUUID->"a9293243-a62c-4149-82c8-af2eca4f278d"]
+}
+]
+*)
+

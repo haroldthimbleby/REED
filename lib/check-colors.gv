@@ -1,0 +1,29 @@
+digraph {
+  compound=true;
+  bgcolor="transparent";
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  label="";
+  rankdir="";
+
+  " yellow " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# yellow "; label=" yellow ";fillcolor=yellow; style=filled; penwidth=2; shape=note; ];
+  " white " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# white "; label=" white ";color=black;fillcolor=white; style=filled; penwidth=2; shape=note; ];
+  " teal " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# teal "; label=" teal ";fillcolor=teal; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " silver " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# silver "; label=" silver ";fillcolor=silver; style=filled; penwidth=2; shape=note; ];
+  " red " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# red "; label=" red ";fillcolor=red; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " purple " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# purple "; label=" purple ";fillcolor=purple; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " orange " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# orange "; label=" orange ";fillcolor=orange; style=filled; penwidth=2; shape=note; ];
+  " olive " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# olive "; label=" olive ";fillcolor=olive; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " navy " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# navy "; label=" navy ";fillcolor=navy; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " maroon " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# maroon "; label=" maroon ";fillcolor=maroon; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " lime " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# lime "; label=" lime ";fillcolor=lime; style=filled; penwidth=2; shape=note; ];
+  " green " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# green "; label=" green ";fillcolor=green; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " gray " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# gray "; label=" gray ";fillcolor=gray; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " fuchsia " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# fuchsia "; label=" fuchsia ";fillcolor=fuchsia; style=filled; penwidth=2; shape=note; ];
+  " blue " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# blue "; label=" blue ";fillcolor=blue; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " black " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# black "; label=" black ";fillcolor=black; style=filled; penwidth=2; shape=note; fontcolor=white;];
+  " aqua " [fillcolor="gray90"; style=filled; shape=ellipse; fontname="Helvetica"; URL="# aqua "; label=" aqua ";fillcolor=aqua; style=filled; penwidth=2; shape=note; ];
+
+}

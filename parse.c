@@ -254,11 +254,13 @@ char *lexvalue(str *v)
 str *allIDs = NULL;
 
 str *canonicalise(str *s)
-{	str *p = allIDs;
+{	return s;
+    str *p = allIDs;
 	//fprintf(stderr," got %s - ", s->s);
 	while( p != NULL )
 		if( !strcmp(p->s, s->s) )
 		{	//fprintf(stderr, " - old\n");
+            //free(s);
 			return p;
 		}
 		else { //fprintf(stderr, " .. ");
@@ -461,9 +463,9 @@ void newnode(int fixVersion, str **u)
 	node *new = (node*) safealloc(sizeof(node));
 	new->next = nodeList;
 	new->s = *u;
-    (*u)->nodeversion = fixVersion? version: undefinedVersion;
+    (*u)->nodeversion = version;
 	(*u)->component = 0;
-    (*u)->visible = 1;
+    (*u)->visible = fixVersion;
 	nodeList = new;
 }
 
@@ -661,7 +663,7 @@ void layout()
 			n->down = NULL;
 			n->right = NULL;
 			n->label = 1;
-			newnode(1, &lex1);
+			newnode(0, &lex1);
 			n->node = lex1;
 			endofcols = &n->down;
 			endofrow = &n->right;
@@ -868,9 +870,9 @@ int parse(char *filename, char *bp)
 	 lex1 = newstr("");
 	 lex2 = newstr("");
 	 lex3 = newstr("");
-    latexdefinitions = newstr("");
-    latexendoffile = newstr("");
-    htmldefinitions = newstr("");
+     latexdefinitions = newstr("");
+     latexendoffile = newstr("");
+     htmldefinitions = newstr("");
      introduction = newstr("");
      conclusion = newstr("");
 
@@ -1230,14 +1232,22 @@ int parse(char *filename, char *bp)
 						nl->u->style = lex1;
                         nl->u->styleName = lex1->s;
 						if( makenewstyle )
-						{	if( nl->v != NULL ) error("arrows cannot be style names");
-							node *new = (node*) safealloc(sizeof(node));
-							new->next = stylelist;
-							new->s = lex1;
-							lex1->style = nl->u;
-							stylelist = new;
-						}
-					}	
+                        {   for( node *u = stylelist; u != NULL; u = u->next )
+                            {   //fprintf(stderr, "%s with nl->u->style->s = %s\n", u->s->style->s, nl->u->s);
+                                if( !strcmp(u->s->style->s, nl->u->s) )
+                                    error("style %s should not be redefined:\n   style.new %s is \"%s\"",
+                                          u->s->style->s, u->s->style->s, lex1->s);
+                            }
+
+                            if( nl->v != NULL ) error("arrows cannot be style names");
+                            node *new = (node*) safealloc(sizeof(node));
+                            new->next = stylelist;
+                            new->s = lex1;
+                            lex1->style = nl->u;
+                            stylelist = new;
+                            // fprintf(stderr, ">>> style.new %s is \"%s\"\n", new->s->style->s, new->s->s);
+                        }
+					}
 					nl = nl->next;
 				}
 				makenewstyle = 0;

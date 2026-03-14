@@ -1,0 +1,57 @@
+direction LR
+
+cycle ( stu scr surpass sp em2 )
+
+rass -> ex0
+ex0 -> de
+de -> em1
+em1 -> em2
+em2 -> em2
+em2 -> em3
+em3 -> fe
+da -> fe
+cl -> sp
+fe -> sp
+fe -> ra
+sp -> e1
+ra -> spss
+sp -> surpass
+surpass -> sp
+surpass -> scr
+stu -> surpass
+scr -> stu
+e1 -> spss
+spss -> winsteps
+winsteps -> e2
+e2 -> jd
+jd -> "?"
+jd -> review
+
+"?" -> "FINISH"
+
+new style startFinish is "shape=none;fontname=Helvetica"
+style FINISH is startFinish
+style START is startFinish
+
+spss is "SPSS"
+surpass is "Surpass"
+winsteps is "Winsteps"
+rass is "Risr\nAssess"
+START -> rass
+em1 is "Emails"
+em2 is "Board\nmeetings"
+em3 is Emails
+fe is "Final\nexam"
+cl is "Candidate\nlist"
+ra is "Correct\nanswers"
+da is "Dummy\nanswers"
+sp is Sharepoint
+jd is "Java\ndatabase"
+de is "3 exams"
+scr is "Exam\nscripts"
+review is "Review?"
+stu is "Candidate\nanswers"
+ex0 is Excel
+e1 is Excel
+e2 is Excel
+"?" is "Results to\ncandidates"

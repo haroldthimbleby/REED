@@ -1,0 +1,230 @@
+\section{REED command line flags summary}\label{flagsSummary}
+The following summary was generated automatically by using \texttt{reed~-summarise}, running REED version 2.3. Compiled 10:02:24, Mar 13 2026.
+\vskip 5mm\begin{description}\raggedright
+\item[\tt -\#]~\\ show comments in the REED file, useful if comments are used as reminders.
+
+\item[\tt -basename <path/file.ext>]~\\ set pathname for generated files (replacing \texttt{.ext} with \texttt{.gv}, \texttt{.html}, \texttt{.pdf}, etc).
+
+\item[\tt -c]~\\ show weakly connected components.
+
+\item[\tt -allcolors]~\\ list all colors that are available for highlighting.
+
+\item[\tt -colors]~\\ list all colors used.
+
+\item[\tt -colors+]~\\ lists all colors like \texttt{-colors} but also gives the meanings of all colors used.
+
+\item[\tt -F]~\\ highlight flags in graph drawing --- unfortunately due to a GraphViz bug, this breaks up any groups.
+
+\item[\tt -f]~\\ show textual descriptions of flag colors in REED drawing.
+
+\item[\tt -flags]~\\ show all flag definitions.
+
+\item[\tt -g]~\\ generate a GraphViz \texttt{.gv} file --- default option if nothing else chosen --- See \texttt{https://graphviz.org} for details.
+
+\item[\tt -go]~\\ as \texttt{-g} but also open the \texttt{.gv} file.
+
+\item[\tt -h]~\\ generate an interactive \texttt{.html} REED file.
+
+\item[\tt -ho]~\\ as \texttt{-h} but also open the \texttt{.html} file.
+
+\item[\tt -ids]~\\ show full names and IDs in graph.
+
+\item[\tt -insert <text>]~\\ insert this text to process before next file.
+
+\item[\tt -json]~\\ generate a JSON \texttt{.js} file with all information from the GraphViz diagram.
+
+\item[\tt -keywords]~\\ list all keywords used.
+
+\item[\tt -l]~\\ generate a Latex REED file --- also generates some useful Latex definition files.
+
+\item[\tt -m]~\\ generate a Mathematica \texttt{.nb} file representing the REED graph as a series of expressions.
+
+\item[\tt -n]~\\ show node IDs in graph drawing.
+
+\item[\tt -o]~\\ open generated files automatically.
+
+\item[\tt -pdf]~\\ generate a \texttt{.pdf} file representing the REED graph.
+
+\item[\tt -pick <color>]~\\ restrict generated files to just this color.
+
+\item[\tt -pick <keyword>]~\\ restrict generated files to notes with this keyword. Keyword can be abbreviated: use \texttt{...} so \texttt{xyz...} matches keywords or phrases starting \texttt{xyz}.
+
+\item[\tt -pick+ <color>]~\\ same as \texttt{-pick} but also explains this color meaning.
+
+\item[\tt -raw]~\\ start in raw mode (skipping text until a start tag) --- only use \texttt{-raw} with \texttt{-tags} flag.
+
+\item[\tt -rules]~\\ summarise HTML-Latex rules.
+
+\item[\tt -s]~\\ list nodes and their full names, sorted by node ID.
+
+\item[\tt -ss]~\\ list nodes and their full names, sorted by full names.
+
+\item[\tt -sss]~\\ list nodes and their full names, sorted by both node ID and full names.
+
+\item[\tt -sep]~\\ draw a separator line before processing any files (useful with \texttt{-watch}).
+
+\item[\tt -sig]~\\ show REED file signatures.
+
+\item[\tt -summarise]~\\ put Latex overview of REED syntax and command line flags to standard output.
+
+\item[\tt -svg]~\\ generate a \texttt{.svg} file --- representing the REED graph.
+
+\item[\tt -syntax]~\\ summarise REED syntax.
+
+\item[\tt -t]~\\ transpose node numbering --- swap row and column node numbers.
+
+\item[\tt -tags <start> <end>]~\\ only process REED information written between these tags --- you can change tags between files --- and also set tags within a REED file by: \texttt{tags <start> <end>}.
+
+\item[\tt -transit]~\\ list transit nodes and nodes with no influence.
+
+\item[\tt -v]~\\ verbose mode.
+
+\item[\tt -version]~\\ state the version number of the REED command.
+
+\item[\tt -w]~\\ what versions are used in these files? --- helpful to know if using the \texttt{v=} flag.
+
+\item[\tt -watch]~\\ run REED when any used file changes (nice with \texttt{-o} flag).
+
+\item[\tt -x]~\\ generate an \texttt{.xml} file --- representing all REED data for import into other applications.
+
+\item[\tt --]~\\ treat all further parameters as filenames --- if you want to have no restrictions on filenames as they otherwise cannot be flags.
+
+\end{description}
+\section{REED syntax summary}\label{syntaxSummary}
+The following summary was generated automatically by using \texttt{reed~-summarise}, running REED version 2.3. Compiled 10:02:24, Mar 13 2026.
+\vskip 5mm
+{\tt\noindent\hbox{}~~~~{\rm \#~Hash~\#~indicates~comment~to~end~of~line}\\
+\hbox{}~~~~{\rm \#~Hash~\#~is~also~used~for~comments~in~this~syntax~summary}\\
+\hbox{}\\
+\hbox{}~~~~{\rm \#\#\#~syntax~notation...}\\
+\hbox{}~~~~{\rm \#\#\#~blanks~can~be~put~between~all~syntactic~items~and~used~freely~for~layout~}\\
+\hbox{}\\
+\hbox{}~~~~x~::=~y~{\rm \#~define~non-terminal~\texttt{x}~to~be~\texttt{y}}\\
+\hbox{}~~~~x~\texttt{|}~y~~~{\rm \#~\texttt{x}~or~\texttt{y}}\\
+\hbox{}~~~~\{~x~\}~~~{\rm \#~grouping~in~syntax~definitions}\\
+\hbox{}~~~~x+~~~~~~{\rm \#~at~least~one~\texttt{x}.~Short~for:~\texttt{x}~\texttt{|}~\texttt{x}\texttt{x}~\texttt{|}~\texttt{x}\texttt{x}\texttt{x}~\texttt{|}~...}\\
+\hbox{}~~~~x++~~~~~{\rm \#~at~least~one~\texttt{x}~separated~by~spaces.~Short~for:~\texttt{x}~\texttt{|}~\texttt{x}~\texttt{x}~\texttt{|}~\texttt{x}~\texttt{x}~\texttt{x}~\texttt{|}...~}\\
+\hbox{}~~~~[~x~]~~~{\rm \#~optional~\texttt{x}}\\
+\hbox{}\\
+\hbox{}~~~~{\rm \#\#\#~REED~syntax...}\\
+\hbox{}\\
+\hbox{}~~~~id~::=~\{~letter~\texttt{|}~digit~\texttt{|}~underline~\texttt{|}~dot~\}+~\texttt{|}~Cstring~\texttt{|}~Herestring\\
+\hbox{}\\
+\hbox{}~~~~Cstring~::=~"C~string,~\textbackslash\@n~for~newline,~\textbackslash\@\textbackslash\@~for~backslash~etc"~\\
+\hbox{}\\
+\hbox{}~~~~Herestring~::=~<<<~arbitrary-terminator\\
+\hbox{}~~~~~~~~~~~~~~~~~~~~~~~characters~(no~escapes~needed)~over~any~number~of~lines\\
+\hbox{}~~~~~~~~~~~~~~~~~~~~~~~ends~with~same~arbitrary-terminator~text\\
+\hbox{}~~~~~~~~~~~~~~~~~~~~~~~at~start~of~line\\
+\hbox{}~~~~arbitrary-terminator\\
+\hbox{}\\
+\hbox{}~~~~properties~::=~\{~id1~:~id2~\}++\\
+\hbox to 3em{}{\rm Used~in~\texttt{note~id}~to~define~property~\texttt{id1}~of~\texttt{id}~as~\texttt{id2}}\\
+\hbox{}\\
+\hbox{}~~~~{\rm \#\#\#~narrative~strings~used~in~notes~are~translated~to~HTML~and/or~Latex}\\
+\hbox{}~~~~{\rm \#\#\#~use~\texttt{-rules}~to~summarise~the~automatic~HTML/Latex~translations}\\
+\hbox{}~~~~{\rm \#\#\#~narrative~strings~can~include:}\\
+\hbox{}\\
+\hbox{}~~~~<html>~...~~~~~~~~{\rm \#~following~text~is~copied~to~HTML,~but~skipped~in~Latex}\\
+\hbox{}~~~~<latex>~...~~~~~~~{\rm \#~following~text~is~copied~to~Latex,~but~skipped~in~HTML}\\
+\hbox{}~~~~<both>~...~~~~~~~~{\rm \#~following~text~is~mixed~basic~HTML~and~Latex}\\
+\hbox{}~~~~<input>~filename~~{\rm \#~insert~the~text~contents~of~file~\texttt{filename}~into~the~string}\\
+\hbox{}~~~~[[[id]]]~~~~~~~~~~{\rm \#~replace~with~\texttt{id}~name~and~make~a~cross-reference~link}\\
+\hbox{}~~~~~~~~~~~~~~~~~~~~~~{\rm \#~(\texttt{[[[id]]]}~makes~links~in~both~HTML~and~Latex)}\\
+\hbox{}\\
+\hbox{}~~~~{\rm \#~reserved~words~can~be~used~as~ids~if~written~out~as~strings}\\
+\hbox{}~~~~{\rm \#~otherwise,~an~id~\texttt{xyz}~and~a~string~\texttt{"xyz"}~are~equivalent}\\
+\hbox{}~~~~{\rm \#~so~\texttt{check}~(a~command)~is~reserved,~but~\texttt{"check"}~can~be~used~arbitrarily}\\
+\hbox{}~~~~{\rm \#~string~notations~also~allow~more~characters,~like~newlines,~to~be~used}\\
+\hbox{}\\
+\hbox{}~~~~{\rm \#\#\#~the~following~are~definitions~of~non-terminals:}\\
+\hbox{}\\
+\hbox{}~~~~arrow~::=~influences:~\texttt{|}~->~\texttt{|}~<-~\\
+\hbox{}~~~~color~::=~aqua~\texttt{|}~black~\texttt{|}~blue~\texttt{|}~fuchsia~\texttt{|}~gray~\texttt{|}~green\\
+\hbox{}~~~~~~~~~~~~\texttt{|}~lime~\texttt{|}~maroon~\texttt{|}~navy~\texttt{|}~olive~\texttt{|}~orange~\texttt{|}~purple\\
+\hbox{}~~~~~~~~~~~~\texttt{|}~red~\texttt{|}~silver~\texttt{|}~teal~\texttt{|}~white~\texttt{|}~yellow\\
+\hbox{}~~~~{\rm \#~note~that~color~names~cannot~be~used~as~ids}\\
+\hbox{}~~~~{\rm \#~NB~\texttt{reed~-allcolors}~lists~all~supported~colors}\\
+\hbox{}\\
+\hbox{}~~~~id-or-star~::=~id~\texttt{|}~*\\
+\hbox{}~~~~node-list~::=~id~\texttt{|}~(~id++~)\\
+\hbox{}~~~~node-or-arrow~::=~id~\texttt{|}~id~\{~arrow~id~\}+\\
+\hbox{}~~~~node-or-arrow-list~::=~node-or-arrow~\texttt{|}~(~node-or-arrow++~)\\
+\hbox{}~~~~document-property~::=~title~\texttt{|}~author~\texttt{|}~abstract~\texttt{|}~date~\\
+\hbox{}~~~~~~~~~~~~~~~~~~~~~~~\texttt{|}~introduction~\texttt{|}~conclusion~\texttt{|}~latexdefinitions\\
+\hbox{}~~~~~~~~~~~~~~~~~~~~~~~\texttt{|}~htmldefinitions\\
+\hbox{}\\
+\hbox{}~~~~{\rm \#\#\#~the~following~are~REED~statements}\\
+\hbox{}~~~~{\rm \#\#\#~all~terminals~below~are~reserved~words}\\
+\hbox{}~~~~{\rm \#\#\#~reserved~words~can~use~lower~and~upper~case~letters~freely}\\
+\hbox{}\\
+\hbox{}~~~~check~id1~=>~id2\\
+\hbox to 3em{}{\rm Check~there~is~a~path~from~\texttt{id1}~to~\texttt{id2}}\\
+\hbox{}~~~~cycle~node-list\\
+\hbox to 3em{}{\rm Confirms~that~these~nodes~are~intended~to~be~on~a~cycle,~and~do~not~report~them}\\
+\hbox{}~~~~direction~\{~LR~\texttt{|}~RL~\texttt{|}~TB~\texttt{|}~BT~\}\\
+\hbox to 3em{}{\rm Primary~direction~of~graph~is~left-right,~right-left,~top-bottom,~or~bottom-top}\\
+\hbox{}~~~~definitions.html~id\\
+\hbox to 3em{}{\rm Insert~\texttt{id}~at~start~of~\texttt{body}~in~HTML~file;~multiple~\texttt{definitions}~concatenate}\\
+\hbox{}~~~~definitions.latex~id\\
+\hbox to 3em{}{\rm Insert~\texttt{id}~at~start~of~Latex~file}\\
+\hbox to 3em{}{\rm multiple~\texttt{definitions}~concatenate~}\\
+\hbox{}~~~~definitions.latexend~id\\
+\hbox to 3em{}{\rm Insert~\texttt{id}~at~end~of~Latex~file~(e.g.,~for~references)}\\
+\hbox to 3em{}{\rm multiple~\texttt{definitions}~concatenate~}\\
+\hbox{}~~~~document-property~id\\
+\hbox to 3em{}{\rm Specify~document~properties.~Details~append~when~given~multiple~times}\\
+\hbox{}~~~~group~node-or-arrow-list~is~id\\
+\hbox to 3em{}{\rm The~nodes~are~grouped,~and~the~group~is~named~\texttt{id}}\\
+\hbox{}~~~~highlight~color~[~cascade~]~is~id\\
+\hbox to 3em{}{\rm Define~meaning~of~color~as~\texttt{id}}\\
+\hbox to 3em{}{\rm If~cascade~is~specified,~apply~to~all~nodes~the~\texttt{color}~influences}\\
+\hbox{}~~~~highlight~id~[~cascade~]~is~color\\
+\hbox to 3em{}{\rm Highlight~node~\texttt{id}~with~\texttt{color}}\\
+\hbox to 3em{}{\rm Optional~\texttt{cascade}~colors~all~nodes~\texttt{id}~influences}\\
+\hbox{}~~~~layout~[~TOC~]~(~\{~id~(~id++~)~\}++~)\\
+\hbox to 3em{}{\rm Draw~a~graph~with~a~structured~layout,~with~optional~TOC~(Theory~of~Change)~styling}\\
+\hbox{}~~~~node-or-arrow~[~is~id~]\\
+\hbox to 3em{}{\rm Create~nodes~or~arrows,~with~optional~display~name~\texttt{id}}\\
+\hbox{}~~~~norefs\\
+\hbox to 3em{}{\rm Nodes~without~reference~numbers~will~not~be~reported~as~errors}\\
+\hbox{}~~~~note~node-or-arrow-list~[~properties~]~[~is~id1~[;]~]~id3\\
+\hbox to 3em{}{\rm Provide~narrative~note~\texttt{id3}~for~the~nodes~or~arrows,~optionally~naming~them~\texttt{id1}}\\
+\hbox{}~~~~numbering~(~\{~(~id-or-star++~)~\}++~)\\
+\hbox to 3em{}{\rm Make~node~references~row.column~numbers~following~the~grid~layout}\\
+\hbox{}~~~~ref~id1~is~id2\\
+\hbox to 3em{}{\rm Set~the~reference~of~node~\texttt{id1}~to~be~\texttt{id2}}\\
+\hbox{}~~~~style~node-or-arrow-list~is~id\\
+\hbox to 3em{}{\rm Set~style~of~nodes~or~arrows~to~a~Dot~specification,}\\
+\hbox to 3em{}{\rm which~can~contain~further~REED~style~names~(see~\texttt{style.new})}\\
+\hbox{}~~~~style.cycle~id\\
+\hbox to 3em{}{\rm Define~style~to~highlight~cycles}\\
+\hbox{}~~~~style.default~id\\
+\hbox to 3em{}{\rm Define~default~style~for~nodes~and~edges}\\
+\hbox{}~~~~style.new~id1~is~id2\\
+\hbox to 3em{}{\rm Define~\texttt{id1}~as~a~style,~using~Dot~syntax~for~\texttt{id2}}\\
+\hbox to 3em{}{\rm \texttt{id2}~can~contain~further~REED~style~names~(but~not~recursively)}\\
+\hbox{}~~~~tags~id1~id2\\
+\hbox to 3em{}{\rm Only~process~REED~code~between~\texttt{id1}~(begin)~and~\texttt{id2}~(end)}\\
+\hbox{}~~~~version~id\\
+\hbox to 3em{}{\rm Subsequent~REED~code~is~version~\texttt{id}~(see~flag~\texttt{v=value})}\\
+\hbox{}\\
+\hbox{}~~~~;\\
+\hbox to 3em{}{\rm semicolons~are~empty~statements}\\
+\hbox to 3em{}{\rm Semicolons~can~be~placed~freely~between~statements,~and~in~\texttt{note}~statements~to~aid~legibility}\\
+\hbox{}\\
+\hbox{}\\
+\hbox to 3em{}{\rm The~order~of~commands~generally~does~not~matter}\\
+\hbox to 3em{}{\rm Except:~}\\
+\hbox to 3em{}{\rm \texttt{author},~\texttt{definitions.html},~\texttt{definitions.latex},~\texttt{definitions.latexend}~which~concatenate}\\
+\hbox to 3em{}{\rm and~\texttt{tag}~and~\texttt{version},~which~are~executed~in~the~order~stated}\\
+\hbox{}\\
+\hbox{}~~~~{\rm \#\#\#~Technical~note~on~style~names~and~spaces:}\\
+\hbox{}~~~~Style~names~defined~by~<style.new~id>~can~be~used~anywhere~in~styles,\\
+\hbox{}~~~~which~means~<id>~must~be~surrounded~by~spaces~to~be~recognised\\
+\hbox{}~~~~e.g.,~<xidy>~has~to~be~written~<x~id~y>~for~<id>~to~be~recognised\\
+\hbox{}~~~~or~of~courses~can~be~written~<x;id;y>~etc.\\
+\hbox{}~~~~Any~spaces~around~using~<id>~will~be~stripped~off,\\
+\hbox{}~~~~so~if~you~do~need~spaces~around~a~named~style\\
+\hbox{}~~~~those~spaces~have~to~be~put~in~the~definition~of~<id>.\\
+\hbox{}}

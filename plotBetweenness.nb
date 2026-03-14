@@ -1,4 +1,8 @@
 (* 
+      Normally used as:
+      
+      wolframscript -file plotBetweenness.nb
+      
       This file reads in lib/pow-reed.nb and uses the definitions there to generate a highlighted graph
       showing betweenness centrality for the REED graph to be used by REED.tex
 

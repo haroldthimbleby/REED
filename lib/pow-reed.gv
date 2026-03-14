@@ -27,7 +27,7 @@ subgraph "clusterhospital" {
   "manual" [URL="#manual"; label="v2-3.2\nPrecisionWeb\noperators\nmanual";];
   "forensicProblems" [URL="#forensicProblems"; label="v2-5.3\nWritten evidence shows\nforensic methods used\nwere unreliable";fillcolor=yellow; style=filled; penwidth=2; shape=note; ];
   "backups" [URL="#backups"; label="v2-8.2\nNo known backups\nthat could have\nprovided evidence";fillcolor=blue; style=filled; penwidth=2; shape=note; fontcolor="white";];
-  "Abbott_engineer" [URL="#Abbott_engineer"; label="v3-2.2\nUnsupervised\nAbbott\nengineer";fillcolor=blue; style=filled; penwidth=2; shape=note; fontcolor="white";];
+  "Abbott_engineer" [URL="#Abbott_engineer"; label="v2-2.2\nUnsupervised\nAbbott\nengineer";fillcolor=blue; style=filled; penwidth=2; shape=note; fontcolor="white";];
   "9" [URL="#9"; label="v2-7.2\nMain hospital\ndatabases";fillcolor=blue; style=filled; penwidth=2; shape=note; fontcolor="white";];
   "8" [URL="#8"; label="v2-6.2\nLots of unknown\ncomplex middleware";fillcolor=blue; style=filled; penwidth=2; shape=note; fontcolor="white";];
   "7" [URL="#7"; label="v2-5.2\nAbbott\nPrecisionWeb\ndatabase";fillcolor=blue; style=filled; penwidth=2; shape=note; fontcolor="white";];

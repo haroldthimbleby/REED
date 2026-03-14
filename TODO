@@ -13,3 +13,6 @@ stuff like components and pulls need to be run before generating reports, etc cr
 maybe allow [[[ a -> b ]]] ???
 
 Haven't implemented -drop x (to complement -pull x) yet
+
+-s and -ss options need to handle " in full names, and non alphanumerics in ids
+add a -sss option (shorthand for -s -ss)

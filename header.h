@@ -13,7 +13,7 @@ extern void checkMemory(char *file, int line);
 #define endError   fprintf(stderr, "\033[0m")
 
 extern void fatalError(char *fmt, ...);
-
+extern int isIDchar(char ch);
 extern void debug(int n);
 
 extern void showAllColors();

@@ -1,0 +1,56 @@
+\documentclass[10pt,a4wide]{article}
+\usepackage{geometry}
+\geometry{a4paper}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\title{}\author{}
+\date{}
+\begin{document} \maketitle
+\def\colorflag#1{\fboxrule=0.3pt
+\fboxsep=0pt
+\hbox{\vrule height 2.2ex width 1pt
+\raise 1ex\hbox{\fbox{\color{#1}\hbox{\vrule width .5ex height 1ex depth 0ex}}}%
+\hskip -.6pt\raise .9ex\hbox{\fbox{\color{#1}\hbox{\vrule width .5ex height 1ex depth 0ex}}}%
+\hskip -.6pt\raise 1ex\hbox{\fbox{\color{#1}\hbox{\vrule width .7ex height 1ex depth 0ex}}}}%
+}\section*{Quick overview}
+{\large\sf\noindent \begin{tabular}{@{}|rlcrl|}\hline 
+\multicolumn{5}{@{}|l|}{Single version}\\
+ 20 & nodes & --- & 0 & highlighted\\&&& 0 & with notes\\
+
+    14 & arrows & --- & 0 & with notes\\\hline
+\end{tabular}
+\vskip 4mm
+\noindent
+\begin{tabular}{|ll|}\hline 
+REED file&Digital signature\\ \hline 
+lib/cycles & 06921281deb02eca3da8613a10dd5fe9 \\
+\hline
+\end{tabular}
+
+\vskip 2mm\noindent
+\emph{\raggedright\small If a REED file has been changed since this report was made, then its digital signature will now be different. You can run the REED tool with flag `--s' on any file to confirm its signature}.
+
+}
+
+
+\vskip 5mm\noindent
+There are 8 weakly connected components (i.e., there are 8 independent REED diagrams not connected to each other with any arrows, regardless of the directions of the arrows).
+
+\begin{description}
+\item[$\rightarrow$] \hyperlink{component1-narrative}{Narrative evidence for component 1}
+\item[$\rightarrow$] \hyperlink{component2-narrative}{Narrative evidence for component 2}
+\item[$\rightarrow$] \hyperlink{component3-narrative}{Narrative evidence for component 3}
+\item[$\rightarrow$] \hyperlink{component4-narrative}{Narrative evidence for component 4}
+\item[$\rightarrow$] \hyperlink{component5-narrative}{Narrative evidence for component 5}
+\item[$\rightarrow$] \hyperlink{component6-narrative}{Narrative evidence for component 6}
+\item[$\rightarrow$] \hyperlink{component7-narrative}{Narrative evidence for component 7}
+\item[$\rightarrow$] \hyperlink{component8-narrative}{Narrative evidence for component 8}
+\end{description}
+\section*{No notes provided}
+\textbf{Node  b} [2]\\\textbf{Node  a} [1]\\\textbf{Node  b} [b1x]\\\textbf{Node  a2} [a2x]\\\textbf{Node  a1} [a1x]\\\textbf{Node  b2} [k]\\\textbf{Node  a} [j]\\\textbf{Node  b1} [i]\\\textbf{Node  b} [q]\\\textbf{Node  a} [p]\\\textbf{Node  a} [pn]\\\textbf{Node  b2} [o]\\\textbf{Node  a} [n]\\\textbf{Node  b} [nq]\\\textbf{Node  b1} [m]\\\textbf{Node  b} [y]\\\textbf{Node  a} [x]\\\textbf{Node  a2} [w]\\\textbf{Node  b} [v]\\\textbf{Node  a1} [u]\\
+
+\end{document}

@@ -449,8 +449,7 @@ void connectedComponents()
 {   int current = 0;
 	for( arrow *t = arrowList; t != NULL; t = t->next )
 		if( !t->expanded && t->component == current )
-		{
-			t->expanded = 1;
+        {   t->expanded = 1;
 			for( node *n = nodeList; n != NULL; n = n->next )
 				if( t->u == n->s || t->v == n->s )
 					n->s->color = current;
@@ -631,6 +630,96 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     //myfprintf(opfd, ", \"Input\"]]}];\n");
 }
 
+char *replace(str **target, char *from, int idlen, char *with)
+{   //fprintf(stderr, "target=\n[%s]\n ", (*target)->s);
+    //for( char *q = (*target)->s; q < from; q++ )
+    //    fprintf(stderr, " ");
+    int max = idlen;
+    char *q;
+    //for( q = from; max-- > 0; q++ )
+    //    fprintf(stderr, "%c", *q);
+    //fprintf(stderr, "[%s]\n", q);
+
+    char *newstring = (char*) safealloc(strlen((*target)->s)-idlen+strlen(with)+1);
+    char *cp = newstring;
+    for( char *cpp = (*target)->s; *cpp && cpp < from; cpp++ ) // copy prefix
+        *cp++ = *cpp;
+    char *news = &newstring[from-(*target)->s+strlen(with)];
+    while( *with ) // copy replacement
+        *cp++ = *with++;
+    with = &from[idlen];
+    do { // copy suffix
+        *cp++ = *with;
+    } while( *with++ );
+   // for( node *u = stylelist; u != NULL; u = u->next )
+   //     fprintf(stderr, "A>>> %s is %s\n",u->s->style->s,u->s->s);
+    //fprintf(stderr, "old=%s\n",(*target)->s);
+    free((*target)->s);
+    (*target)->s = newstring;
+   // fprintf(stderr, "newstring=%s\n",newstring);
+  //  for( node *u = stylelist; u != NULL; u = u->next )
+  //      fprintf(stderr, "B>>> %s is %s\n",u->s->style->s,u->s->s);
+
+    //fprintf(stderr, "result=%s\n", newstring);
+    return news; // in the calling for loop put s in right place in replacement
+}
+
+void expand(str **target)
+{   // find ids in (*target)->s
+    // lookup each id in stylelist
+    // for( node *u = stylelist; u != NULL; u = u->next ) ...
+    // if id == u->s->style->s, expand id to include spaces each side, then replace id with u->s->s
+
+    //fprintf(stderr, "expand(%s)\n", (*target)->s);
+
+    for( char *s = (*target)->s; *s; s++ )
+    {   //fprintf(stderr, ":: %s\n", s); fflush(stderr);
+        if( isIDchar(*s) )
+        {   int idlen = 1;
+            char *from = s;
+            while( isIDchar(*++s) ) idlen++;
+
+            //fprintf(stderr, "got ");
+            //for( char *f = from; f < s; f++ ) fprintf(stderr, "%c", *f);
+            //fprintf(stderr, "\n");
+
+            for( node *u = stylelist; u != NULL; u = u->next )
+                if( !strncmp(from, u->s->style->s, idlen) )
+                {   // now matched, can we expand the text to replace?
+                    if( 1 ) // expand to include spaces each side
+                    {   // NB ' ' is not (char)0 so these loops don't drop off the end
+                        while( from > (*target)->s && from[-1] == ' ' ) // prefix spaces
+                        {   from--;
+                            idlen++;
+                        }
+                        while( from[idlen] == ' ') // postfix spaces
+                            idlen++;
+                    }
+                    char save = *s;
+                    *s = (char) 0;
+                    //fprintf(stderr, "replace %s with %s in %s\n", u->s->style->s, u->s->s, from);
+                    *s = save;
+                    s = replace(target, from, idlen, u->s->s);
+                    //fprintf(stderr, "-- carry on [%s]\n", s); fflush(stderr);
+
+                    if( strlen(s) > 500 ) // this won't detect head recursion sadly
+                    {   nolineerror("Very long style, so it looks like styles are recursive!");
+                        for( node *u = stylelist; u != NULL; u = u->next )
+                            fprintf(stderr, "  >>> %s is \"%s\"\n", u->s->style->s, u->s->s);
+                        exit(1);
+                    }
+
+                    s--;
+                    //fprintf(stderr, "X\n"); fflush(stderr);
+                    break;
+                }
+            s--;
+            // fprintf(stderr, "Y\n"); fflush(stderr);
+        }
+    }
+    //fprintf(stderr, "replaced: [%s]\n\n", (*target)->s);
+}
+
 void styleReplace(str **target, char *styleName, char *replace)
 {   // scan target for occurrences of styleName and replace with replace
     if( !strlen(replace) ) return; // nothing to do
@@ -640,11 +729,8 @@ void styleReplace(str **target, char *styleName, char *replace)
 
     //fprintf(stderr, "before for s=%p\n", (*target)->s); fflush(stderr);
     for( char *s = (*target)->s; *s; s++ )
-    {   //fprintf(stderr, "in for s=%p\n", s); fflush(stderr);
-        //fprintf(stderr, "in for s=[%s]\n", s); fflush(stderr);
-        if( !strncmp(s, styleName, len) )
+    {   if( !strncmp(s, styleName, len) )
         {
-            //fprintf(stderr, "replace [%s]@%d in [%s] with [%s]\n", styleName, len, (*target)->s, replace);
             replacements++;
             *s = (char) 0;
 
@@ -657,9 +743,12 @@ void styleReplace(str **target, char *styleName, char *replace)
             char *pre = (*target)->s; //fprintf(stderr, "pre: |%s|\n", pre); fflush(stderr);
             char *post = &s[len]; //fprintf(stderr, "post: |%s|\n", post); fflush(stderr);
 
-            //fprintf(stderr, "[%s]%s[%s] where %s->%s\n",pre,styleName,post,styleName,replace); fflush(stderr);
+            // gobble spaces after post
+            while( *post == ' ' ) post = &s[++len];
 
-            //fprintf(stderr, "--->[%s]--->", newstr(pre)->s); fflush(stderr);
+            // gobble spaces at end of pre
+            while( s > (*target)->s && s[-1] == ' ' ) s--;
+            *s = (char) 0;
 
             *target = strlen(pre)? appendcstr(newstr(pre), replace): newstr(replace);
 
@@ -668,15 +757,13 @@ void styleReplace(str **target, char *styleName, char *replace)
             if( strlen(post) )
                 *target = appendcstr(*target, post);
 
-            //fprintf(stderr, "\nfinal: [%s] with ", (*target)->s); fflush(stderr);
-
             // now fix s to right place, since we've relocated the string s pointed to
             s = &(*target)->s[offset-1]; // because it's about to be incremented at end of for loop
             //fprintf(stderr, "full string: [%s]\n", (*target)->s); fflush(stderr);
             //fprintf(stderr, "rest of string: [%s]\n", s); fflush(stderr);
         }
     }
-    if( replacements )
+    if( 0 && replacements )
         fprintf(stderr, "%d replacements [of substrings], finally: [%s]\n", replacements, (*target)->s); fflush(stderr);
 }
 
@@ -714,6 +801,33 @@ int versionstrcmp(char *a, char *b)
 }
 
 extern int versionCount;
+
+void checkversions(char *targetVersion, char *debug)
+{   //fprintf(stderr, "checkversions(%s) @ %s\n", targetVersion, debug);
+    for( node *t = nodeList; t != NULL; t = t->next )
+    {   if( t->s->nodeversion != NULL )
+        {   // fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
+            if( !strcmp(t->s->nodeversion, "") )
+                t->s->visible = 1;
+            else
+            if( !strcmp(t->s->nodeversion, undefinedVersion) || versionstrcmp(targetVersion, t->s->nodeversion) > 0 )
+            {   //fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
+                //fprintf(stderr, "  - so make %s invisible\n", t->s->s);
+                t->s->visible = 0;
+            }
+            else
+            {   // fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion,versionstrcmp(targetVersion, t->s->nodeversion) );
+                // fprintf(stderr, "  - so make %s visible\n", t->s->s);
+                t->s->visible = 1;
+            }
+        }
+        else
+        {
+            fprintf(stderr, "?error? %s nodeversion=NULL\n", t->s->s);
+            t->s->visible = 0;
+        }
+    }
+}
 void fixVersions(char *targetVersion)
 {   if( !strcmp(targetVersion, "") ) return;
 
@@ -727,39 +841,16 @@ void fixVersions(char *targetVersion)
         nolineerror("v='%s' is not a defined version", targetVersion);
         exit(1);
     }
-
-    //fprintf(stderr, "Generating version v=%s\n", targetVersion);
-    for( node *t = nodeList; t != NULL; t = t->next )
-    {   if( t->s->nodeversion != NULL )
-        {   // fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
-            if( !strcmp(t->s->nodeversion, "") )
-                t->s->visible = 1;
-            else
-            if( t->s->nodeversion == undefinedVersion || versionstrcmp(targetVersion, t->s->nodeversion) > 0 )
-            {   fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
-                fprintf(stderr, "  - so make %s INvisible\n", t->s->s);
-                t->s->visible = 0;
-            }
-            else
-            {   // fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion,versionstrcmp(targetVersion, t->s->nodeversion) );
-                // fprintf(stderr, "  - so make %s visible\n", t->s->s);
-                t->s->visible = 1;
-            }
-        }
-        else
-        {
-            fprintf(stderr, "? %s nodeversion=NULL\n", t->s->s);
-            t->s->visible = 0;
-        }
-    }
+    checkversions(targetVersion, "A");
 }
 
 void generateFiles(char *targetVersion, char *filename)
 {
     // printf("Styles are:\n");
-	// for( node *u = stylelist; u != NULL; u = u->next )
-	//	printf("  style %s is '%s'\n", u->s->style->s, u->s->s);
+    // for( node *u = stylelist; u != NULL; u = u->next )
+    //	printf("  style %s is '%s'\n", u->s->style->s, u->s->s);
     checkarrowlist(7);
+
     if( !*targetVersion || !strcmp(targetVersion, "") )
     {   targetVersion = lastVersion();
         if( strcmp(targetVersion, "") )
@@ -770,7 +861,15 @@ void generateFiles(char *targetVersion, char *filename)
     checkarrowlist(8);
     checkNumbering();
 
-    checkarrowlist(9);
+    // expand styles with embedded definitions
+    //fprintf(stderr, "All styles:\n");
+    //for( node *u = stylelist; u != NULL; u = u->next )
+    //    fprintf(stderr, " >>> %s is %s\n", u->s->style->s, u->s->s);
+    for( node *u = stylelist; u != NULL; u = u->next )
+    {   //fprintf(stderr, "Before >>> %s is %s\n", u->s->style->s, u->s->s);
+        expand(&u->s);
+        //fprintf(stderr, "After %s\n", u->s->s);
+    }
 
 	// now everything collected, replace use of style nodes with the style values themselves
     // node is: typedef struct tmpnode { str *s; struct tmpnode *next; } node;
@@ -781,33 +880,18 @@ void generateFiles(char *targetVersion, char *filename)
             if( t->s->ranky ) fprintf(stderr, ".%d", t->s->ranky);
             fprintf(stderr, ")\n");
         }
-
-        // for each node t...
         if( t->s->style != NULL && !t->s->style->isstyle )
-        {	//printf("%s has style [%s] ", t->s->s, t->s->style->s);
-            //printf(" .. and that isstyle = %d\n", t->s->style->isstyle);
-            for( node *u = stylelist; u != NULL; u = u->next )
-            {	//printf("compare %s (node) ..with.. %s (style)\n", t->s->style->s, u->s->style->s);
-                if( strlen(t->s->style->s) == 0 ) continue;
-                if( !strcmp(t->s->style->s, u->s->style->s) )
-                {
-                    //printf("  set %s in %s\n", t->s->style->s, t->s->s);
-                    //printf("  to style %s\n**\n", u->s->s);
-                    fprintf(stderr, "== [%s] where %s -> %s\n", t->s->style->s, u->s->style->s, u->s->s);
-                    t->s->style = u->s;
-                }
-                else
-                    styleReplace(&t->s->style, u->s->style->s, u->s->s);
-            }
-        }
+            expand(&t->s->style);
     }
+
     checkarrowlist(10);
 	// DO THE SAME WITH ARROW STYLES...
 	for( node *u = stylelist; u != NULL; u = u->next )
 		for( arrow *styleda = styledArrowList; styleda != NULL; styleda = styleda->next )
-			if(  u->s->style->s == styleda->arrowStyle->s )
-				styleda->arrowStyle = u->s;
-    checkarrowlist(11);
+			//if( u->s->style->s == styleda->arrowStyle->s )
+			//	styleda->arrowStyle = u->s;
+            expand(&styleda->arrowStyle);
+
 //	typedef struct tmparrow { str *u, *v; struct tmparrow *next; } arrow;
 // 	typedef struct tmpnode { str *s; struct tmpnode *next; } node;
 
@@ -822,7 +906,7 @@ void generateFiles(char *targetVersion, char *filename)
     cascade();
     checkarrowlist(14);
     sortkeywords(&allkeywords);
-    checkarrowlist(15);
+
     if( 0 )
 		for( node *t = nodeList; t != NULL; t = t->next )
 			if( !t->s->pointsTo && !t->s->pointedFrom )

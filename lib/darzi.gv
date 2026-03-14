@@ -1,0 +1,67 @@
+digraph {
+  compound=true;
+  bgcolor="transparent";
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  label="";
+  rankdir="BT";
+{rank=same; "Inputs               ";"i1";"i2";}
+{rank=same; "Activities needed    ";"ct";"police";"a";"research";}
+{rank=same; "Barriers to overcome ";"b1";"b2";"b3";"b4";}
+{rank=same; "Direct benefits      ";"io";}
+{rank=same; "Goals                ";"o";"loweringcosts";}
+
+  "research" [URL="#research"; label="Improve and use digital\nmethodologies in evidence base";shape=box;style=filled;fontname=Helvetica;color=darkgoldenrod1;peripheries=3;];
+  "police" [URL="#police"; label="Prioritize skilled\nprocurement roles";shape=box;style=filled;fontname=Helvetica;color=darkgoldenrod1;];
+  "o" [URL="#o"; label="Improved\npatient outcomes";shape=box;style=filled;fontsize=24;fontname="Helvetica-bold";color=lime;];
+  "loweringcosts" [URL="#loweringcosts"; label="Lowering costs\nImproving morale";shape=box;style=filled;fontsize=24;fontname="Helvetica-bold";color=lime;];
+  "io" [URL="#io"; label="Improved digital infrastructure\nImproved digital systems\nImproved NHS performance\nImproved patient safety";shape=box;style=filled;fontname=Helvetica;color=aquamarine;];
+  "i2" [URL="#i2"; label="This paper";shape=box;style=filled;fontname=Helvetica;color=darkolivegreen3;];
+  "i1" [URL="#i1"; label="Darzi Report";shape=box;style=filled;fontname=Helvetica;color=darkolivegreen3;];
+  "ct" [URL="#ct"; label="Promote & use\ncomputational thinking";shape=box;style=filled;fontname=Helvetica;color=darkgoldenrod1;];
+  "b4" [URL="#b4"; label="Improving procurement\nand digital systems";shape=box;fontcolor=white;style=filled;fontname=Helvetica;color=red;];
+  "b3" [URL="#b3"; label="Improving funding\nand planning";shape=box;fontcolor=white;style=filled;fontname=Helvetica;color=red;];
+  "b2" [URL="#b2"; label="Using\ncomputational thinking";shape=box;fontcolor=white;style=filled;fontname=Helvetica;color=red;peripheries=3;];
+  "b1" [URL="#b1"; label="Correcting false assumptions\nthat improving digital is easy,\nand just means buying into\n“cutting edge” digital systems";shape=box;fontcolor=white;style=filled;fontname=Helvetica;color=red;peripheries=3;];
+  "a" [URL="#a"; label="Define & prioritize goals\nDevelop ToCs for each goal";shape=box;style=filled;fontname=Helvetica;color=darkgoldenrod1;];
+  "Inputs               " [URL="#Inputs               "; label="Inputs               ";shape=cds;fontname="Monaco";];
+  "Goals                " [URL="#Goals                "; label="Goals                ";shape=cds;fontname="Monaco";];
+  "Direct benefits      " [URL="#Direct benefits      "; label="Direct benefits      ";shape=cds;fontname="Monaco";];
+  "Barriers to overcome " [URL="#Barriers to overcome "; label="Barriers to overcome ";shape=cds;fontname="Monaco";];
+  "Activities needed    " [URL="#Activities needed    "; label="Activities needed    ";shape=cds;fontname="Monaco";];
+
+  "Direct benefits      "->"Goals                " [style=invis; ];
+  "Barriers to overcome "->"Direct benefits      " [style=invis; ];
+  "Activities needed    "->"Barriers to overcome " [style=invis; ];
+  "Inputs               "->"Activities needed    " [style=invis; ];
+  "b3"->"b4" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "b2"->"b3" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "b1"->"b2" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "ct"->"b2" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "ct"->"b4" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "ct"->"b1" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "i2"->"ct" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "b4"->"io" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "a"->"b4" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "b3"->"io" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "a"->"b3" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "b2"->"io" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "a"->"b2" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "i2"->"a" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "o"->"loweringcosts" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "io"->"o" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "b1"->"io" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "a"->"b1" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "i1"->"a" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "b2"->"b4" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "ct"->"a" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "ct"->"police" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "police"->"b4" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "i2"->"police" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "ct"->"research" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "b2"->"research" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "research"->"b1" [penwidth=1;arrowhead=vee;color=darkblue; ];
+  "i2"->"research" [penwidth=1;arrowhead=vee;color=darkblue; ];
+}

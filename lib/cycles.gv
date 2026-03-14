@@ -1,0 +1,44 @@
+digraph {
+  compound=true;
+  bgcolor="transparent";
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  label="";
+  rankdir="";
+{rank=same; "1a";"2a";"3a";"4a";}
+{rank=same; "1b";"2b";"3b";"4b";}
+{rank=same; "1c";"2c";"3c";"4c";}
+
+  "Conclusions" [URL="#Conclusions"; label="Conclusions";fontname="Helvetica";];
+  "4c" [URL="#4c"; label="4c";fontname="Helvetica";fontcolor="black";fillcolor="gray90";style="filled";label=<C<FONT POINT-SIZE='10'><SUB>4</SUB></FONT>>;];
+  "4b" [URL="#4b"; label="4b";fontname="Helvetica";fontcolor="black";fillcolor="gray90";style="filled";label=<B<FONT POINT-SIZE='10'><SUB>4</SUB></FONT>>;];
+  "4a" [URL="#4a"; label="4a";fontname="Helvetica";fontcolor="black";fillcolor="gray90";style="filled";label=<A<FONT POINT-SIZE='10'><SUB>4</SUB></FONT>>;];
+  "3c" [URL="#3c"; label="3c";fontname="Helvetica";label=<C<FONT POINT-SIZE='10'><SUB>3</SUB></FONT>>;peripheries=3;fontcolor="white";color="firebrick1",fillcolor="fireBrick1"; style="filled,dashed";];
+  "3b" [URL="#3b"; label="3b";fontname="Helvetica";label=<B<FONT POINT-SIZE='10'><SUB>3</SUB></FONT>>;peripheries=3;fontcolor="white";color="firebrick1",fillcolor="fireBrick1"; style="filled,dashed";];
+  "3a" [URL="#3a"; label="3a";fontname="Helvetica";fontcolor="black";fillcolor="gray90";style="filled";label=<A<FONT POINT-SIZE='10'><SUB>3</SUB></FONT>>;];
+  "2c" [URL="#2c"; label="2c";fontname="Helvetica";fontcolor="black";fillcolor="gray90";style="filled";label=<C<FONT POINT-SIZE='10'><SUB>2</SUB></FONT>>;];
+  "2b" [URL="#2b"; label="2b";fontname="Helvetica";fontcolor="black";fillcolor="gray90";style="filled";label=<B<FONT POINT-SIZE='10'><SUB>2</SUB></FONT>>;];
+  "2a" [URL="#2a"; label="2a";fontname="Helvetica";fontcolor="black";fillcolor="gray90";style="filled";label=<A<FONT POINT-SIZE='10'><SUB>2</SUB></FONT>>;];
+  "1c" [URL="#1c"; label="1c";fontname="Helvetica";label=<C<FONT POINT-SIZE='10'><SUB>1</SUB></FONT>>;peripheries=3;fontcolor="white";color="firebrick1",fillcolor="fireBrick1"; style="filled,dashed";];
+  "1b" [URL="#1b"; label="1b";fontname="Helvetica";label=<B<FONT POINT-SIZE='10'><SUB>1</SUB></FONT>>;peripheries=3;fontcolor="white";color="firebrick1",fillcolor="fireBrick1"; style="filled,dashed";];
+  "1a" [URL="#1a"; label="1a";fontname="Helvetica";label=<A<FONT POINT-SIZE='10'><SUB>1</SUB></FONT>>;peripheries=3;fontcolor="white";color="firebrick1",fillcolor="fireBrick1"; style="filled,dashed";];
+
+  "4c"->"Conclusions";
+  "3c"->"Conclusions";
+  "2c"->"Conclusions";
+  "1c"->"Conclusions";
+  "4b"->"4c";
+  "4b"->"4c";
+  "4a"->"4b";
+  "3c"->"3b";
+  "3b"->"3c";
+  "3a"->"3b";
+  "2a"->"2c";
+  "2b"->"2c";
+  "2a"->"2b";
+  "1c"->"1a";
+  "1b"->"1c";
+  "1a"->"1b";
+}
