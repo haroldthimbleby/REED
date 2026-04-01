@@ -1,5 +1,6 @@
 #include "header.h"
 #include "notes.h"
+#include "evalstyle.h"
 
 char *flagstyle = "fillcolor=%s; style=filled; penwidth=2; shape=note; ";
 
@@ -94,7 +95,7 @@ void xml(FILE *opfd)
  	if( *date ) xmlattribute(opfd, "", "date", date);
  	if( *direction ) xmlattribute(opfd, "", "direction", direction);
 	
-    for( int i = 1; i <= numberOfColors; i++ ) // gets them in alphabetical order
+    for( int i = 1; i < nflagcolors; i++ ) // gets them in alphabetical order
 		{	if( *flagdefinitions[i] )
 			{	myfprintf(opfd, "<highlightDefinition color=\"%s\">", flagcolors[i]);
 				xmlconverted(opfd, flagdefinitions[i]); 
@@ -104,28 +105,28 @@ void xml(FILE *opfd)
 	
 	for( node *t = nodeList; t != NULL; t = t->next )
 	{
-		myfprintf(opfd, "<node id=\"%s\">\n", t->s->s);
-        xmlattribute(opfd, "    ", "version", t->s->nodeversion);
-        if(  t->s->is != NULL )
-            xmlattribute(opfd, "    ", "label", t->s->is->s);
-        xmlhighlight(opfd, "    ", t->s->flag,  t->s->cascade);
-        if( t->s->note != NULL )
-            xmlattribute(opfd, "    ", "note", t->s->note->s);
-        xmlintattribute(opfd, "    ", "component", t->s->component);
+		myfprintf(opfd, "<node id=\"%s\">\n", t->strp->s);
+        xmlattribute(opfd, "    ", "version", t->strp->nodeversion);
+        if(  t->strp->is != NULL )
+            xmlattribute(opfd, "    ", "label", t->strp->is->s);
+        xmlhighlight(opfd, "    ", t->strp->flag,  t->strp->cascade);
+        if( t->strp->note != NULL )
+            xmlattribute(opfd, "    ", "note", t->strp->note->s);
+        xmlintattribute(opfd, "    ", "component", t->strp->component);
 
-        if( t->s->metadata != NULL )
+        if( t->strp->metadata != NULL )
         {   fprintf(opfd, "    <metadata>\n");
-            for( metadataList *ml = t->s->metadata; ml != NULL; ml = ml->next )
+            for( metadataList *ml = t->strp->metadata; ml != NULL; ml = ml->next )
                     fprintf(opfd, "        <property name=\"%s\" value=\"%s\"/>\n", ml->property, ml->value);
             fprintf(opfd, "    </metadata>\n");
         }
 
 			for( arrow *a = arrowList; a != NULL; a = a->next )
-				if( a->u == t->s )
+				if( a->u == t->strp )
 				{	myfprintf(opfd, "    <arrow to=\"%s\"", a->v->s);
 					myfprintf(opfd, ">\n");
-					xmlattribute(opfd, "    ", "version", t->s->nodeversion);
-					
+					xmlattribute(opfd, "    ", "version", t->strp->nodeversion);
+
 					for( arrow *t = noteArrowList; t != NULL; t = t->next )
 						if( t->u == a->u && t->v == a->v )
 						{	if( t->arrowis != NULL && *t->arrowis->s )
@@ -173,28 +174,28 @@ int printrank(FILE *opfd, str *n, char *version) // for tex file
 
 void printNodeLabel(FILE *opfd, node *t, char *version)  // for dot file
 {
-	myfprintf(opfd, "URL=\"#%s\"; label=\"", t->s->s); 
-	if( !t->s->plain )
-	{	int print = printrank(opfd, t->s, version);
-		if( showIDsOption ) 
+	myfprintf(opfd, "URL=\"#%s\"; label=\"", t->strp->s);
+	if( !t->strp->plain )
+	{	int print = printrank(opfd, t->strp, version);
+		if( showIDsOption )
 		{ 	if( print ) myfprintf(opfd, " ");
-			myfprintf(opfd, "(%j)", t->s->s);
+			myfprintf(opfd, "(%j)", t->strp->s);
 		}
 		if( print || showIDsOption )
 			fprintf(opfd, "\\n");
 	}
 	else
 	{	if( showIDsOption ) 
-		{	if( !t->s->plain && *version ) fprintf(opfd, "-");
-			myfprintf(opfd, "(%j)\\n", t->s->s);
+		{	if( !t->strp->plain && *version ) fprintf(opfd, "-");
+			myfprintf(opfd, "(%j)\\n", t->strp->s);
 		}
-		else if( !t->s->plain && *version )
+		else if( !t->strp->plain && *version )
 			myfprintf(opfd, "\n");
 	}	
-	myfprintf(opfd, "%S", t->s->is != NULL? t->s->is->s: t->s->s);
+	myfprintf(opfd, "%S", t->strp->is != NULL? t->strp->is->s: t->strp->s);
 	if( flagTextOption )
-		{	if( t->s->flag != noflag )
-				myfprintf(opfd, "\n\nHighlighted %j", flagcolor(t->s->flag));
+		{	if( t->strp->flag != noflag )
+				myfprintf(opfd, "\n\nHighlighted %j", flagcolor(t->strp->flag));
 		}
 	myfprintf(opfd, "\";");
 }
@@ -227,8 +228,7 @@ extern void checkMemory(char *file, int line)
 }
 
 void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
-{ 	checkarrowlist(2);
-    fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
+{ 	fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
     if( *defaultStyle )
         fprintf(opfd, "graph [%s];\nnode [%s];\nedge [%s];\n", defaultStyle, defaultStyle, defaultStyle);
     myfprintf(opfd, "label=\"");
@@ -282,7 +282,6 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 		rowcounter++;
 		myfprintf(opfd, "}\n");
 	}
-    checkarrowlist(3);
 
 	// the above generates this (where r1 etc are row labels) for each row arrow:
 	// style (r1 r2 r3 r4 r5) is "shape=cds; fontname=\"Monaco\""
@@ -295,63 +294,61 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 	if( flagOption )
 	{	int flagclustern = 1;
 		for( node *t = nodeList; t != NULL; t = t->next )
-			if( pullnode(t->s) && t->s->flag != noflag )
-			{	enum flagcolor fc = t->s->flag;
+			if( pullnode(t->strp) && t->strp->flag != noflag )
+			{	enum flagcolor fc = t->strp->flag;
 				char *color = flagcolor(fc), *edgecolor = color, *fontcolor = "black";
 				if( fc == white ) edgecolor = "black";
 				if( darkcolor(fc) )
                     fontcolor = "white";
-				myfprintf(opfd, "subgraph \"clusterflag%d\" { \"%s\"; color=%s; bgcolor=%s; shape=circle; label=\"Flagged %s\"; labelloc=\"b\"; fontcolor=\"%s\"; fontsize=12; fontname=\"Helvetica\"; penwidth=2; };\n", flagclustern++, t->s->s, edgecolor, color, color, fontcolor);
+				myfprintf(opfd, "subgraph \"clusterflag%d\" { \"%s\"; color=%s; bgcolor=%s; shape=circle; label=\"Flagged %s\"; labelloc=\"b\"; fontcolor=\"%s\"; fontsize=12; fontname=\"Helvetica\"; penwidth=2; };\n", flagclustern++, t->strp->s, edgecolor, color, color, fontcolor);
 			}
 	}
-    checkarrowlist(4);
 
 	for( node *t = nodeList; t != NULL; t = t->next )
-		if( pullnode(t->s) && t->s->isgroup &&
-			!(flagOption && t->s->flag != noflag) // bug in graphviz means we can't have both
+		if( pullnode(t->strp) && t->strp->isgroup &&
+			!(flagOption && t->strp->flag != noflag) // bug in graphviz means we can't have both
 		)
-		{	myfprintf(opfd, "subgraph \"cluster%S\" {\n   ", t->s->s);
+		{	myfprintf(opfd, "subgraph \"cluster%S\" {\n   ", t->strp->s);
 			for( node *u = nodeList; u != NULL; u = u->next )
-				if( pullnode(u->s) && u->s->group == t->s )
-				{	t->s->exampleGroupMember = u->s;
+				if( pullnode(u->strp) && u->strp->group == t->strp )
+				{	t->strp->exampleGroupMember = u->strp;
 					// myfprintf(opfd, //fprintf(opfd, "    %s [color=%s; style=filled];\n", u->s->s, u->s->flag? "pink": "white");
-					fprintf(opfd, "\"%s\"; ", u->s->s);
+					fprintf(opfd, "\"%s\"; ", u->strp->s);
 				}
-			if( t->s->is != NULL )
-				myfprintf(opfd, "fontname=\"Helvetica-Bold\"; fontcolor=black; labelloc=b;  style=\"rounded\"; ", t->s->is->s);
+			if( t->strp->is != NULL )
+				myfprintf(opfd, "fontname=\"Helvetica-Bold\"; fontcolor=black; labelloc=b;  style=\"rounded\"; ", t->strp->is->s);
 			printNodeLabel(opfd, t, version);
 			fprintf(opfd, "\n};\n\n");
 		}
 
 	//for( node *t = nodeList; t != NULL; t = t->next )
 	//	printf("%s: group=%d, style=%d\n",t->s->s,t->s->isgroup,t->s->isstyle); 
-    checkarrowlist(5);
 
 	for( node *t = nodeList; t != NULL; t = t->next )
-		if( pullnode(t->s) && !t->s->isgroup && !t->s->isstyle && t->s->l != HIGHLIGHT )
-		{	myfprintf(opfd, "  \"%s%S\"", t->s->isgroup? "cluster": "", t->s->s);
+		if( pullnode(t->strp) && !t->strp->isgroup && !t->strp->isstyle && t->strp->l != HIGHLIGHT )
+		{	myfprintf(opfd, "  \"%s%S\"", t->strp->isgroup? "cluster": "", t->strp->s);
 			myfprintf(opfd, " [");
 		//	if( !rowsTOCstyled && t->s->style == NULL ) // do not override an explicit style
 			//	myfprintf(opfd, "%s", defaultstyle);
 			if( rowsTOCstyled )
-			{	printColor(opfd, "rdylgn", rowcounter, t->s->rowDefaultNodeStyle);
+			{	printColor(opfd, "rdylgn", rowcounter, t->strp->rowDefaultNodeStyle);
 				myfprintf(opfd, "shape=box; fontname=Helvetica; ");
 			}
 			printNodeLabel(opfd, t, version);
 			if( //(!rowsTOCstyled || t->s->plain) && 
-				t->s->style != NULL )
-			{	myfprintf(opfd, "%j;", t->s->style->s);
+				t->strp->style != NULL )
+			{	myfprintf(opfd, "%j;", t->strp->style->s);
 				//fprintf(stderr, "%s\n", t->s->style->s);
 			}
-			if( !rowsTOCstyled && t->s->flag != noflag ) // put last, flag style overrides other styles
-			{	if( t->s->flag == white ) myfprintf(opfd, "color=black;");
-				myfprintf(opfd, flagstyle, flagcolor(t->s->flag)); 
-				if( darkcolor(t->s->flag))
+			if( !rowsTOCstyled && t->strp->flag != noflag ) // put last, flag style overrides other styles
+			{	if( t->strp->flag == white ) myfprintf(opfd, "color=black;");
+				myfprintf(opfd, flagstyle, flagcolor(t->strp->flag));
+				if( darkcolor(t->strp->flag))
                     myfprintf(opfd, "fontcolor=\"white\";");
 			}
-            if( t->s->cyclic )
+            if( t->strp->cyclic )
                 myfprintf(opfd, cyclicStyle);
-            if( !t->s->visible )
+            if( !t->strp->visible )
                 myfprintf(opfd, "style=invis;");
             fprintf(opfd, "];\n");
 		}
@@ -451,8 +448,8 @@ void connectedComponents()
 		if( !t->expanded && t->component == current )
         {   t->expanded = 1;
 			for( node *n = nodeList; n != NULL; n = n->next )
-				if( t->u == n->s || t->v == n->s )
-					n->s->color = current;
+				if( t->u == n->strp || t->v == n->strp )
+					n->strp->color = current;
 		}
 }
 
@@ -504,11 +501,11 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     myfprintf(opfd, "vertexNames={\n");
     commarise = "";
     for( node *t = nodeList; t != NULL; t = t->next )
-        if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
-        {	myfprintf(opfd, "%s   \"%m\"->\"", commarise, t->s->s);
-            if( showIDsOption ) myfprintf(opfd, "[%m] ", t->s->s);
-            printrank(opfd, t->s, version);
-            myfprintf(opfd, " %m\"", t->s->is != NULL? t->s->is->s: t->s->s); // was % ....
+        if( !t->strp->isgroup && !t->strp->isstyle && t->strp->l == ID )
+        {	myfprintf(opfd, "%s   \"%m\"->\"", commarise, t->strp->s);
+            if( showIDsOption ) myfprintf(opfd, "[%m] ", t->strp->s);
+            printrank(opfd, t->strp, version);
+            myfprintf(opfd, " %m\"", t->strp->is != NULL? t->strp->is->s: t->strp->s); // was % ....
             commarise = ",\n";
         }
     myfprintf(opfd, "};\n");
@@ -516,12 +513,12 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     myfprintf(opfd, "keywords={\n");
     commarise = "";
     for( node *t = nodeList; t != NULL; t = t->next )
-        if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
-        {   myfprintf(opfd, "%s   \"%m\"->{", commarise, t->s->s);
+        if( !t->strp->isgroup && !t->strp->isstyle && t->strp->l == ID )
+        {   myfprintf(opfd, "%s   \"%m\"->{", commarise, t->strp->s);
             char *sep = "";
-            if( t->s->keywords != NULL )
+            if( t->strp->keywords != NULL )
             {
-                for( struct keywordlist *tt = t->s->keywords; tt != NULL; tt = tt->next )
+                for( struct keywordlist *tt = t->strp->keywords; tt != NULL; tt = tt->next )
                 {   myfprintf(opfd, "%s\"%s\"", sep, tt->keyword->s);
                     sep = ", ";
                 }
@@ -534,8 +531,8 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     myfprintf(opfd, "notes={\n");
     commarise = "";
     for( node *t = nodeList; t != NULL; t = t->next )
-        if( !t->s->isgroup && !t->s->isstyle && t->s->l == ID )
-        {   myfprintf(opfd, "%s   \"%m\"->\"%m\"", commarise, t->s->s, t->s->note != NULL? t->s->note->s: "");
+        if( !t->strp->isgroup && !t->strp->isstyle && t->strp->l == ID )
+        {   myfprintf(opfd, "%s   \"%m\"->\"%m\"", commarise, t->strp->s, t->strp->note != NULL? t->strp->note->s: "");
             commarise = ",\n";
         }
     myfprintf(opfd, "\n};\n");
@@ -543,7 +540,7 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     myfprintf(opfd, "highlights={\n");
     commarise = "";
     for( node *t = nodeList; t != NULL; t = t->next )
-    {   myfprintf(opfd, "%s\"%s\"->\"%s\"", commarise, t->s->s,  flagcolor(t->s->flag));
+    {   myfprintf(opfd, "%s\"%s\"->\"%s\"", commarise, t->strp->s,  flagcolor(t->strp->flag));
         commarise = ",\n";
     }
     myfprintf(opfd,"};\n");
@@ -556,8 +553,8 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
             ccommarise = ",\n  ";
             commarise = "";
             for( node *t = nodeList; t != NULL; t = t->next )
-                if( t->s->component == c )
-                {	myfprintf(opfd, "%s\"%m\"", commarise, t->s->s);
+                if( t->strp->component == c )
+                {	myfprintf(opfd, "%s\"%m\"", commarise, t->strp->s);
                     commarise = ",";
                 }
             fprintf(opfd, "}");
@@ -568,41 +565,41 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     char *outercomma = "";
     myfprintf(opfd, "groups={");
     for( node *t = nodeList; t != NULL; t = t->next )
-        if( t->s->isgroup &&
-           !(flagOption && t->s->flag != noflag) // bug in graphviz means we can't have both
+        if( t->strp->isgroup &&
+           !(flagOption && t->strp->flag != noflag) // bug in graphviz means we can't have both
            )
         {   char *comma = "";
-            myfprintf(opfd, "%s{\"name\"->\"%S\", \"nodes\"->{", outercomma, t->s->s);
+            myfprintf(opfd, "%s{\"name\"->\"%S\", \"nodes\"->{", outercomma, t->strp->s);
             outercomma = ",\n";
             for( node *u = nodeList; u != NULL; u = u->next )
-                if( u->s->group == t->s )
-                {    t->s->exampleGroupMember = u->s;
+                if( u->strp->group == t->strp )
+                {    t->strp->exampleGroupMember = u->strp;
                     // myfprintf(opfd, //fprintf(opfd, "    %s [color=%s; style=filled];\n", u->s->s, u->s->flag? "pink": "white");
-                    fprintf(opfd, "%s\"%s\"", comma, u->s->s);
+                    fprintf(opfd, "%s\"%s\"", comma, u->strp->s);
                     comma = ", ";
                 }
             myfprintf(opfd, "},\n\"label\"->\"");
-            if( !t->s->plain )
-            {   int print = printrank(opfd, t->s, version);
+            if( !t->strp->plain )
+            {   int print = printrank(opfd, t->strp, version);
                 if( showIDsOption )
                 {     if( print ) myfprintf(opfd, " ");
-                    myfprintf(opfd, "(%j)", t->s->s);
+                    myfprintf(opfd, "(%j)", t->strp->s);
                 }
                 if( print || showIDsOption )
                     fprintf(opfd, "\\n");
             }
             else
             {    if( showIDsOption )
-            {   if( !t->s->plain && *version ) fprintf(opfd, "-");
-                myfprintf(opfd, "(%j)\\n", t->s->s);
+            {   if( !t->strp->plain && *version ) fprintf(opfd, "-");
+                myfprintf(opfd, "(%j)\\n", t->strp->s);
             }
-            else if( !t->s->plain && *version )
+            else if( !t->strp->plain && *version )
                 myfprintf(opfd, "\n");
             }
-            myfprintf(opfd, "%S", t->s->is != NULL? t->s->is->s: t->s->s);
+            myfprintf(opfd, "%S", t->strp->is != NULL? t->strp->is->s: t->strp->s);
             if( flagTextOption )
-            {    if( t->s->flag != noflag )
-                myfprintf(opfd, "\n\nHighlighted %j", flagcolor(t->s->flag));
+            {    if( t->strp->flag != noflag )
+                myfprintf(opfd, "\n\nHighlighted %j", flagcolor(t->strp->flag));
             }
             myfprintf(opfd, "\"}");
         }
@@ -611,14 +608,14 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     myfprintf(opfd, "metadata={");
     for( node *t = nodeList; t != NULL; t = t->next )
     {   ccommarise = "";
-        if( t->s->metadata != NULL )
+        if( t->strp->metadata != NULL )
         {   commarise = "";
-            myfprintf(opfd, "%s{\"%j\", {", ccommarise, t->s->s);
-            for( metadataList *ml = t->s->metadata; ml != NULL; ml = ml->next )
+            myfprintf(opfd, "%s{\"%j\", {", ccommarise, t->strp->s);
+            for( metadataList *ml = t->strp->metadata; ml != NULL; ml = ml->next )
             {   myfprintf(opfd, "%s\"%j\"->\"%j\"", commarise, ml->property, ml->value);
                 commarise = ", ";
             }
-            myfprintf(opfd, "}}\n", t->s->s);
+            myfprintf(opfd, "}}\n", t->strp->s);
             ccommarise = "\n,";
         }
     }
@@ -630,142 +627,7 @@ void mathematica(FILE *opfd, char *title, char *version, authorList *authors, ch
     //myfprintf(opfd, ", \"Input\"]]}];\n");
 }
 
-char *replace(str **target, char *from, int idlen, char *with)
-{   //fprintf(stderr, "target=\n[%s]\n ", (*target)->s);
-    //for( char *q = (*target)->s; q < from; q++ )
-    //    fprintf(stderr, " ");
-    int max = idlen;
-    char *q;
-    //for( q = from; max-- > 0; q++ )
-    //    fprintf(stderr, "%c", *q);
-    //fprintf(stderr, "[%s]\n", q);
 
-    char *newstring = (char*) safealloc(strlen((*target)->s)-idlen+strlen(with)+1);
-    char *cp = newstring;
-    for( char *cpp = (*target)->s; *cpp && cpp < from; cpp++ ) // copy prefix
-        *cp++ = *cpp;
-    char *news = &newstring[from-(*target)->s+strlen(with)];
-    while( *with ) // copy replacement
-        *cp++ = *with++;
-    with = &from[idlen];
-    do { // copy suffix
-        *cp++ = *with;
-    } while( *with++ );
-   // for( node *u = stylelist; u != NULL; u = u->next )
-   //     fprintf(stderr, "A>>> %s is %s\n",u->s->style->s,u->s->s);
-    //fprintf(stderr, "old=%s\n",(*target)->s);
-    free((*target)->s);
-    (*target)->s = newstring;
-   // fprintf(stderr, "newstring=%s\n",newstring);
-  //  for( node *u = stylelist; u != NULL; u = u->next )
-  //      fprintf(stderr, "B>>> %s is %s\n",u->s->style->s,u->s->s);
-
-    //fprintf(stderr, "result=%s\n", newstring);
-    return news; // in the calling for loop put s in right place in replacement
-}
-
-void expand(str **target)
-{   // find ids in (*target)->s
-    // lookup each id in stylelist
-    // for( node *u = stylelist; u != NULL; u = u->next ) ...
-    // if id == u->s->style->s, expand id to include spaces each side, then replace id with u->s->s
-
-    //fprintf(stderr, "expand(%s)\n", (*target)->s);
-
-    for( char *s = (*target)->s; *s; s++ )
-    {   //fprintf(stderr, ":: %s\n", s); fflush(stderr);
-        if( isIDchar(*s) )
-        {   int idlen = 1;
-            char *from = s;
-            while( isIDchar(*++s) ) idlen++;
-
-            //fprintf(stderr, "got ");
-            //for( char *f = from; f < s; f++ ) fprintf(stderr, "%c", *f);
-            //fprintf(stderr, "\n");
-
-            for( node *u = stylelist; u != NULL; u = u->next )
-                if( !strncmp(from, u->s->style->s, idlen) )
-                {   // now matched, can we expand the text to replace?
-                    if( 1 ) // expand to include spaces each side
-                    {   // NB ' ' is not (char)0 so these loops don't drop off the end
-                        while( from > (*target)->s && from[-1] == ' ' ) // prefix spaces
-                        {   from--;
-                            idlen++;
-                        }
-                        while( from[idlen] == ' ') // postfix spaces
-                            idlen++;
-                    }
-                    char save = *s;
-                    *s = (char) 0;
-                    //fprintf(stderr, "replace %s with %s in %s\n", u->s->style->s, u->s->s, from);
-                    *s = save;
-                    s = replace(target, from, idlen, u->s->s);
-                    //fprintf(stderr, "-- carry on [%s]\n", s); fflush(stderr);
-
-                    if( strlen(s) > 500 ) // this won't detect head recursion sadly
-                    {   nolineerror("Very long style, so it looks like styles are recursive!");
-                        for( node *u = stylelist; u != NULL; u = u->next )
-                            fprintf(stderr, "  >>> %s is \"%s\"\n", u->s->style->s, u->s->s);
-                        exit(1);
-                    }
-
-                    s--;
-                    //fprintf(stderr, "X\n"); fflush(stderr);
-                    break;
-                }
-            s--;
-            // fprintf(stderr, "Y\n"); fflush(stderr);
-        }
-    }
-    //fprintf(stderr, "replaced: [%s]\n\n", (*target)->s);
-}
-
-void styleReplace(str **target, char *styleName, char *replace)
-{   // scan target for occurrences of styleName and replace with replace
-    if( !strlen(replace) ) return; // nothing to do
-    int replacements = 0;
-    int len = strlen(styleName);
-    if( !len ) return; // nothing to do (and would fail if it tried!)
-
-    //fprintf(stderr, "before for s=%p\n", (*target)->s); fflush(stderr);
-    for( char *s = (*target)->s; *s; s++ )
-    {   if( !strncmp(s, styleName, len) )
-        {
-            replacements++;
-            *s = (char) 0;
-
-            // now target has 3 substrings:
-            //  (*target)->s is a null terminated string before the text to replace
-            //  &target[s] (which is now nulled) .. &target[s+len-1] is substring to replace
-            //  then &s[len+1] is a null terminated string after the repacement
-            // so...
-
-            char *pre = (*target)->s; //fprintf(stderr, "pre: |%s|\n", pre); fflush(stderr);
-            char *post = &s[len]; //fprintf(stderr, "post: |%s|\n", post); fflush(stderr);
-
-            // gobble spaces after post
-            while( *post == ' ' ) post = &s[++len];
-
-            // gobble spaces at end of pre
-            while( s > (*target)->s && s[-1] == ' ' ) s--;
-            *s = (char) 0;
-
-            *target = strlen(pre)? appendcstr(newstr(pre), replace): newstr(replace);
-
-            int offset = strlen((*target)->s); //fprintf(stderr, "offset: %d\n", offset); fflush(stderr);
-            // fprintf(stderr, "offset=%d\n", offset); fflush(stderr);
-            if( strlen(post) )
-                *target = appendcstr(*target, post);
-
-            // now fix s to right place, since we've relocated the string s pointed to
-            s = &(*target)->s[offset-1]; // because it's about to be incremented at end of for loop
-            //fprintf(stderr, "full string: [%s]\n", (*target)->s); fflush(stderr);
-            //fprintf(stderr, "rest of string: [%s]\n", s); fflush(stderr);
-        }
-    }
-    if( 0 && replacements )
-        fprintf(stderr, "%d replacements [of substrings], finally: [%s]\n", replacements, (*target)->s); fflush(stderr);
-}
 
 int versionstrcmp(char *a, char *b)
 // like strcmp
@@ -805,26 +667,26 @@ extern int versionCount;
 void checkversions(char *targetVersion, char *debug)
 {   //fprintf(stderr, "checkversions(%s) @ %s\n", targetVersion, debug);
     for( node *t = nodeList; t != NULL; t = t->next )
-    {   if( t->s->nodeversion != NULL )
+    {   if( t->strp->nodeversion != NULL )
         {   // fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
-            if( !strcmp(t->s->nodeversion, "") )
-                t->s->visible = 1;
+            if( !strcmp(t->strp->nodeversion, "") )
+                t->strp->visible = 1;
             else
-            if( !strcmp(t->s->nodeversion, undefinedVersion) || versionstrcmp(targetVersion, t->s->nodeversion) > 0 )
+            if( !strcmp(t->strp->nodeversion, undefinedVersion) || versionstrcmp(targetVersion, t->strp->nodeversion) > 0 )
             {   //fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion, versionstrcmp(targetVersion, t->s->nodeversion) );
                 //fprintf(stderr, "  - so make %s invisible\n", t->s->s);
-                t->s->visible = 0;
+                t->strp->visible = 0;
             }
             else
             {   // fprintf(stderr, "%s v=%s versionstrcmp=%d : ", t->s->s, t->s->nodeversion,versionstrcmp(targetVersion, t->s->nodeversion) );
                 // fprintf(stderr, "  - so make %s visible\n", t->s->s);
-                t->s->visible = 1;
+                t->strp->visible = 1;
             }
         }
         else
         {
-            fprintf(stderr, "?error? %s nodeversion=NULL\n", t->s->s);
-            t->s->visible = 0;
+            fprintf(stderr, "?error? %s nodeversion=NULL\n", t->strp->s);
+            t->strp->visible = 0;
         }
     }
 }
@@ -849,7 +711,6 @@ void generateFiles(char *targetVersion, char *filename)
     // printf("Styles are:\n");
     // for( node *u = stylelist; u != NULL; u = u->next )
     //	printf("  style %s is '%s'\n", u->s->style->s, u->s->s);
-    checkarrowlist(7);
 
     if( !*targetVersion || !strcmp(targetVersion, "") )
     {   targetVersion = lastVersion();
@@ -858,60 +719,25 @@ void generateFiles(char *targetVersion, char *filename)
     }
 
     checkIS();
-    checkarrowlist(8);
     checkNumbering();
-
-    // expand styles with embedded definitions
-    //fprintf(stderr, "All styles:\n");
-    //for( node *u = stylelist; u != NULL; u = u->next )
-    //    fprintf(stderr, " >>> %s is %s\n", u->s->style->s, u->s->s);
-    for( node *u = stylelist; u != NULL; u = u->next )
-    {   //fprintf(stderr, "Before >>> %s is %s\n", u->s->style->s, u->s->s);
-        expand(&u->s);
-        //fprintf(stderr, "After %s\n", u->s->s);
-    }
-
-	// now everything collected, replace use of style nodes with the style values themselves
-    // node is: typedef struct tmpnode { str *s; struct tmpnode *next; } node;
-    for( node *t = nodeList; t != NULL; t = t->next )
-    {	if( (t->s->rankx || t->s->ranky) && t->s->noderef && *t->s->noderef )
-        {   fprintf(stderr, "Warning: node %s has references set by ref (%s) and numbering (", t->s->s, t->s->noderef);
-            if( t->s->rankx ) fprintf(stderr, "%d", t->s->rankx);
-            if( t->s->ranky ) fprintf(stderr, ".%d", t->s->ranky);
-            fprintf(stderr, ")\n");
-        }
-        if( t->s->style != NULL && !t->s->style->isstyle )
-            expand(&t->s->style);
-    }
-
-    checkarrowlist(10);
-	// DO THE SAME WITH ARROW STYLES...
-	for( node *u = stylelist; u != NULL; u = u->next )
-		for( arrow *styleda = styledArrowList; styleda != NULL; styleda = styleda->next )
-			//if( u->s->style->s == styleda->arrowStyle->s )
-			//	styleda->arrowStyle = u->s;
-            expand(&styleda->arrowStyle);
-
-//	typedef struct tmparrow { str *u, *v; struct tmparrow *next; } arrow;
-// 	typedef struct tmpnode { str *s; struct tmpnode *next; } node;
+    evalStyles();
 
 	if( numberingCount ) // not numbering a node is only an error if any nodes are numbered
 		for( node *t = nodeList; t != NULL; t = t->next )
-			if( t->s->l == ID )
-			{	if( !t->s->plain && !t->s->ranky && !t->s->rankx && !t->s->noderef )  
-					fprintf(stderr, "Warning: Numbering for %s '%s' not defined\n", t->s->isgroup? "group": "node", t->s->s);
+			if( t->strp->l == ID )
+			{	if( !t->strp->plain && !t->strp->ranky && !t->strp->rankx && !t->strp->noderef )
+					fprintf(stderr, "Warning: Numbering for %s '%s' not defined\n", t->strp->isgroup? "group": "node", t->strp->s);
 				// fprintf(stderr, "Node %s @ %d.%d\n", t->s->s, t->s->rankx, t->s->ranky);
 			}
 
     cascade();
-    checkarrowlist(14);
     sortkeywords(&allkeywords);
 
     if( 0 )
 		for( node *t = nodeList; t != NULL; t = t->next )
-			if( !t->s->pointsTo && !t->s->pointedFrom )
-				fprintf(stderr, "Node %s is not on any arrow: %d %d\n", t->s->s, t->s->pointsTo, t->s->pointedFrom);
-	
+			if( !t->strp->pointsTo && !t->strp->pointedFrom )
+				fprintf(stderr, "Node %s is not on any arrow: %d %d\n", t->strp->s, t->strp->pointsTo, t->strp->pointedFrom);
+
     stopiferror();
 
     if( verboseOption && graphvizOption )
@@ -922,7 +748,7 @@ void generateFiles(char *targetVersion, char *filename)
     do
     {    swapped = 0;
          for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
-            if( strcmp((*t)->s->s, (*t)->next->s->s) < 0 )
+            if( strcmp((*t)->strp->s, (*t)->next->strp->s) < 0 )
             {    node *u = *t;
                 *t = (*t)->next;
                 u->next = (*t)->next;
@@ -940,19 +766,19 @@ void generateFiles(char *targetVersion, char *filename)
 
 extern int flagsusedaftercascades[];
 void listColorsUsed() // list highlighting colors used to stdout
-{   for( int flag = 0; flag < 8; flag++ )
+{   for( int flag = 0; flag < nflagcolors; flag++ )
         flagsusedaftercascades[flag] = 0;
     for( node *t = nodeList; t != NULL; t = t->next )
-        flagsusedaftercascades[t->s->flag]++;
+        flagsusedaftercascades[t->strp->flag]++;
     char *spacing = "";
-    for( int i = 0; i < 8; i++ ) // gets them in alphabetical order
+    for( int i = 0; i < nflagcolors; i++ ) // gets them in alphabetical order
         if( flagsusedaftercascades[i] )
         {   fprintf(stdout, "%s%s", spacing, !i? "gray": flagcolor(i));
             spacing = " ";
         }
     fprintf(stdout, "\n");
     if( colorsPlusOption )
-    {   for( int i = 1; i < 8; i++ ) // gets them in alphabetical order
+    {   for( int i = 1; i < nflagcolors; i++ ) // gets them in alphabetical order
             if( strlen(flagdefinitions[i]) != 0 )
             {   fprintf(stdout, "\n%s: ", flagcolor(i));
                 HTMLtranslate(stdout, NULL, flagdefinitions[i]);

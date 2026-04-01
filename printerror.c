@@ -227,6 +227,35 @@ void myfprintf(FILE *opfd, char *fmt, ...)
                                     default:   fprintf(opfd, "%c", *s);
                                 }
                            break;
+                    case 'v': // generate a CSV string
+                    {   char *theparam = va_arg(ap, char *);
+                        int needsquotes = !*theparam;
+                        for( s = theparam; *s; s++ )
+                            switch( *s )
+                               {
+                                   case '\n': case ' ': case '"':
+                                       needsquotes = 1;
+                                       break;
+                               }
+                        if( needsquotes ) fprintf(opfd, "\"");
+                        int compressblanks = 0;
+                        for( s = theparam; *s; s++ )
+                            switch( *s )
+                               {
+                                   case '\n': case ' ': case '\t':
+                                       compressblanks = 1;
+                                       break;
+                                   default:
+                                       if( compressblanks )
+                                       {    fprintf(opfd, " ");
+                                            compressblanks = 0;
+                                       }
+                                       if( *s == '"' )  fprintf(opfd, "\"\"");
+                                       else fprintf(opfd, "%c", *s);
+                               }
+                        if( needsquotes ) fprintf(opfd, "\"");
+                     }
+                    break;
                     case 't':    // same as %s but works with tex  - \n becomes space
                         for( s = va_arg(ap, char *); *s; s++ )
                              switch( *s )

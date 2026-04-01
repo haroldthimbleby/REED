@@ -9,7 +9,7 @@ extern rownodes *cols;
 
 char *title = "", *date = "", *version = "", *abstract = "", *direction = "", *defaultStyle = "";
 
-char *flagcolors[] = // 17 colors
+char *flagcolors[] = // 17 colors + NONE
 { "NONE",
   "aqua", "black", "blue", "fuchsia", "gray",
   "green", "lime", "maroon", "navy", "olive",
@@ -17,12 +17,14 @@ char *flagcolors[] = // 17 colors
   "white", "yellow"
 };
 
+int nflagcolors = sizeof(flagcolors)/sizeof(char*);
+
 enum flagcolor iscolor(char *s)
 {   if( !strcmp(s, "aqua") ) return aqua;
     if( !strcmp(s, "black") ) return black;
     if( !strcmp(s, "blue") ) return blue;
     if( !strcmp(s, "fuchsia") ) return fuchsia;
-    if( !strcmp(s, "gray") ) return gray;
+    if( !strcmp(s, "gray") || !strcmp(s, "grey") ) return gray;
     if( !strcmp(s, "green") ) return green;
     if( !strcmp(s, "lime") ) return lime;
     if( !strcmp(s, "maroon") ) return maroon;
@@ -39,17 +41,16 @@ enum flagcolor iscolor(char *s)
 }
 
 char *flagdefinitions[] = {"","","","","", "","","","","", "","","","","", "","",""};
-int flagsused[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
+int flagsusedexplicitly[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
 int flagsusedaftercascades[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
 int flagcascade[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
-
-int numberOfColors = sizeof(flagcolors)/sizeof(char *)-1;
+int flagscascaded[] = {0,0,0,0,0, 0,0,0,0,0, 0,0,0,0,0, 0,0,0};
 
 int alreadyShownAllColors = 0;
 void showAllColors()
 {   if( alreadyShownAllColors++ ) return;
     fprintf(stderr, "Available highlighting color names are:\n   ");
-    for( int i = 1; i <= numberOfColors; i++ )
+    for( int i = 1; i < nflagcolors; i++ )
         fprintf(stderr, "%s ", flagcolor(i));
     fprintf(stderr, "\n");
 }
@@ -90,13 +91,12 @@ arrow *auxnewarrowstruct()
     a->next = NULL;
     a->flag = noflag;
     //fprintf(stderr, "a->flag=%d\n",a->flag); fflush(stderr);
-    checkarrowlist(0);
+    a->metadata = NULL;
     return a;
 }
 
 void defineArrowStyle(str *u, str *v, str *theStyle)
-{	checkarrowlist(10101);
-    for( arrow *t = styledArrowList; t != NULL; t = t->next )
+{	for( arrow *t = styledArrowList; t != NULL; t = t->next )
 		if( t->u == u && t->v == v )
 		{	error("arrow %s -> %s style being redefined", t->u->s, t->v->s);
 		}
@@ -233,6 +233,7 @@ struct { lexval l; char *symbol; } lexes[] =
     { CHECK, "<check>"},
     { TRANSARROW, "=>"},
     { KEYWORDS, "<keywords>"},
+    { PROPERTY, "<property>"},
     { NOREFS, "<norefs>"},
     { VISIBLE, "<visible>"},
     { INVISIBLE, "<invisible>"},
@@ -323,6 +324,8 @@ lexval readlex(str **lexstr)
                     if( !strcasecmp("numbering", (*lexstr)->s) ) return NUMBERING;
                     if( !strcasecmp("norefs", (*lexstr)->s) ) return NOREFS;
                     if( !strcasecmp("note", (*lexstr)->s) ) return NOTE;
+                    if( !strcasecmp("property", (*lexstr)->s) ) return PROPERTY;
+                    if( !strcasecmp("properties", (*lexstr)->s) ) return PROPERTY;
                     if( !strcasecmp("ref", (*lexstr)->s) ) return REF;
                     if( !strcasecmp("tags", (*lexstr)->s) ) return TAGS;
                     if( !strcasecmp("style", (*lexstr)->s) ) return STYLE;
@@ -381,7 +384,7 @@ lexval readlex(str **lexstr)
 						}
 						error("end of file after unmatched herestring started with <<< %s\nlikely caused by missing newline+'%s'", &ending->s[1], &ending->s[1]);
                     }
-					else error("<< not formed into a proper <<<");
+					else error("<< not formed into a full <<<");
 					return SEMI;
 				}
 				if( nextch() != '-' ) error("< not followed by - to make either <- or <-> arrows");
@@ -442,41 +445,45 @@ lexval readlex(str **lexstr)
 	}
 }
 
-arrow *arrowList = (arrow*) NULL, *styledArrowList = (arrow*) NULL, *noteArrowList = (arrow*) NULL;
+// see comment in header.h
+arrow *arrowList = (arrow*) NULL, *styledArrowList = (arrow*) NULL, *noteArrowList = (arrow*) NULL,
+    *metaArrowList = (arrow*) NULL;
 
 node *nodeList = (node*) NULL, *stylelist = (node*) NULL;
 
 int rankx = 1;
 
 void newnode(int fixVersion, str **u)
-{	if( fixVersion && (*u)->nodeversion == undefinedVersion )
-		(*u)->nodeversion = version; // update version to be latest (as specified in file order)
+{	//if( fixVersion && (*u)->nodeversion == undefinedVersion )
+    (*u)->nodeversion = version; // update version to be latest (as specified in file order)
+    //fprintf(stderr, "%s %s\n", *version? version: "--", (*u)->s);
 	for( node *t = nodeList; t != NULL; t = t->next )
-		if( !strcmp(t->s->s, (*u)->s) )
+		if( !strcmp(t->strp->s, (*u)->s) )
     	{ //fprintf(stderr, "existing node t=%s = us=%s -- ", t->s->s, (*u)->s);
     	  //fprintf(stderr, "%s = %ld; ", t->s == *u? "SAME": "DIFFERENT ADDRESSES!", (long) t->s);
-    	  *u = t->s;
+    	  *u = t->strp;
+            t->strp->nodeversion = version;
           //fprintf(stderr, "update *u\n");
           return;
     	}
 	//fprintf(stderr, "new node %s at %ld\n", (*u)->s, (long) *u);
 	node *new = (node*) safealloc(sizeof(node));
 	new->next = nodeList;
-	new->s = *u;
+	new->strp = *u;
+    new->count = nodeList == NULL? 0: nodeList->count+1; // count from 0
     (*u)->nodeversion = version;
 	(*u)->component = 0;
     (*u)->visible = fixVersion;
+    (*u)->metadata = NULL;
+    (*u)->flag = noflag;
 	nodeList = new;
 }
 
 void newarrow(arrow **putonthisarrowlist, str **u, str **v, int forceadd)
-{	checkarrowlist(99012);
-    newnode(1, u);
-    checkarrowlist(990123ee);
-	newnode(1, v);
+{	newnode(1, u);
+    newnode(1, v);
 
 	// do we already have the arrow?
-    checkarrowlist(101012);
     for( arrow *t = *putonthisarrowlist; t != NULL; t = t->next )
 	{
 		if( t->u == *u && t->v == *v )
@@ -491,7 +498,7 @@ void newarrow(arrow **putonthisarrowlist, str **u, str **v, int forceadd)
 	new->next = *putonthisarrowlist;
 	new->force = forceadd;
     new->arrowis = NULL;
-
+    new->metadata = NULL;
     //fprintf(stderr, "parsed %s -> %s\n", u->s, v->s);
 
 	new->u = *u;
@@ -507,21 +514,16 @@ void getlex()
 
 void whilearrow(arrow **whicharrowlist, int forceadd)
 {	while( lex2->l == LARROW || lex2->l == RARROW )
-    {   checkarrowlist(71);
-        if( lex1->l == HIGHLIGHT || lex3->l == HIGHLIGHT )
+    {   if( lex1->l == HIGHLIGHT || lex3->l == HIGHLIGHT )
         {   error("highlight cannot be at end of an arrow");
             getlex();
             break;
         }
 		if( lex3->l != ID ) { error("Expected ID after arrow"); getlex(); break; }
 		// myfprintf(stderr, "in whilearrow() read arrow: %s -> %s\n", lex1->s, lex3->s);
-        checkarrowlist(72);
         //fprintf(stderr, "lex2->l is ", lexvalue(lex2)); fflush(stderr);
         if( lex2->l == LARROW ) newarrow(whicharrowlist, &lex3, &lex1, forceadd);
-		else if( lex2->l == RARROW ) newarrow(whicharrowlist, &lex1, &lex3, forceadd);
-		else // double arrow
-			newarrow(whicharrowlist, &lex1, &lex3, forceadd);
-        checkarrowlist(73);
+		else newarrow(whicharrowlist, &lex1, &lex3, forceadd);
 		getlex();
 		getlex();
 	}
@@ -588,7 +590,7 @@ void numbering()
 	{	// reset numbering --- yes because we need to see if individual nodes are renumbered
 		numberingCount = 0;
 		for( node *t = nodeList; t != NULL; t = t->next )
-			t->s->rankx = t->s->ranky = 0;
+			t->strp->rankx = t->strp->ranky = 0;
 	}
 	numberingCount++;
 	if( lex1->l == ID && !strcmp("flat", lex1->s) )
@@ -618,7 +620,7 @@ void checkNumbering()
 {   // have we set reference numbers for all nodes?
     int warned = 0;
     for( node *t = nodeList; t != NULL; t = t->next )
-    {   int set = t->s->rankx || t->s->ranky || (t->s->noderef && *t->s->noderef);
+    {   int set = t->strp->rankx || t->strp->ranky || (t->strp->noderef && *t->strp->noderef);
         if( (set && norefs) || (!set && !norefs) )
         {
             if( !warned )
@@ -627,7 +629,7 @@ void checkNumbering()
                         norefs? "Warning: norefs used, but some nodes have had their reference or x.y numbering set:\n":
                                 "Warning: norefs not used, but some nodes have not had their reference or x.y numbering set:\n");
             }
-            fprintf(stderr, "            %s\n", t->s->s);
+            fprintf(stderr, "            %s\n", t->strp->s);
             warned = 1;
         }
     }
@@ -719,6 +721,7 @@ arrow *parsenodelist(int debug, int makenodes, int makearrows)
 		if( lex2->l == LARROW || lex2->l == RARROW )
 		{	// single row of arrows
 			//myfprintf(stderr, "in parsenodelist() read arrow: %s -> %s\n", lex1->s, lex3->s);
+            if( makenodes ) newnode(1, &lex1);
 			whilearrow(&t, makearrows);
 			getlex();
 			//printf("lex1 should be is ");
@@ -824,12 +827,12 @@ void defineflag(char *color, char *meaning, int cascade)
 }
 
 void summarizeMissingFlagDefinitions()
-{   for( int i = 1; i <= numberOfColors; i++ )
+{   for( int i = 1; i < nflagcolors; i++ )
     {	if( iscolor(flagcolors[i]) != i )
             error("!!! Internal error !!! flacolors[%d]=%s but iscolor(%s)=%d\n", i, flagcolors[i], flagcolors[i], iscolor(flagcolors[i]));
 
         //fprintf(stderr, "%d highlight is colored %s. Used=%d. Defined=%s.\n", i, flagcolors[i], flagsused[i], flagdefinitions[i]);
-        if( flagsused[i] && !*flagdefinitions[i] )
+        if( flagsusedexplicitly[i] && !*flagdefinitions[i] )
            error("%s highlight meaning not defined", flagcolors[i]); // , flagcolors[i]
     }
 }
@@ -1070,16 +1073,13 @@ int parse(char *filename, char *bp)
 
                 if( thenodetoflag->l != ID ) { error("Expected node after 'highlight'"); getlex(); break; }
                 newnode(1, &thenodetoflag); // was a node name
+                enum flagcolor newcolor = noflag;
                 enum flagcolor previousFlag = thenodetoflag->flag;
-                thenodetoflag->flag = red; // default flag color if none is specified
-                enum flagcolor fc = noflag;
                 thenodetoflag->cascade = cascadeflag;
                 if( lex2->l == IS ) // highlight <node> is form ; now read the color
                 {	if( lex3->l != ID ) error("Expected a color for highlight <node> is <color>");
-                    if( (fc = iscolor(lex3->s)) != noflag )
-                    {	thenodetoflag->flag = fc;
-                        flagsused[thenodetoflag->flag]++;
-                    }
+                    if( (newcolor = iscolor(lex3->s)) != noflag )
+                    	thenodetoflag->flag = newcolor;
                     else
                     {   error("Expected standard color but got '%s' instead", lex3->s);
                         showAllColors();
@@ -1087,15 +1087,13 @@ int parse(char *filename, char *bp)
                     getlex();
                     getlex();
                 }
-                else
-                    flagsused[thenodetoflag->flag]++;
                 if( previousFlag != noflag )
-                {	if( fc != previousFlag )
-                    error("Highlighting %s to %s when it was previously highlighted %s",
-                          thenodetoflag->s, flagcolor(fc), flagcolor(previousFlag));
-                else
-                    error("Highlighting %s to %s again",
-                          thenodetoflag->s, flagcolor(fc));
+                {	if( newcolor != previousFlag )
+                        error("Highlighting %s to %s when it was previously highlighted %s",
+                              thenodetoflag->s, flagcolor(newcolor), flagcolor(previousFlag));
+                    else
+                        error("Highlighting %s to %s again",
+                          thenodetoflag->s, flagcolor(newcolor));
                 }
                 break;
 
@@ -1152,7 +1150,7 @@ int parse(char *filename, char *bp)
                 //if( !isnode ) printf("->%s", nl->v->s);
                 //printf(" (%s) --- lex1 = %s; lex2 = %s\n", sort, lexvalue(lex1), lexvalue(lex2));
 
-                metadata(nl);
+                (void) metadata(nl); // metadata is optional
 
                 if( lex1->l == IS ) // expect: title note
                 {   getlex();
@@ -1197,6 +1195,15 @@ int parse(char *filename, char *bp)
                     defineArrowNote(nl->u, nl->v, lex1, NULL, &keywordlist);
                 break;
 
+            case PROPERTY:
+                getlex();
+                nl = parsenodelist(0, 1, 1);
+                if( nl == NULL )
+                    error("expected at least one node or arrow after property keyword");
+                if( !metadata(nl) )
+                    error("expected properties to be listed after property keyword");
+                break;
+
 			case NEWSTYLE:
                 makenewstyle = 1;
 				// fall through
@@ -1204,7 +1211,7 @@ int parse(char *filename, char *bp)
 				getlex();
 				//fprintf(stderr, "got a style ...\n");
 				nl = parsenodelist(0, !makenewstyle, 0);
-				if( nl == NULL ) error("Expected a list after 'style'");
+                if( nl == NULL ) error("Expected a %s after 'style'", makenewstyle? "a style name": "node, arrow or list");
 				if( lex1->l != IS ) error("Expected 'is' after style");
 				getlex();
 				if( lex1->l != ID ) error("Expected a style name or a string");
@@ -1214,7 +1221,7 @@ int parse(char *filename, char *bp)
 					if( nl->v != NULL ) // an arrow
                     {
                         if( makenewstyle )
-                            error("arrows cannot be made into new styles");
+                            error("Arrows cannot be made into new styles");
                         else
                             defineArrowStyle(nl->u, nl->v, lex1);
                     }
@@ -1234,18 +1241,20 @@ int parse(char *filename, char *bp)
 						if( makenewstyle )
                         {   for( node *u = stylelist; u != NULL; u = u->next )
                             {   //fprintf(stderr, "%s with nl->u->style->s = %s\n", u->s->style->s, nl->u->s);
-                                if( !strcmp(u->s->style->s, nl->u->s) )
+                                if( !strcmp(u->strp->style->s, nl->u->s) )
                                     error("style %s should not be redefined:\n   style.new %s is \"%s\"",
-                                          u->s->style->s, u->s->style->s, lex1->s);
+                                          u->strp->style->s, u->strp->style->s, lex1->s);
                             }
 
                             if( nl->v != NULL ) error("arrows cannot be style names");
+
                             node *new = (node*) safealloc(sizeof(node));
+                            new->count = stylelist == NULL? 0: stylelist->count+1; // count from 0
                             new->next = stylelist;
-                            new->s = lex1;
+                            new->strp = lex1;
                             lex1->style = nl->u;
                             stylelist = new;
-                            // fprintf(stderr, ">>> style.new %s is \"%s\"\n", new->s->style->s, new->s->s);
+                            // fprintf(stderr, ">>> style.new %s (style no. %d) is \"%s\"\n", new->s->style->s, new->count, new->s->s);
                         }
 					}
 					nl = nl->next;
@@ -1279,8 +1288,7 @@ int parse(char *filename, char *bp)
 						break;
                     case LARROW: case RARROW:
 						whilearrow(&arrowList, 1);
-                        checkarrowlist(1010199);
-						break;
+                        break;
                     default: // an isolated node
 						warning("isolated node with no arrow or 'is': %s", lex1->s);
 						newnode(1, &lex1);

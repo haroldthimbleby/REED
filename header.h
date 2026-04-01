@@ -5,6 +5,8 @@
 #include <sys/errno.h>
 #include <ctype.h>
 
+#include "mainStructs.h"
+
 #define checkarrowlist(x) (checkMemory(__FILE__,__LINE__))
 extern void checkMemory(char *file, int line);
 
@@ -12,89 +14,31 @@ extern void checkMemory(char *file, int line);
 #define beginError fprintf(stderr, "\033[38;91m")
 #define endError   fprintf(stderr, "\033[0m")
 
+extern int nflagcolors;
 extern void fatalError(char *fmt, ...);
 extern int isIDchar(char ch);
 extern void debug(int n);
-
+extern void generateMetadata(FILE *opdf);
 extern void showAllColors();
-
 void *safealloc(size_t size);
 void *safeCalloc(size_t count, size_t size);
-
 extern int parse(char *filename, char *bp);
-
 extern void listnodes();
 extern int listidsOption;
 extern int listissOption;
 extern int listBothOption;
 
-extern int numberOfColors;
-
 extern void latexxrefs(FILE *opfd);
-
 extern void hash(char *file);
 extern void printfiledata(FILE *opfd);
-
-typedef enum { None, String, Node, Arrow, Annotation } type;
-
-enum flagcolor { noflag, aqua, black, blue, fuchsia, gray, green,
-                 lime, maroon, navy, olive, orange, purple, red,
-                 silver, teal, white, yellow };  // in alpha order
-
 enum flagcolor pullString;
-
 extern int norefs;
-
-typedef enum {
-            DIRECTION, ROWS, STAR, NUMBERING, LBRA, RBRA, SEMI, LARROW, RARROW, TRANSARROW, CHECK, NOREFS,
-			IS, NOTE, TITLE, VERSION, AUTHOR, DATE, ABSTRACT, HIGHLIGHT, KEYWORDS, INTRODUCTION, CONCLUSION,
-			GROUP, STYLE,  REF, // these don't require a string
-			ID,// assumes the string s is initialised
-            COLON, INVISIBLE, VISIBLE, DEFAULTSTYLE, CYCLICSTYLE, INFLUENCES,
-            TAGS, LATEXDEFINITIONS, LATEXENDOFFILE, HTMLDEFINITIONS, CYCLE, NEWSTYLE
-    // removed: OVERRIDE,
-		 } lexval;
-
-typedef struct tmpmetadata {
-    struct tmpmetadata *next;
-    char *property, *value;
-    int count; // for reporting property repetitions
-} metadataList;
-
-typedef struct tmpstr { 
-	char *s; char *styleName; lexval l; type t; 
-	struct tmpstr *is, *style, *note;
-	int number, rankx, ranky, pointsTo, pointedFrom, rowDefaultNodeStyle, cascade;
-	struct tmpstr *next, *nextstr, *group, *exampleGroupMember; 
-	int isgroup, isstyle, plain;
-	int color;
-	int lineno;
-	int component;
-    enum flagcolor flag, originalflag;
-	char *nodeversion, *noderef;
-    struct keywordlist *keywords;
-    int nodeNumber; // for cycle algorithms, etc
-    int cyclic; // is node on a cycle?
-    int declaredCyclic; // if REED has said cyclic <node>?
-    int keywordsOK;
-    int wasString;
-    int visible;
-    int inDegree, outDegree;
-    metadataList *metadata;
-} str;
-
 extern void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip);
-
-typedef struct rownode { str *node; int label; struct rownode *right, *down; } rownodes;
-
 extern char *undefinedVersion;
 extern str *latexdefinitions, *latexendoffile, *htmldefinitions, *introduction, *conclusion;
 extern str *newstr(const char *s);
-
 extern str *appendch(str *d, char c);
-
 extern const int EndOfFile;
-
 extern void error(char *fmt, ...);
 extern void warning(char *fmt, ...);
 extern str *copystr(str *s);
@@ -103,66 +47,34 @@ extern str *newappendcstr(str *d, char *e); // appends to a new string (not chan
 extern void strpad(str **s, int d); // pad to length d with spaces
 extern str *appendstr(str *d, str *e); // append a string to a string
 
-typedef struct
-{    char *option, *args, *usage;
-    int *optionFlag;
-    int needGraphViz;
-} structOption;
-
-extern int verboseOption, graphvizOption, openOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption, IDsOption, transitOption,
+extern int verboseOption, csvOption, graphvizOption, openOption, showIDsOption, optionsOption, transposeOption, flagOption, flagTextOption, xmlOption, generatePDFOption, showVersionsOption, componentsOption, JSONOption, colorsOption, generateSVGOption, pullPlusOption, colorsPlusOption, IDsOption, transitOption,
 	mathematicaOption, showSignatures, latexOption, htmlOption, commentOption, separatorOption, rawOption, pullOption, goOption, hoOption, keywordsOption;
 
 extern void generateFiles(char *targetVersion, char *filename);
-
-typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote; struct keywordlist *keywords; int force; struct tmparrow *next;
-		// flags for connected components analysis
-		int expanded, component;
-		enum flagcolor flag;
-        int visible;
-	} arrow;
-
-extern void metadata(arrow *nl);
-
+extern int metadata(arrow *nl);
 extern void newarrow(arrow **putonthisarrowlist, str **u, str **v, int forceadd);
-
-typedef struct tmpnode { str *s; struct tmpnode *next; } node;
-
 extern node *nodeList, *stylelist;
-
 extern void myfprintf(FILE *opfd, char *fmt, ...);
-
 extern void nolineerror(char *fmt, ...);
-
 extern int printrank(FILE *opfd, str *n, char *version); // for tex file
 
-extern arrow *arrowList, *styledArrowList, *noteArrowList;
+// nodes are made unique, but arrows aren't:
+// they are pairs of nodes and can end up on one or more different lists depending...
+extern arrow *arrowList, *styledArrowList, *noteArrowList, *metaArrowList;
 
 extern char *flagcolor(enum flagcolor fc);
-
 extern enum flagcolor iscolor(char *s);
-
 extern void cascade();
-
 extern int flagcascade[];
-
 extern char *version;
-
 extern char *defaultStyle;
 extern char *cyclicStyle;
-
 extern void saveCheckRtrans(str *claims, str *u, str *v);
 extern void checkAllRtrans();
 extern void findComponents();
 extern void findCycles();
 extern void explainTranslationRules();
-
 extern int numberOfComponents;
-
-typedef struct {
-    char *tagString;
-    int tagLength;
-} tag;
-
 extern tag startTag, endTag;
 extern tag setTag(char *string);
 extern int versionstrcmp(char *a, char *b);
@@ -188,16 +100,8 @@ extern int ispullingkeywords();
 extern void htmlsaypullingkeyword(FILE *opfd);
 extern void href(FILE *opfd, int html, str *here, char *id, char *close);
 extern int checkOneRtrans(str *u, str *v);
-
-struct keywordlist {
-    str *keyword;
-    int xkey, ykey;
-    struct keywordlist *next;
-};
-
 extern void sortkeywords(struct keywordlist **keywordlist);
 extern struct keywordlist *allkeywords;
 extern void linkkeyword(FILE *opfd, struct keywordlist *t, char *debug);
 extern void noteaddkeywordtolist(str *keyword, struct keywordlist **keywords);
-
 extern int keywordcmp(char *keyword, char *pattern);

@@ -73,7 +73,18 @@ void makefiles(char *targetVersion, char *filename)
             if( 1 || verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
             system(cmd->s);
         }
-     }
+    }
+
+
+    if( csvOption )
+    {   fd = fopen(filename = newappendcstr(base, ".csv")->s, "w");
+        if( fd == NULL )
+            fatalError("Can't open %s (CSV file) for writing", filename);
+        generateMetadata(fd);
+        fclose(fd);
+        generated(filename, "", "CSV file of properties");
+    }
+
 
     if( JSONOption )
     {   str *cmd = newstr("dot -Tjson ");

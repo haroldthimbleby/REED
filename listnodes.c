@@ -25,7 +25,7 @@ void listnodes()
         do
         {   swapped = 0;
             for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
-                if( strcasecmp((*t)->s->s, (*t)->next->s->s) > 0 )
+                if( strcasecmp((*t)->strp->s, (*t)->next->strp->s) > 0 )
                 {   node *u = *t;
                     *t = (*t)->next;
                     u->next = (*t)->next;
@@ -35,10 +35,10 @@ void listnodes()
         } while( swapped );
 
         for( node *t = nodeList; t != NULL; t = t->next )
-        {   fprintf(stderr, "%s", t->s->s);
-            if( t->s->is != NULL )
+        {   fprintf(stderr, "%s", t->strp->s);
+            if( t->strp->is != NULL )
             {   fprintf(stderr, " is\n  \"");
-                for( char *s = t->s->is->s; *s; s++ )
+                for( char *s = t->strp->is->s; *s; s++ )
                     fprintf(stderr, "%c", *s == '\n'? ' ': *s);
                 fprintf(stderr, "\"");
             }
@@ -57,8 +57,8 @@ void listnodes()
             for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
             {   char *u, *v;
 
-                u = (*t)->s->is == NULL? (*t)->s->s: (*t)->s->is->s;
-                v = (*t)->next->s->is == NULL? (*t)->next->s->s: (*t)->next->s->is->s;
+                u = (*t)->strp->is == NULL? (*t)->strp->s: (*t)->strp->is->s;
+                v = (*t)->next->strp->is == NULL? (*t)->next->strp->s: (*t)->next->strp->is->s;
 
                 if( strcasecmp(u, v) > 0 )
                 {   node *u = *t;
@@ -71,10 +71,10 @@ void listnodes()
         } while( swapped );
 
         for( node *t = nodeList; t != NULL; t = t->next )
-        {    fprintf(stderr, "%s", t->s->s);
-            if( t->s->is != NULL )
+        {    fprintf(stderr, "%s", t->strp->s);
+            if( t->strp->is != NULL )
             {   fprintf(stderr, " is\n  \"");
-                for( char *s = t->s->is->s; *s; s++ )
+                for( char *s = t->strp->is->s; *s; s++ )
                     fprintf(stderr, "%c", *s == '\n'? ' ': *s);
                 fprintf(stderr, "\"");
             }

@@ -35,11 +35,11 @@ void pullkeywords(char *keyword)
     //fprintf(stderr, "IMPLEMENTING -pull %s\n", keyword);
     for( node *t = nodeList; t != NULL; t = t->next )
     {   // if keyword is not in the list of the nodes keywords...
-        t->s->keywordsOK = 0;
-        for( struct keywordlist *tt = t->s->keywords; tt != NULL; tt = tt->next )
+        t->strp->keywordsOK = 0;
+        for( struct keywordlist *tt = t->strp->keywords; tt != NULL; tt = tt->next )
         {   //fprintf(stderr, "%s: compare %s with %s\n", t->s->s, keyword, tt->u->s);
             if( !keywordcmp(tt->keyword->s, keyword) )
-            {   t->s->keywordsOK = 1;
+            {   t->strp->keywordsOK = 1;
                 break;
             }
         }

@@ -1,7 +1,7 @@
 #include "header.h"
 #include "notes.h"
 extern char *flagdefinitions[], *flagcolors[];
-extern int flagsused[], flagsusedaftercascades[];
+extern int flagsusedexplicitly[], flagsusedaftercascades[];
 extern void LaTeXtranslate(FILE *opfd, char *version, char *note, str *innode); // convert <<id>> notation
 
 /*
@@ -128,26 +128,23 @@ void latexxrefs(FILE *opfd)
 	fprintf(opfd, "%% \\ref{node-ID-is} gives the node full name\n");
 	// for all nodes id, generate a list: \newlabel{node-id}{{node reference}{}} and \newlabel{node-id-is}{{node name}{}}
 	for( node *t = nodeList; t != NULL; t = t->next )
-	{	fprintf(opfd, "\\newlabel{node-%s}{{", t->s->s);
-		printrank(opfd, t->s, version);
+	{	fprintf(opfd, "\\newlabel{node-%s}{{", t->strp->s);
+		printrank(opfd, t->strp, version);
 		fprintf(opfd, "}{}}\n");
-		fprintf(opfd, "\\newlabel{node-%s-is}{{%s}{}}\n", t->s->s, t->s->is == NULL? t->s->s: t->s->is->s);
+		fprintf(opfd, "\\newlabel{node-%s-is}{{%s}{}}\n", t->strp->s, t->strp->is == NULL? t->strp->s: t->strp->is->s);
 	}
 }
+
+extern void texcasecadedcolors(FILE *opfd, int it);
 
 void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip)
 {	int flagLegends = 0;
 	int hasHeading = *heading;
 	char *vbar = hasHeading? "|": "";
 	char *hbar = hasHeading? "\\hline": "";
-		
-		// if there was a cascade, all the flags used will be wrong, so fix them -- because we thought auxcascade() was the wrong place to do it :-)
-		for( int flag = 0; flag <= numberOfColors; flag++ )
-			flagsusedaftercascades[flag] = 0;
-		for( node *t = nodeList; t != NULL; t = t->next )
-			flagsusedaftercascades[t->s->flag]++;
-		
-		for( int i = 1; i <= numberOfColors; i++ ) // gets them in alphabetical order
+
+        char *cline = "";
+		for( int i = 1; i < nflagcolors; i++ ) // gets them in alphabetical order
 		{	if( *flagdefinitions[i] )
 			{	if( !flagLegends )
 				{	myfprintf(opfd, "\\setbox0=\\hbox{\\colorflag{white}}%%\n\
@@ -165,6 +162,7 @@ void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip)
                     }
 				}
 				flagLegends++;
+                myfprintf(opfd, cline);
 				if( flagLegends == 1 )
 					myfprintf(opfd, "\\vphantom{\\copy0}");
 				myfprintf(opfd, "\\colorflag{%s}&", flagcolors[i]);
@@ -172,14 +170,17 @@ void LaTeXcolorkey(FILE *opfd, char *heading, char *vskip)
 				if( !flagsusedaftercascades[i] ) myfprintf(opfd, "\\bf not used&");
 				else myfprintf(opfd, "\\hbox{used %d time%s}&", flagsusedaftercascades[i], flagsusedaftercascades[i] == 1? "": "s");
 				myfprintf(opfd, "%s", flagdefinitions[i]);
-				if( hasHeading && flagsusedaftercascades[i] != flagsused[i] )
+				if( hasHeading )
 				{	myfprintf(opfd, "\\\\&&\\scriptsize (%s used explicitly ", flagcolors[i]);
-					if( flagsused[i] == 1 )
-						myfprintf(opfd, "once before cascading)", flagsused[i]);
+					if( flagsusedexplicitly[i] == 1 )
+						myfprintf(opfd, "once before cascading ", flagsusedexplicitly[i]);
 					else
-						myfprintf(opfd, "%d times before cascading)", flagsused[i]);
+						myfprintf(opfd, "%d times before cascading ", flagsusedexplicitly[i]);
+                    texcasecadedcolors(opfd, i);
+                    myfprintf(opfd, ")");
 				}
-				myfprintf(opfd, "\\\\ \n");
+				myfprintf(opfd, "\\\\\n");
+                cline = "\\cline{2-3}\n";
 			}
 		}
 		if( flagLegends )
@@ -253,7 +254,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 
         swapped = 0;
         for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
-            if( needSwap((*t)->s, (*t)->next->s) )
+            if( needSwap((*t)->strp, (*t)->next->strp) )
             {	//fprintf(stderr, "  swap *t: %d.%d & (*t)->next: %d.%d\n", (*t)->s->rankx, (*t)->s->ranky, (*t)->next->s->rankx, (*t)->next->s->ranky);
                 node *u = *t;
                 *t = (*t)->next;
@@ -274,16 +275,16 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
     int nonotes = 0, anyflags = 0, anynodes = 0, anynotes = 0, anyarrows = 0, anyarrownotes = 0;
     for( node *t = nodeList; t != NULL; t = t->next )
     {	anynodes++;
-        if( t->s->flag ) anyflags++;
+        if( t->strp->flag ) anyflags++;
         //fprintf(stderr, "%s - %d\n", t->s->s, (int) t->s->note);
-        if( t->s->note == NULL ) // && !t->s->isstyle ) // styles don't have notes
+        if( t->strp->note == NULL ) // && !t->s->isstyle ) // styles don't have notes
         { 	if( nonotes == 0 )
         { 	fprintf(stderr, "Warning: No notes provided for these nodes:\n");
             nonotes = 1;
         }
-            myfprintf(stderr, "         - %t", t->s->s);
-            if( t->s->flag != noflag )
-                fprintf(stderr, "         - Node with %s highlight has no notes", flagcolor(t->s->flag));
+            myfprintf(stderr, "         - %t", t->strp->s);
+            if( t->strp->flag != noflag )
+                fprintf(stderr, "         - Node with %s highlight has no notes", flagcolor(t->strp->flag));
             myfprintf(stderr, "\n");
             nonotes = 1;
         } else anynotes++;
@@ -325,17 +326,17 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 		myfprintf(opfd, "\\noindent\\begin{tabular}{@{}llll}\n");
 		for( int i = 1; i < 8; i++ ) // gets flags in alphabetical order
 		{	for( node *t = nodeList; t != NULL; t = t->next )
-				if( t->s->flag != noflag && t->s->flag == i )
-				{	myfprintf(opfd, "\\colorflag{%s}&", flagcolor(t->s->flag));
-					if( t->s->cascade || flagcascade[i] )
+				if( t->strp->flag != noflag && t->strp->flag == i )
+				{	myfprintf(opfd, "\\colorflag{%s}&", flagcolor(t->strp->flag));
+					if( t->strp->cascade || flagcascade[i] )
 						myfprintf(opfd, "Cascaded %s&", flagcascade[i]? "color": "node");
 					else 
-					if( t->s->originalflag != noflag && t->s->originalflag != t->s->flag )
-						myfprintf(opfd, "\\scriptsize (%s before cascade)&", flagcolor(t->s->originalflag));
+					if( t->strp->originalflag != noflag && t->strp->originalflag != t->strp->flag )
+						myfprintf(opfd, "\\scriptsize (%s before cascade)&", flagcolor(t->strp->originalflag));
 					else
 						myfprintf(opfd, "&");
-					printrank(opfd, t->s, version);
-					myfprintf(opfd, "&\\hyperlink{%s}{%t}\\\\\n", t->s->s, t->s->is == NULL? t->s->s: t->s->is->s);
+					printrank(opfd, t->strp, version);
+					myfprintf(opfd, "&\\hyperlink{%s}{%t}\\\\\n", t->strp->s, t->strp->is == NULL? t->strp->s: t->strp->is->s);
 				}
 		}
 		myfprintf(opfd, "\n\\end{tabular}\n");
@@ -349,7 +350,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
         for( component = 1; component <= numberOfComponents; component++ )
         {   anynotes = 0; // per component
             for( node *t = nodeList; t != NULL; t = t->next )
-                if( t->s->visible && t->s->note != NULL && t->s->component == component )
+                if( t->strp->visible && t->strp->note != NULL && t->strp->component == component )
                 {	if( !anynotes )
                     {   myfprintf(opfd, "\\hypertarget{component%d-narrative}{\\section*{Node narrative evidence", component);
                         if( numberOfComponents > 1 )
@@ -362,25 +363,25 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
                         myfprintf(opfd, "\\end{description}\n");
                     }
                     anynotes = 1;
-                    myfprintf(opfd, "\n\n\\hypertarget{%s}{\\subsection*{", t->s->s);
-                    if( t->s->flag != noflag )
-                        myfprintf(opfd, " \\colorflag{%s} ", flagcolor(t->s->flag));
+                    myfprintf(opfd, "\n\n\\hypertarget{%s}{\\subsection*{", t->strp->s);
+                    if( t->strp->flag != noflag )
+                        myfprintf(opfd, " \\colorflag{%s} ", flagcolor(t->strp->flag));
 
                     myfprintf(opfd, "Node ");
-                    printrank(opfd, t->s, version);
-                    myfprintf(opfd, " %T", t->s->is != NULL? t->s->is->s: t->s->s);
+                    printrank(opfd, t->strp, version);
+                    myfprintf(opfd, " %T", t->strp->is != NULL? t->strp->is->s: t->strp->s);
 
-                    if( t->s->group != NULL )
-                        myfprintf(opfd, "\\\\\\hskip 2em --- (Group: %t) ", t->s->group->is == NULL? t->s->group->s: t->s->group->is->s);
-                    if( showIDsOption ) myfprintf(opfd, "\\fbox{%t} ", t->s->s);
+                    if( t->strp->group != NULL )
+                        myfprintf(opfd, "\\\\\\hskip 2em --- (Group: %t) ", t->strp->group->is == NULL? t->strp->group->s: t->strp->group->is->s);
+                    if( showIDsOption ) myfprintf(opfd, "\\fbox{%t} ", t->strp->s);
                     //if( *version ) myfprintf(opfd, " (%t)", version);
                     myfprintf(opfd, "}}\n");
-                    LaTeXkeywords(opfd, t->s->keywords);
-                    LaTeXtranslate(opfd, version, t->s->note->s, t->s);
+                    LaTeXkeywords(opfd, t->strp->keywords);
+                    LaTeXtranslate(opfd, version, t->strp->note->s, t->strp);
 
                     int anyarrows = 0;
                     for( arrow *a = arrowList; a != NULL; a = a->next )
-                        if( a->u == t->s )
+                        if( a->u == t->strp )
                         {	if( !anyarrows ) myfprintf(opfd, "\\vskip .5ex\\vbox{\\small ");
                             anyarrows = 1;
                             myfprintf(opfd, "\\hskip 2em\\\\$\\rightarrow$ \\hyperlink{%s}{", a->v->s);
@@ -445,12 +446,12 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
 	if( nonotes ) 
 	{	fprintf(opfd, "\\section*{No notes provided}\n");
 		for( node *t = nodeList; t != NULL; t = t->next )
-			if( t->s->note == NULL )
+			if( t->strp->note == NULL )
 			{	myfprintf(opfd, "\\textbf{Node ");
-				printrank(opfd, t->s, version);
-				myfprintf(opfd, " %t}", t->s->is != NULL? t->s->is->s: t->s->s);
-				if( t->s->is != NULL )
-					myfprintf(opfd, " [%t]", t->s->s);
+				printrank(opfd, t->strp, version);
+				myfprintf(opfd, " %t}", t->strp->is != NULL? t->strp->is->s: t->strp->s);
+				if( t->strp->is != NULL )
+					myfprintf(opfd, " [%t]", t->strp->s);
 				fprintf(opfd, "\\\\");
 			} 
 	}
@@ -493,7 +494,8 @@ void defineArrowNote(str *u, str *v, str *theNote, str *theIs, struct keywordlis
 	a->arrowis = theIs;
 	a->u = u;
 	a->v = v;
-	noteArrowList = a;
+    a->metadata = NULL;
+    noteArrowList = a;
 }
 
 void defineNodeNote(arrow *nl, str *theNote, struct keywordlist **keywordlist)

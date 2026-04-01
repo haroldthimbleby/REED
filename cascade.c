@@ -1,7 +1,7 @@
 #include "header.h"
 
 extern char *flagdefinitions[], *flagcolors[];
-extern int flagsused[], flagcascade[];
+extern int flagsusedexplicitly[], flagcascade[];
 
 void auxcascade(enum flagcolor fly, str *t, int depth) // recursive cascading
 {
@@ -38,9 +38,9 @@ void markComponent(str *t, int component)
 	if( t->isgroup )
 	{	// myfprintf(stderr, "Group %t is %t\n", t->s, t->is->s);
 		for( node *u = nodeList; u != NULL; u = u->next )
-			if( u->s->group == t )
+			if( u->strp->group == t )
 			{	// myfprintf(stderr, "  %t is %t\n", u->s->s, u->s->is->s);
-				markComponent(u->s, component);
+				markComponent(u->strp, component);
 			}
 	}
 	
@@ -76,10 +76,10 @@ void findCycles() // also computes in and out degrees
 
     for( node *t = nodeList; t != NULL; t = t->next )
     {   int tmp;
-        t->s->nodeNumber = N; // numbering from 0
+        t->strp->nodeNumber = N; // numbering from 0
         // fprintf(stderr, "node %s is %d\n", t->s->s, t->s->nodeNumber);
         N++;
-        if( (tmp = strlen(t->s->s)) > max )
+        if( (tmp = strlen(t->strp->s)) > max )
             max = tmp;
     }
 
@@ -99,8 +99,8 @@ void findCycles() // also computes in and out degrees
     {   int i = 0;
         for( node *t = nodeList; t != NULL; t = t->next )
         {   if( i < 0 || i > N+1 )
-            fprintf(stderr, "out of range: 0 <= %d <= %d\n", i, N); fflush(stderr);
-            cycles[i].s = t->s;
+                fprintf(stderr, "out of range: 0 <= %d <= %d\n", i, N); fflush(stderr);
+            cycles[i].s = t->strp;
             cycles[i].cycle = 0;
             i++;
         }
@@ -119,32 +119,32 @@ void findCycles() // also computes in and out degrees
     {
         int transits = 0;
         for( node *t = nodeList; t != NULL; t = t->next )
-        {   if( t->s->inDegree == 1 && t->s->outDegree == 1 )
+        {   if( t->strp->inDegree == 1 && t->strp->outDegree == 1 )
             {   if( !transits )
                 {   transits = 1;
                     fprintf(stderr, "Transit nodes (in degree = out degree = 1):\n");
                 }
                 fprintf(stderr, "    ");
-                if( t->s->is != NULL )
-                    myfprintf(stderr, "%N (", t->s->is->s);
-                fprintf(stderr, "%s", t->s->s);
-                if( t->s->is != NULL )
+                if( t->strp->is != NULL )
+                    myfprintf(stderr, "%N (", t->strp->is->s);
+                fprintf(stderr, "%s", t->strp->s);
+                if( t->strp->is != NULL )
                     fprintf(stderr, ")");
                 fprintf(stderr, "\n");
             }
         }
         int noInfluence = 0;
         for( node *t = nodeList; t != NULL; t = t->next )
-        {   if( t->s->outDegree == 0 )
+        {   if( t->strp->outDegree == 0 )
             {   if( !noInfluence )
                 {   noInfluence = 1;
                     fprintf(stderr, "Nodes with no influence (out degree = 0):\n");
                 }
                 fprintf(stderr, "    ");
-                if( t->s->is != NULL )
-                    myfprintf(stderr, "%N (", t->s->is->s);
-                fprintf(stderr, "%s", t->s->s);
-                if( t->s->is != NULL )
+                if( t->strp->is != NULL )
+                    myfprintf(stderr, "%N (", t->strp->is->s);
+                fprintf(stderr, "%s", t->strp->s);
+                if( t->strp->is != NULL )
                     fprintf(stderr, ")");
                 fprintf(stderr, "\n");
             }
@@ -219,8 +219,8 @@ void findComponents() // weakly connected components
     {   swapped = 0;
         checkarrowlist(1);
         for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
-            if( (*t)->s->is != NULL && (*t)->next->s->is != NULL &&
-               strcmp((*t)->s->is->s, (*t)->next->s->is->s) > 0 )
+            if( (*t)->strp->is != NULL && (*t)->next->strp->is != NULL &&
+               strcmp((*t)->strp->is->s, (*t)->next->strp->is->s) > 0 )
             {   node *u = *t;
                 *t = (*t)->next;
                 u->next = (*t)->next;
@@ -231,14 +231,14 @@ void findComponents() // weakly connected components
 
     int max = 0, tmp;
         for( node *n = nodeList; n != NULL; n = n->next )
-            if( (tmp = strlen(n->s->s)) > max )
+            if( (tmp = strlen(n->strp->s)) > max )
                 max = tmp;
 
     if( IDsOption )
     {   for( node *n = nodeList; n != NULL; n = n->next )
-        {   mypadstring(stderr, n->s->s, max);
-            if( n->s->is != NULL ) myfprintf(stderr, " is \"%t\"", n->s->is->s);
-            if( n->s->nodeversion != NULL && !strcmp(n->s->nodeversion, undefinedVersion) ) myfprintf(stderr, " version: \"%t\"", n->s->is->nodeversion);
+        {   mypadstring(stderr, n->strp->s, max);
+            if( n->strp->is != NULL ) myfprintf(stderr, " is \"%t\"", n->strp->is->s);
+            if( n->strp->nodeversion != NULL && !strcmp(n->strp->nodeversion, undefinedVersion) ) myfprintf(stderr, " version: \"%t\"", n->strp->is->nodeversion);
 
             fprintf(stderr, "\n");
         }
@@ -252,10 +252,10 @@ void findComponents() // weakly connected components
 	do
     {	repeat = 0;
     	for( node *n = nodeList; n != NULL; n = n->next )
-    		if( n->s->component == 0 )
+    		if( n->strp->component == 0 )
     		{	repeat = 1;
     			// anything n points (or anything that points to n) to is in c, and so on recursively
-    			markComponent(n->s, c);
+    			markComponent(n->strp, c);
 				c++;
     		}
 	} while( repeat );
@@ -272,10 +272,10 @@ void findComponents() // weakly connected components
     	for( int ac = 1; ac < c; ac++ )
     	{	fprintf(stderr, "Component %d:\n", ac);
     		for( node *n = nodeList; n != NULL; n = n->next ) 
-    			if( n->s->component == ac )
-                {	myfprintf(stderr, "    %t ", n->s->isgroup? "Group":"     ");
-                    mypadstring(stderr, n->s->s, max);
-                    if( n->s->is != NULL ) myfprintf(stderr, " is \"%t\"", n->s->is->s);
+    			if( n->strp->component == ac )
+                {	myfprintf(stderr, "    %t ", n->strp->isgroup? "Group":"     ");
+                    mypadstring(stderr, n->strp->s, max);
+                    if( n->strp->is != NULL ) myfprintf(stderr, " is \"%t\"", n->strp->is->s);
                     fprintf(stderr, "\n");
                 }
     		fprintf(stderr, "\n");
@@ -283,28 +283,75 @@ void findComponents() // weakly connected components
 	}
 }
 
+extern int flagsusedaftercascades[];
+
+extern int flagscascaded[];
+void texcasecadedcolors(FILE *opfd, int it)
+{   char *sep = "";
+    int lastone = -1;
+    for( int i = nflagcolors-1; i >= 0; i-- )
+        if( flagscascaded[i] )
+        {   lastone = i;
+            break;
+        }
+    for( int i = 1; i < nflagcolors; i++ ) // say color it first
+        if( i == it && flagscascaded[i] )
+        {   if( i == lastone && *sep )
+                sep = " \\& ";
+            fprintf(opfd, "%s%s", sep,
+                    i == it? "it": flagcolor(i));
+            sep = ", ";
+            break;
+        }
+    for( int i = 1; i < nflagcolors; i++ )
+        if( i != it && flagscascaded[i] )
+        {   if( i == lastone && *sep )
+                sep = " \\& ";
+            fprintf(opfd, "%s%s", sep,
+                    i == it? "it": flagcolor(i));
+            sep = ", ";
+        }
+}
+
 void cascade()
 {	// there are two things that may be cascaded
-	// flag colors if flagcascade[] is set
-	// or nodes if ->cascade is set
-	
-	for( int i = 1; i < 7; i++ )
-		if( flagcascade[i] )
-		{	fprintf(stderr, "Cascade all flags coloured %s\n", flagcolor(i));
+    // flag colors if flagcascade[] is set
+    // or nodes if ->cascade is set
+
+    //fprintf(stderr, "number of flag colors = %d + NONE\n", nflagcolors-1);
+
+    for( int flag = 0; flag < nflagcolors; flag++ )
+        flagsusedexplicitly[flag] = 0;
+    for( node *t = nodeList; t != NULL; t = t->next )
+    {   flagsusedexplicitly[t->strp->flag]++;
+       /* myfprintf(stderr, "%s %v\n    %s %d\n",
+                  t->strp->s,
+                  t->strp->is != NULL? t->strp->is->s: "null",
+                  flagcolor(t->strp->flag),
+                  flagsusedexplicitly[t->strp->flag]);
+        */
+    }
+
+    for( int i = 1; i < nflagcolors; i++ )
+        if( flagcascade[i] )
+        {	fprintf(stderr, "Cascade all flags coloured %s\n", flagcolor(i));
+            flagscascaded[i] = 1;
             for( node *t =  nodeList; t != NULL; t = t->next )
-                if( t->s->flag == i )
-                    auxcascade(t->s->flag, t->s, 0);
-		}
-	
-	for( int flag = 0; flag < 7; flag++ )
-		flagsused[flag] = 0;	
-	for( node *t =  nodeList; t != NULL; t = t->next )
-			flagsused[t->s->flag]++;
-	
-	for( node *t =  nodeList; t != NULL; t = t->next )
-	{	if( t->s->cascade )
-			auxcascade(t->s->flag, t->s, 0);
-	}
+                if( t->strp->flag == i )
+                    auxcascade(t->strp->flag, t->strp, 0);
+        }
+
+    for( node *t =  nodeList; t != NULL; t = t->next )
+    {	if( t->strp->cascade )
+        {	flagscascaded[t->strp->flag] = 1;
+            auxcascade(t->strp->flag, t->strp, 0);
+        }
+    }
+
+    for( int flag = 0; flag < nflagcolors; flag++ )
+        flagsusedaftercascades[flag] = 0;
+    for( node *t = nodeList; t != NULL; t = t->next )
+        flagsusedaftercascades[t->strp->flag]++;
 }
 
 struct transpair {
@@ -358,8 +405,8 @@ void checkISaux(char *id, str *t)
         // is there any node with this as its name?
         for( node *u = nodeList; u != NULL; u = u->next )
         {   //fprintf(stderr," %s <> %s\n", t->s, u->s->s);
-            if( !strcmp(u->s->s, t->s) )
-                nolineerror("To avoid confusion, you must not have\n   \"%s\" is \"%s\"\nand a node called\n   \"%s\"!\n", id, u->s->s, u->s->s);
+            if( !strcmp(u->strp->s, t->s) )
+                nolineerror("To avoid confusion, you must not have\n   \"%s\" is \"%s\"\nand a node called\n   \"%s\"!\n", id, u->strp->s, u->strp->s);
         }
     }
 }
@@ -375,6 +422,6 @@ void checkIS() // warn if any name occurs as a node if there is any node is name
         checkISaux(t->u->s, t->arrowis);
     for( node *u = nodeList; u != NULL; u = u->next )
     {   //fprintf(stderr, "Node %s\n", u->s->s);
-        checkISaux(u->s->s, u->s->is);
+        checkISaux(u->strp->s, u->strp->is);
     }
 }
