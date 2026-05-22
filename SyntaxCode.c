@@ -9,7 +9,7 @@
 "    ### syntax notation...\n"
 "\n"
 "    x ::= y # define non-terminal <x> to be <y>\n"
-"    x | y   # <x> or <y?\n"
+"    x | y   # <x> or <y>\n"
 "    { x }   # grouping in syntax definitions\n"
 "    x+      # at least one x. Short for: <x | xx | xxx>...\n"
 "    x++     # at least one x. Short for: <x | x x | x x x>... separated by spaces\n"
