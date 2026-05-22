@@ -15,6 +15,7 @@ definitions.latex <<< ****
 
 title "Princess of Wales Hospital blood glucometer case"
 author "Harold Thimbleby"
+email "harold@thimbleby.net"
 version "v2"
 date "10 September 2025" 
 
@@ -80,7 +81,7 @@ style.new wideBlackArrow is "color=black; penwidth=4"
 
 style 2->4 is "label=\"  A\",fontname=\"Helvetica-Bold\",fontcolor=blue;fontsize=18;penwidth=4"
 
-note 2->4 is " B" "A blood sample from a patient enters an XceedPro."
+note 2->4 prop:val is " B" "A blood sample from a patient enters an XceedPro."
 note 1->4 is " A" "A nurse uses an XceedPro to take a sample from a specific patient, and the XceedPro records the nurse's and the patient's IDs."
 note 4->5 is " C" "The XceedPros provide date, time, XceedPro ID, nurse ID, patient ID, blood glucose level, etc."
 note 5->7 is " D" "Should be identical to the XceedPro data from [[[from:4]]] via arrow C plus a timestamp of upload."
@@ -90,7 +91,7 @@ backups <- 7;
 backups <- 9
 highlight backups is yellow
 keywords Backups "PrecisionWeb database"
-note backups is "No known backups\nthat could have\nprovided evidence" <<< ENDNOTE
+note backups propb:valb is "No known backups\nthat could have\nprovided evidence" <<< ENDNOTE
 	If backups had been taken (we do not know) then it would have been natural to check if the alleged missing nurse data had ever been stored on the main PrecisionWeb database.
 
 	Backups would have shown whether failures happened in PrecisionWeb, or earlier for instance over arrows A (as the prosecution argued), B, C or D.
