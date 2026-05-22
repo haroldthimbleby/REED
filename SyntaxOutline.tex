@@ -4,29 +4,31 @@ Syntax summary
 ==============
 
 # comment to end of line
-# Hash "#" is used in REED files, and is also used for comments in this syntax summary
+# Hash "<#>" is used in REED files, and is also used for comments in this syntax summary
 
 ### syntax notation...
 
-x ::= y # define non-terminal x to be y
-x | y   # x or y
+x ::= y # define non-terminal <x> to be <y>
+x | y   # <x> or <y?
 { x }   # grouping in syntax definitions
-x+      # at least one x. Short for: x | xx | xxx...
-x++     # at least one x. Short for: x | x x | x x x... separated by spaces
-[ x ]   # optional x
+x+      # at least one x. Short for: <x | xx | xxx>...
+x++     # at least one x. Short for: <x | x x | x x x>... separated by spaces
+[ x ]   # optional <x>
         # spaces/blanks can be put between all syntactic items and used freely for layout 
 
 ### REED syntax...
 
 id ::= { letter | digit | underline }+ | Cstring | Herestring
 Cstring ::= "C string, \\n for newline, \\\\ for backslash etc" 
-Herestring ::= <<< arbitrary-terminator\n                           characters (no escapes needed) over any number of lines\n                       same arbitrary-terminator at start of line
+Herestring ::= <<< arbitrary-terminator
+                   # characters (no escapes needed) over any number of lines
+                   # same arbitrary-terminator at start of line
 
 ### narrative strings in notes are translated to HTML and Latex, and can include:
 
 <html> ...        # following text is copied to HTML, but skipped in Latex
 <latex> ...       # following text is copied to Latex, but skipped in HTML
-<both> ...        # following text is mixed basic HTML and Latex (use flag -rules to see translation rules)
+<both> ...        # following text is mixed basic HTML and Latex !(use reed flag <-rules> to see translation rules)
 <input> filename  # insert the text contents of file into the string
 [[[id]]]          # replace with id's name and make a cross-reference link (in both HTML and Latex)
 
@@ -55,7 +57,7 @@ document-properties ::=  abstract | author | date | email
 ### the following are REED statements
 ### all terminals below are reserved words
 
-check id1 => id2!Check there is a path from id1 to id2
+check id1 => id2!Check there is a path from <id1> to <id2>
 cycle node-list!Confirms that these nodes are supposed to be on a cycle, and don't report them
 cyclestyle id!Define style to highlight cycles
 defaultstyle id!Define default style for nodes and edges
@@ -63,24 +65,24 @@ direction { LR | RL | TB | BT }!Primary direction of graph is left-right, right-
 document-properties id!Specify document properties. Details append when repeated!(e.g., for multiple authors)
 feedback id!Send REED ideas, comments, and feedback to Harold Thimbleby
 group node-or-arrow-list is id!The nodes are grouped, and the group is named
-highlight color [ cascade ] is id!Explain color as id, optionally cascading when it is used
-highlight id is color!Highlight node id with color
-htmldefinitions id!Insert id at start of <body> in HTML file; multiple htmldefinitions append to id
-latexdefinitions id!Insert id at start of Latex file; multiple latexdefinitions append to id 
-latexEOF id!Insert id at end of Latex file (e.g., for references, appendices, etc);!multiple latexEOFs append to id 
+highlight color [ cascade ] is id!Explain <color> as <id>, optionally cascading when it is used
+highlight id is color!Highlight node <id> with <color>
+htmldefinitions id!Insert <id> at start of <body> in HTML file; multiple <htmldefinitions> append <id>
+latexdefinitions id!Insert <id> at start of Latex file; multiple <latexdefinitions> append to <id> 
+latexEOF id!Insert id at end of Latex file (e.g., for references, appendices, etc);!multiple <latexEOF>s append <id> 
 layout [ TOC ] ( { id ( id++ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling
-new style id1 is id2!Define id1 as a style, using Dot syntax for id2!(e.g., new style blue18 is "fontcolor=blue; fontsize=18")
-node-or-arrow [ is id ]!Create nodes or arrows, with optional display name id
+new style id1 is id2!Define <id1> as a style, using Dot syntax for <id2>!(e.g., <new style blue18 is "fontcolor=blue; fontsize=18">)
+node-or-arrow [ is id ]!Create nodes or arrows, with optional display name <id>
 norefs!Nodes without reference numbers will not be reported as errors
-note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note id3 for the nodes or arrows, optionally naming them id1
+note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note <id3> for the nodes or arrows, optionally naming them <id1>
 numbering ( { ( id-or-star++ ) }++ )!Make node references row.column numbers following the grid layout
-ref id1 is id2!Set the reference of node id1 to be id2
+ref id1 is id2!Set the reference of node <id1> to be <id2>
 style node-or-arrow-list is id!Set style of nodes or arrows,!either to a named style or to an explicit Dot specification
-tags id1 id2!Only process REED code between id1 (begin) and id2 (end)
-version id!Subsequent REED code is version id (see flag v=value)
+tags id1 id2!Only process REED code between <id1> (begin) and <id2> (end)
+version id!Subsequent REED code is version <id> (see flag v=value)
 
 ;!semicolons are empty statements, and can be placed freely between statements!... and in note statements for legibility
 
 ### Apart from override, tags, and version the order of commands does not matter
-### Except: author, htmldefinitions, and latexdefinitions append in REED file order
+### Except: <author>, <htmldefinitions>, and <latexdefinitions> which append in REED file order
 
