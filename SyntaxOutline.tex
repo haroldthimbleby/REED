@@ -11,8 +11,8 @@ Syntax summary
 x ::= y # define non-terminal <x> to be <y>
 x | y   # <x> or <y>
 { x }   # grouping in syntax definitions
-x+      # at least one x. Short for: <x | xx | xxx>...
-x++     # at least one x. Short for: <x | x x | x x x>... separated by spaces
+x+      # at least one <x>. Short for: <x | xx | xxx>...
+x++     # at least one <x> separated by spaces. Short for: <x | x x | x x x>... 
 [ x ]   # optional <x>
         # spaces/blanks can be put between all syntactic items and used freely for layout 
 
@@ -21,8 +21,14 @@ x++     # at least one x. Short for: <x | x x | x x x>... separated by spaces
 id ::= { letter | digit | underline }+ | Cstring | Herestring
 Cstring ::= "C string, \\n for newline, \\\\ for backslash etc" 
 Herestring ::= <<< arbitrary-terminator
-                   # characters (no escapes needed) over any number of lines
-                   # same arbitrary-terminator at start of line
+                     # string of characters (no escapes needed) over any number of lines
+arbitrary-terminator # ends at same <arbitrary-terminator> at start of line
+
+# <id>s must be letters, digits, underlines but
+# strings allow all characters to be used
+# reserved words can be used as <id>s if written as strings
+# otherwise, <xyz> and string <"xyz"> are equivalent
+# thus <check> is reserved, but <"check"> can be used arbitrarily
 
 ### narrative strings in notes are translated to HTML and Latex, and can include:
 
@@ -30,12 +36,7 @@ Herestring ::= <<< arbitrary-terminator
 <latex> ...       # following text is copied to Latex, but skipped in HTML
 <both> ...        # following text is mixed basic HTML and Latex !(use reed flag <-rules> to see translation rules)
 <input> filename  # insert the text contents of file into the string
-[[[id]]]          # replace with id's name and make a cross-reference link (in both HTML and Latex)
-
-# reserved words can be used as ids if written out as strings
-# otherwise, id xyz and string "xyz" are equivalent
-# so check is reserved, but "check" can be used arbitrarily
-# string notations allow more characters to be used
+[[[id]]]          # replace with <id>'s name and make a cross-reference link (in both HTML and Latex)
 
 ### the following are definitions of non-terminals:
 
@@ -43,8 +44,8 @@ arrow ::= -> | <-
 color ::= aqua | black | blue | fuchsia | gray | green
         | lime | maroon | navy | olive | orange | purple
         | red | silver | teal | white | yellow
-        # NB, reed -allcolors lists all supported colors
-        # note that color names cannot be used as ids
+        # NB, <reed -allcolors> lists all supported colors
+        # note that color names cannot be used as <id>s
 id-or-star ::= id | *
 node-list ::= id | ( id++ )
 node-or-arrow ::= id | id { arrow id }+
