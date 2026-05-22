@@ -13,7 +13,7 @@ x ::= y # define non-terminal <x> to be <y>
 x | y   # <x> or <y>
 { x }   # grouping in syntax definitions
 x+      # at least one <x>. Short for: <x | xx | xxx>...
-x++     # at least one <x> separated by spaces. Short for: <x | x x | x x x>... 
+x++     # at least one <x> separated by spaces. Short for: <x | x x | x x x> ... 
 [ x ]   # optional <x>
         # blanks can be put between all syntactic items and used freely for layout 
 
@@ -38,7 +38,8 @@ arbitrary-terminator
 <latex> ...       # following text is copied to Latex, but skipped in HTML
 <both> ...        # following text is mixed basic HTML and Latex !(use reed flag <-rules> to see translation rules)
 <input> filename  # insert the text contents of file into the string
-[[[id]]]          # replace with <id>'s name and make a cross-reference link (HTML and Latex)
+[[[id]]]          # replace with <id>'s name and make a cross-reference link 
+                  # generates links in both HTML and Latex
 
 ### the following are definitions of non-terminals:
 
