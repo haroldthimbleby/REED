@@ -20,7 +20,7 @@
 "\n"
 "    id ::= { letter | digit | underline }+ | Cstring | Herestring\n"
 "    Cstring ::= \"C string, \\n for newline, \\\\ for backslash etc\" \n"
-"    Herestring ::= <<< arbitrary-terminator\n                           characters (no escapes needed) over any number of lines\n                       same arbitrary-terminator at start of line\n"
+"    Herestring ::= <{}<{}< arbitrary-terminator\n                           characters (no escapes needed) over any number of lines\n                       same arbitrary-terminator at start of line\n"
 "\n"
 "    ### narrative strings in notes are translated to HTML and Latex, and can include:\n"
 "\n"
