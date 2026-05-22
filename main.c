@@ -211,10 +211,12 @@ structOption options[] =
 	{"--", "", "treat all further parameters as filenames*- if you want to have no restrictions on filenames as they otherwise cannot be flags", &optionsOption, 0}
 };
 
+char *reedVersion = "3.1";
+
 void sayVersion(int inLatex, FILE *fd)
 {   if( inLatex )
         fprintf(fd, "The following summary was generated automatically by using \\texttt{reed~-summarise}, running ");
-    fprintf(fd, "%s version 2.3. Compiled %s, %s.\n", "REED", __TIME__, __DATE__);
+    fprintf(fd, "%s version %s. Compiled %s, %s.\n", "REED", reedVersion, __TIME__, __DATE__);
 }
 
 void summariseFeatures()
@@ -281,7 +283,9 @@ void summariseFeatures()
                 roman = 0;
                 fprintf(fd, "\\\\\n\\hbox{}"); break;
             case '<':
-                fprintf(fd, roman? "\\texttt{": "<"); break;
+                fprintf(fd, roman? "\\texttt{": "<");
+                if( s[1] == '<' ) fprintf(fd, "{}");
+                break;
             case '>':
                 fprintf(fd, roman? "}": ">"); break;
             default:
@@ -545,6 +549,7 @@ int main(int argc, char *argv[])
         }
 
         generateFiles(targetVersion, *outputbasename? outputbasename: processedFileName); // processFileName is the last file named
+        dofeedback(); // if any
         if( colorsOption || colorsPlusOption )
             listColorsUsed();
         if( keywordsOption )

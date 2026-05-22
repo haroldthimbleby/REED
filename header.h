@@ -105,3 +105,6 @@ extern struct keywordlist *allkeywords;
 extern void linkkeyword(FILE *opfd, struct keywordlist *t, char *debug);
 extern void noteaddkeywordtolist(str *keyword, struct keywordlist **keywords);
 extern int keywordcmp(char *keyword, char *pattern);
+extern void dofeedback();
+extern int newfeedback(char *feedback);
+extern int newemail(char *email);

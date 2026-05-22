@@ -9,7 +9,7 @@ extern void defineNodeNote(arrow *nl, str *theNote, struct keywordlist **keyword
 extern void notes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract);
 extern void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract);
 
-extern authorList *authors;
+extern authorList *authors, *emails;
 
 extern void defineArrowStyle(str *u, str *v, str *theStyle);
 

@@ -238,7 +238,9 @@ struct { lexval l; char *symbol; } lexes[] =
     { VISIBLE, "<visible>"},
     { INVISIBLE, "<invisible>"},
     { DEFAULTSTYLE, "<defaultstyle>"},
-    { CYCLICSTYLE, "<cyclestyle>"}
+    { CYCLICSTYLE, "<cyclestyle>"},
+    { FEEDBACK, "<feedback>"},
+    { EMAIL, "<email>"}
 };
 
 str *currentlexstr;
@@ -312,6 +314,8 @@ lexval readlex(str **lexstr)
                     if( !strcasecmp("definitions.latexend", (*lexstr)->s) ) return LATEXENDOFFILE;
                     if( !strcasecmp("definitions.html", (*lexstr)->s) ) return HTMLDEFINITIONS;
                     if( !strcasecmp("direction", (*lexstr)->s) ) return DIRECTION;
+                    if( !strcasecmp("email", (*lexstr)->s) ) return EMAIL;
+                    if( !strcasecmp("feedback", (*lexstr)->s) ) return FEEDBACK;
                     if( !strcasecmp("group", (*lexstr)->s) ) return GROUP;
                     if( !strcasecmp("highlight", (*lexstr)->s) ) return HIGHLIGHT;
                     if( !strcasecmp("influences", (*lexstr)->s) ) return RARROW; // it's a synonym
@@ -938,7 +942,7 @@ int parse(char *filename, char *bp)
                 }
                 if( lex1->l == AUTHOR )
                 {	if( !newauthor(lex2->s) )
-                    error("Repeated author name in document author listings");
+                        error("Repeated author name in document author listings");
                 }
                 if( lex1->l == DATE )
                 {	if( *date ) error("Multiple dates");
@@ -971,6 +975,24 @@ int parse(char *filename, char *bp)
                         error("invalid direction '%s'; possible options are BT, TB, LR, RL (in upper or lower case)", direction);
                 }
                 getlex();
+                break;
+
+            case FEEDBACK:
+                if( lex2->l != ID )
+                    error("feedback should be followed by a string of feedback about REED");
+                else {
+                    newfeedback(lex2->s);
+                    getlex();
+                }
+                break;
+
+            case EMAIL:
+                if( lex2->l != ID )
+                    error("email should be followed by an email string");
+                else {
+                    newemail(lex2->s);
+                    getlex();
+                }
                 break;
 
             case INTRODUCTION:
