@@ -4,7 +4,8 @@ Syntax summary
 ==============
 
 # comment to end of line
-# Hash "<#>" is used in REED files, and is also used for comments in this syntax summary
+# Hash "<#>" is used in REED files
+# and is also used for comments in this syntax summary
 
 ### syntax notation...
 
@@ -14,15 +15,16 @@ x | y   # <x> or <y>
 x+      # at least one <x>. Short for: <x | xx | xxx>...
 x++     # at least one <x> separated by spaces. Short for: <x | x x | x x x>... 
 [ x ]   # optional <x>
-        # spaces/blanks can be put between all syntactic items and used freely for layout 
+        # blanks can be put between all syntactic items and used freely for layout 
 
 ### REED syntax...
 
 id ::= { letter | digit | underline }+ | Cstring | Herestring
 Cstring ::= "C string, \\n for newline, \\\\ for backslash etc" 
 Herestring ::= <<< arbitrary-terminator
-                     # string of characters (no escapes needed) over any number of lines
-arbitrary-terminator # ends at same <arbitrary-terminator> at start of line
+               # string of characters (no escapes needed) over any number of lines
+arbitrary-terminator 
+               # ends at same <arbitrary-terminator> at start of line
 
 # <id>s must be letters, digits, underlines but
 # strings allow all characters to be used
@@ -30,13 +32,13 @@ arbitrary-terminator # ends at same <arbitrary-terminator> at start of line
 # otherwise, <xyz> and string <"xyz"> are equivalent
 # thus <check> is reserved, but <"check"> can be used arbitrarily
 
-### narrative strings in notes are translated to HTML and Latex, and can include:
+### note strings are translated to HTML and Latex, and can include:
 
 <html> ...        # following text is copied to HTML, but skipped in Latex
 <latex> ...       # following text is copied to Latex, but skipped in HTML
 <both> ...        # following text is mixed basic HTML and Latex !(use reed flag <-rules> to see translation rules)
 <input> filename  # insert the text contents of file into the string
-[[[id]]]          # replace with <id>'s name and make a cross-reference link (in both HTML and Latex)
+[[[id]]]          # replace with <id>'s name and make a cross-reference link (HTML and Latex)
 
 ### the following are definitions of non-terminals:
 
@@ -70,20 +72,21 @@ highlight color [ cascade ] is id!Explain <color> as <id>, optionally cascading 
 highlight id is color!Highlight node <id> with <color>
 htmldefinitions id!Insert <id> at start of <body> in HTML file; multiple <htmldefinitions> append <id>
 latexdefinitions id!Insert <id> at start of Latex file; multiple <latexdefinitions> append to <id> 
-latexEOF id!Insert id at end of Latex file (e.g., for references, appendices, etc);!multiple <latexEOF>s append <id> 
+latexEOF id!Insert <id> at end of Latex file (e.g., for references, appendices, etc);!multiple <latexEOF>s append <id> 
 layout [ TOC ] ( { id ( id++ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling
 new style id1 is id2!Define <id1> as a style, using Dot syntax for <id2>!(e.g., <new style blue18 is "fontcolor=blue; fontsize=18">)
 node-or-arrow [ is id ]!Create nodes or arrows, with optional display name <id>
 norefs!Nodes without reference numbers will not be reported as errors
 note node-or-arrow-list [ is id1 [;] ] [ author id2 [;] ] id3!Provide narrative note <id3> for the nodes or arrows, optionally naming them <id1>
-numbering ( { ( id-or-star++ ) }++ )!Make node references row.column numbers following the grid layout
+numbering ( { ( id-or-star++ ) }++ )!Make node references row.column numbers follow the grid layout
 ref id1 is id2!Set the reference of node <id1> to be <id2>
 style node-or-arrow-list is id!Set style of nodes or arrows,!either to a named style or to an explicit Dot specification
 tags id1 id2!Only process REED code between <id1> (begin) and <id2> (end)
-version id!Subsequent REED code is version <id> (see flag v=value)
+version id!Subsequent REED code is version <id> (see flag <v=value>)
 
-;!semicolons are empty statements, and can be placed freely between statements!... and in note statements for legibility
+;!semicolons are empty statements, and can be placed freely between statements!... and in <note> statements for legibility
 
-### Apart from override, tags, and version the order of commands does not matter
-### Except: <author>, <htmldefinitions>, and <latexdefinitions> which append in REED file order
+### Apart from <tags>, and <version> the order of commands does not matter
+### Except: <author>, <htmldefinitions>, and <latexdefinitions>
+### which append in REED file order
 
