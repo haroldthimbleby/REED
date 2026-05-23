@@ -177,6 +177,8 @@ structOption options[] =
     {"-go", "", "as [-g] but also open the [.gv] file", &goOption, 1},
 	{"-h", "", "generate an interactive [.html] REED file", &htmlOption, 0},
     {"-ho", "", "as [-h] but also open the [.html] file", &hoOption, 0},
+    {"-html", "", "long form of -h flag", &htmlOption, 0},
+    {"-htmlo", "", "long form of -ho flag", &hoOption, 0},
     {"-ids", "", "show full names and IDs in the REED graph", &IDsOption, 0},
     {"-insert", "<text>", "insert this text to process before the next file", &handleInsert, 0},
     {"-json", "", "generate a JSON [.js] file with all information from the GraphViz diagram", &JSONOption, 1},
@@ -187,7 +189,7 @@ structOption options[] =
     {"-o", "", "open generated files automatically", &openOption, 1},
     {"-pdf", "", "generate a [.pdf] file representing the REED graph", &generatePDFOption, 1},
     {"-pick", "<color>", "restrict generated files to just this color", &matchedpullOption, 1},
-    {"-pick", "<keyword>", "restrict generated files to notes with this keyword. Keyword can be abbreviated: use [...] so [xyz...] matches keywords or phrases starting [xyz]", &matchedpullOption, 1},
+    {"-pick", "<keyword>", "restrict generated files to notes with this keyword*- the keyword can be abbreviated: use [...] so [xyz...] matches keywords or phrases starting [xyz]", &matchedpullOption, 1},
     {"-pick+", "<color>", "same as [-pick] but also explains this color meaning", &matchedpullPlusOption, 1},
     {"-properties", "", "generate a [.csv] file of properties for any application", &csvOption, 0},
     {"-raw", "", "start in raw mode (skipping text until a start tag)*- only use [-raw] with [-tags] flag", &rawOption, 0},
@@ -207,8 +209,9 @@ structOption options[] =
     {"-version", "", "state the version number of the REED command", &versionOption, 0},
     {"-w", "", "what versions are used in these files?*- helpful to know if using the [v=] flag", &showVersionsOption, 0},
     {"-watch", "", "run REED when any used file changes (nice with [-o] flag)", &handleWatch, 0},
-	{"-x", "", "generate an [.xml] file*- representing all REED data for import into other applications", &xmlOption, 0},
-	{"--", "", "treat all further parameters as filenames*- if you want to have no restrictions on filenames as they otherwise cannot be flags", &optionsOption, 0}
+    {"-x", "", "generate an [.xml] file*- representing all REED data for import into other applications", &xmlOption, 0},
+    {"-xml", "", "long form of -x flag", &xmlOption, 0},
+    {"--", "", "treat all further parameters as filenames*- if you want to have no restrictions on filenames as they otherwise cannot be flags", &optionsOption, 0}
 };
 
 char *reedVersion = "3.1";
