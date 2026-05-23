@@ -1,5 +1,9 @@
 #include "header.h"
 #include "notes.h"
+
+//#include <strings.h>
+#include <xlocale.h>
+
 extern char *flagdefinitions[], *flagcolors[];
 extern int flagsusedexplicitly[], flagsusedaftercascades[];
 extern void allVersions(FILE *opfd);
@@ -242,7 +246,7 @@ void HTMLcolorkey(FILE *opfd, char *heading, char *vskip)
 	char *vbar = hasHeading? "|": "";
 	char *hbar = hasHeading? "\\hline": "";
 
-		for( int i = 1; i < 8; i++ ) // gets them in alphabetical order
+		for( int i = 1; i < nflagcolors; i++ ) // gets them in alphabetical order
 		{	if( *flagdefinitions[i] )
 			{	if( !flagLegends )
 				{	myfprintf(opfd, "<table>\n");
@@ -286,8 +290,8 @@ void wrapuplinkkeyword(FILE *opfd, struct keywordlist *t, char *debug)
 }
 
 // generate the narrative HTML file
-void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract)
-{ 	myfprintf(opfd, "<!DOCTYPE html>\n<html>\n<head>\n<title>%t%t%t%t</title>\n", title, 
+void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract, char *filename)
+{ 	myfprintf(opfd, "<!DOCTYPE html>\n<html>\n<head>\n<title>%t%t%t%t</title>\n", title,
 			*title? "<br/>": "", *version? "Version ": "", version);
 	fprintf(opfd, "<style>%s</style></head>\n", css);
     fprintf(opfd, "<body>\n%s\n", htmldefinitions->s);
@@ -312,6 +316,8 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
     else
         summarisekeywords(opfd);
     fprintf(opfd, "</center>\n");
+
+    fprintf(opfd, "<blockquote><h2>&rarr; <a href=\"#nodeIndex\">Go to node index</a></h2></blockquote>\n");
 
 	if( *abstract ) // && pullString == noflag )
 	{	fprintf(opfd, "<a name=\"REEDabstract\"/><blockquote><div class=\"shadedBox\">");
@@ -408,7 +414,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 		HTMLcolorkey(opfd, "", "");
 			
 		myfprintf(opfd, "<table frame=\"box\">\n");
-		for( int i = 1; i < 8; i++ ) // gets flags in alphabetical order
+		for( int i = 1; i < nflagcolors; i++ ) // gets flags in alphabetical order
 		{	for( node *t = nodeList; t != NULL; t = t->next )
 				if( t->strp->flag != noflag && t->strp->flag == i )
 				{	fprintf(opfd, "<tr><td>");
@@ -537,7 +543,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
     {   char *sep = "";
         int plural = allkeywords->next != NULL;
         fprintf(opfd, "<hr><blockquote><h2>");
-             fprintf(opfd, "Jump back to first note with %s keyphrase:<br><span style=\"font-weight:normal;\">\n", plural? "any": "this");
+        fprintf(opfd, "Jump back to first note with %s keyphrase:<br><span style=\"font-weight:normal;\">\n", plural? "any": "this");
         for( struct keywordlist *t = allkeywords; t != NULL; t = t->next )
         {   fprintf(opfd, "%s    ", sep);
             wrapuplinkkeyword(opfd, t, t->keyword->s);
@@ -547,6 +553,45 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
         }
         fprintf(opfd, ".</span></h2></blockquote>\n");
     }
+
+    fprintf(opfd, "<hr><blockquote><a name=\"nodeIndex\"><h2>HTML node index</h2></a>");
+
+    myfprintf(opfd, "<p>Assuming this file is still called \"<tt>%s</tt>\" ... then:</p>", filename);
+    myfprintf(opfd, "<ul>");
+    myfprintf(opfd, "<li>To make a link to a <em>pecific</em> node in this file use <tt>&lt;a href=\"%s#<em>%s</em>\"&gt;<em>%s</em>&lt;/a&gt;</tt> from the table below</li>\n", filename, "short-id", "full name of node");
+    myfprintf(opfd, "<li>To make an HTML file link to the <em>complete</em> file use, e.g., <tt>&lt;a href=\"%s\"&gt; %s&lt;/a&gt;</tt></li>\n", filename, title);
+    myfprintf(opfd, "<li>In general, you will need to reference the web host: <tt>https://<em>host.name.url</em>/<em>file path</em>.../%s</tt></li>\n", filename);
+    myfprintf(opfd, "</ul>\n");
+
+    fprintf(opfd, "<table><tr><th>Full name of node</th><th>REED short ID</th><th>Version</th></tr>\n");
+
+    swapped = 0;
+    do
+    {    swapped = 0; // , (size_t) NULL
+         for( node **t = &nodeList; (*t) != NULL && (*t)->next != NULL; t = &(*t)->next )
+         {   char *u, *v;
+             u = (*t)->next->strp->is == NULL? (*t)->next->strp->s: (*t)->next->strp->is->s;
+             v = (*t)->strp->is == NULL? (*t)->strp->s: (*t)->strp->is->s;
+             if( strcmp(u, v) < 0 )
+             {    node *u = *t;
+                 *t = (*t)->next;
+                 u->next = (*t)->next;
+                 (*t)->next = u;
+                 swapped = 1;
+             }
+         }
+    } while( swapped );
+
+    for( node *t = nodeList; t != NULL; t = t->next )
+    {   myfprintf(opfd, "\n<tr>");
+        myfprintf(opfd, "<td><a href=\"#%s\">%s</a></td>", t->strp->s, t->strp->is == NULL? t->strp->s: t->strp->is->s);
+        myfprintf(opfd, "<td>&nbsp;<a href=\"#%s\"><tt>%s</tt></a>&nbsp;</td>", t->strp->s, t->strp->s);
+        myfprintf(opfd,"<td>&nbsp;<a href=\"#%s\">%s%s%d.%d</a>&nbsp;</td></tr></a>\n", t->strp->s,
+                  *version? version: "", *version? "-": "",
+                  t->strp->rankx, t->strp->ranky);
+    }
+
+    fprintf(opfd, "</table>\n</blockquote>");
 
     fprintf(opfd, "\n%s\n", conclusion->s);
 	fprintf(opfd, "</body>\n</html>\n");

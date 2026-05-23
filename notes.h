@@ -7,7 +7,8 @@ extern void defineArrowNote(str *u, str *v, str *theNote, str *theIs, struct key
 extern void defineNodeNote(arrow *nl, str *theNote, struct keywordlist **keywordlist);
 
 extern void notes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract);
-extern void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract);
+
+extern void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char *date, char *abstract, char *filename);
 
 extern authorList *authors, *emails;
 

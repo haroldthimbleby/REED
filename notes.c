@@ -324,7 +324,7 @@ void notes(FILE *opfd, char *title, char *version, authorList *authors, char *da
         LaTeXcolorkey(opfd, "Highlighting key", "\\vskip 4ex");
 
 		myfprintf(opfd, "\\noindent\\begin{tabular}{@{}llll}\n");
-		for( int i = 1; i < 8; i++ ) // gets flags in alphabetical order
+		for( int i = 1; i < nflagcolors; i++ ) // gets flags in alphabetical order
 		{	for( node *t = nodeList; t != NULL; t = t->next )
 				if( t->strp->flag != noflag && t->strp->flag == i )
 				{	myfprintf(opfd, "\\colorflag{%s}&", flagcolor(t->strp->flag));

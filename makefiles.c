@@ -161,13 +161,13 @@ void makefiles(char *targetVersion, char *filename)
         else
         {
             if( !*title || authors == NULL || !*date || !*version  )
-            {    myfprintf(stderr, "Warning: Missing details needed for the HTML file (%s)\n", filename);
+            {   myfprintf(stderr, "Warning: Missing details needed for the HTML file (%s)\n", filename);
                 if( authors == NULL ) fprintf(stderr, "         - No author(s) provided\n");
                 if( !*version ) fprintf(stderr, "         - No version provided\n");
                 if( !*title ) fprintf(stderr, "         - No title provided\n");
                 if( !*date ) fprintf(stderr, "         - No date provided\n");
             }
-            htmlnotes(fd, title, version, authors, date, abstract);
+            htmlnotes(fd, title, version, authors, date, abstract, filename);
             fclose(fd);
             generated(filename, "", "interactive HTML of REED file");
             if( hoOption )
