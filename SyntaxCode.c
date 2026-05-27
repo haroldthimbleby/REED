@@ -68,6 +68,8 @@
 "    direction { LR | RL | TB | BT }!Primary direction of graph is left-right, right-left, top-bottom, or bottom-top\n"
 "    document-properties id!Specify document properties. Details append when repeated!(e.g., for multiple authors)\n"
 "    feedback id!Send REED ideas, comments, and feedback to Harold Thimbleby\n"
+"    !No information apart from the <id>, the date \n"
+"    !and the version of the REED tool being used is shared, so please be specific\n"
 "    group node-or-arrow-list is id!The nodes are grouped, and the group is named\n"
 "    highlight color [ cascade ] is id!Explain <color> as <id>, optionally cascading when it is used\n"
 "    highlight id is color!Highlight node <id> with <color>\n"
