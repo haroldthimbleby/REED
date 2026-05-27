@@ -1,0 +1,17 @@
+digraph {
+  compound=true;
+  bgcolor="transparent";
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  label="";
+  rankdir="";
+
+  "3" [URL="#3"; label="Node three";];
+  "2" [URL="#2"; label="Node two";];
+  "1" [URL="#1"; label="Node one";];
+
+  "2"->"3";
+  "1"->"2";
+}

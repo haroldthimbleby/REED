@@ -184,7 +184,7 @@ void arrowTable(FILE *opfd, node *t, int allLinked)
         }
     if( anyarrows ) fprintf(opfd, "</table></td>\n");
     fprintf(opfd, "</tr>\n</table>\n");
-    fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a></h3>\n</div>\n");
+    fprintf(opfd, "<h3>&uarr;&nbsp;<a href=\"#REEDabstract\">Back to top</a>&nbsp;&nbsp;&darr;&nbsp;<a href=\"#nodeIndex\">Node index</a></h3>\n</div>\n");
 }
 
 void HTMLkeywords(FILE *opfd, struct keywordlist *keywords)
@@ -214,7 +214,7 @@ void pullAcolor(FILE *opfd, enum flagcolor pullString)
     for( node *t = nodeList; t != NULL; t = t->next )
         if( (t->strp->flag == pullString || (t->strp->flag == noflag && pullString == gray)) && t->strp->note != NULL )
         {   count++;
-            fprintf(opfd, "\n<a name=\"%s\"><br/></a>\n<div class=\"shadedBox\"><h2>", t->strp->s);
+            fprintf(opfd, "\n<a name=\"%s\" id=\"%s\"><br/></a>\n<div class=\"shadedBox\"><h2>", t->strp->s, t->strp->s);
             myfprintf(opfd, t->strp->isgroup? "Group ": "Node ");
             (void) printrank(opfd, t->strp, version);
             myfprintf(opfd, " %T",
@@ -320,7 +320,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
     fprintf(opfd, "<blockquote><h2>&rarr; <a href=\"#nodeIndex\">Go to node index</a></h2></blockquote>\n");
 
 	if( *abstract ) // && pullString == noflag )
-	{	fprintf(opfd, "<a name=\"REEDabstract\"/><blockquote><div class=\"shadedBox\">");
+	{	fprintf(opfd, "<a name=\"REEDabstract\" id=\"REEDabstract\"/><blockquote><div class=\"shadedBox\">");
 		HTMLtranslate(opfd, NULL, abstract);
 		fprintf(opfd, "</div></blockquote>\n");
 	}
@@ -449,7 +449,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 			if( t->strp->note != NULL && t->strp->component == component && pullnode(t->strp) )
             {	if( pullString != noflag && pullString != t->strp->flag ) continue; //
                 if( !anynotes )
-				{	myfprintf(opfd, "<h1 style='text-decoration: underline'><a name=\"component%d-narrative\">Node narrative evidence", component);
+				{	myfprintf(opfd, "<h1 style='text-decoration: underline'><a name=\"component%d-narrative\" id=\"component%d-narrative\">Node narrative evidence", component, component);
 					if( numberOfComponents > 1 )
 						myfprintf(opfd, " for component %d", component);
 					myfprintf(opfd, "</a></h1>");
@@ -460,7 +460,7 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
 					myfprintf(opfd, "</ul>\n");
 				}
 				anynotes = 1;
-				fprintf(opfd, "\n<a name=\"%s\"><br/></a>\n<div class=\"shadedBox\"><h2>", t->strp->s);
+				fprintf(opfd, "\n<a name=\"%s\" id=\"%s\"><br/></a>\n<div class=\"shadedBox\"><h2>", t->strp->s, t->strp->s);
 				if( t->strp->flag != noflag ) htmlflagcolor(opfd, t->strp->flag, 0);
 
 				myfprintf(opfd, " Node ");
@@ -554,16 +554,19 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
         fprintf(opfd, ".</span></h2></blockquote>\n");
     }
 
-    fprintf(opfd, "<hr><blockquote><a name=\"nodeIndex\"><h2>HTML node index</h2></a>");
+    fprintf(opfd, "<hr><blockquote><a name=\"nodeIndex\" id=\"nodeIndex\"><h2>HTML node index</h2></a>");
 
-    myfprintf(opfd, "<p>Assuming this file is still called \"<tt>%s</tt>\" ... then:</p>", filename);
+    myfprintf(opfd, "<p>This is an index to all nodes in this HTML REED file for %s.</p>\n<p>This index can also be used so you can write HTML links (in emails or in your own HTML files) to refer to this file or to individual evidence nodes within this file.</p>", title);
+    myfprintf(opfd, "<p>Assuming this file is still called &ldquo;<tt>%s</tt>&rdquo; then:</p>", filename);
     myfprintf(opfd, "<ul>");
-    myfprintf(opfd, "<li>To make a link to a <em>pecific</em> node in this file use <tt>&lt;a href=\"%s#<em>%s</em>\"&gt;<em>%s</em>&lt;/a&gt;</tt> from the table below</li>\n", filename, "short-id", "full name of node");
-    myfprintf(opfd, "<li>To make an HTML file link to the <em>complete</em> file use, e.g., <tt>&lt;a href=\"%s\"&gt; %s&lt;/a&gt;</tt></li>\n", filename, title);
-    myfprintf(opfd, "<li>In general, you will need to reference the web host: <tt>https://<em>host.name.url</em>/<em>file path</em>.../%s</tt></li>\n", filename);
+    myfprintf(opfd, "<li>To make an HTML file link to this <em>complete</em> file use, e.g., <blockquote><tt>&lt;a href=\"%s\"&gt;%s&lt;/a&gt;</tt></blockquote></li>\n", filename, title);
+    myfprintf(opfd, "<li>In general, you will need to reference the web host with a full URL, e.g., <blockquote><tt>https://<em>host.name.url</em>/<em>file path</em>.../%s</tt></blockquote></li>\n", filename);
+    myfprintf(opfd, "<li>To make a link to a <em>specific</em> node in this file copy the <b>REED short id</b> from the table below and use <blockquote><tt>&lt;a href=\"%s#<em>%s</em>\"&gt;<em>%s</em>&lt;/a&gt;</tt></blockquote></li>\n", filename, "REED-short-id", "link text, full name of node, etc");
     myfprintf(opfd, "</ul>\n");
 
-    fprintf(opfd, "<table><tr><th>Full name of node</th><th>REED short ID</th><th>Version</th></tr>\n");
+    char *ruleCSS = " style=\"border-bottom: 2px solid black;\"";
+
+    fprintf(opfd, "<table style=\"border-collapse: collapse\"><tr><th%s>Full name of node</th><th%s>REED short ID</th><th%s>Version</th></tr>\n", ruleCSS, ruleCSS, ruleCSS);
 
     swapped = 0;
     do
@@ -582,13 +585,16 @@ void htmlnotes(FILE *opfd, char *title, char *version, authorList *authors, char
          }
     } while( swapped );
 
+    int rowCount = 1;
     for( node *t = nodeList; t != NULL; t = t->next )
-    {   myfprintf(opfd, "\n<tr>");
-        myfprintf(opfd, "<td><a href=\"#%s\">%s</a></td>", t->strp->s, t->strp->is == NULL? t->strp->s: t->strp->is->s);
-        myfprintf(opfd, "<td>&nbsp;<a href=\"#%s\"><tt>%s</tt></a>&nbsp;</td>", t->strp->s, t->strp->s);
-        myfprintf(opfd,"<td>&nbsp;<a href=\"#%s\">%s%s%d.%d</a>&nbsp;</td></tr></a>\n", t->strp->s,
+    {   char *rule = rowCount % 5 == 0? ruleCSS: "";
+        myfprintf(opfd, "\n<tr>");
+        myfprintf(opfd, "<td%s><a href=\"#%s\">%s</a></td>", rule, t->strp->s, t->strp->is == NULL? t->strp->s: t->strp->is->s);
+        myfprintf(opfd, "<td%s>&nbsp;<a href=\"#%s\"><tt>%s</tt></a>&nbsp;</td>", rule, t->strp->s, t->strp->s);
+        myfprintf(opfd,"<td%s>&nbsp;<a href=\"#%s\">%s%s%d.%d</a>&nbsp;</td></tr></a>\n", rule, t->strp->s,
                   *version? version: "", *version? "-": "",
                   t->strp->rankx, t->strp->ranky);
+        rowCount++;
     }
 
     fprintf(opfd, "</table>\n</blockquote>");

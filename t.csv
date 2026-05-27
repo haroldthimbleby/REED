@@ -1,0 +1,3 @@
+Type, ID1, ID2, "Full name", Property, Value
+Node, backups, "", "No known backups that could have provided evidence", propb, valb
+Arrow, 2, 4, "", prop, val

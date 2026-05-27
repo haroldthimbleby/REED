@@ -29,8 +29,8 @@ void generated(char *filename, char *suffix, char *reason)
         appendcstr(cmd, filename);
         if( *suffix )
             appendcstr(cmd, suffix);
-        if( verboseOption ) fprintf(stderr, "| -- ");
-        if( 1 || verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        if( verboseOption ) fprintf(stderr, "|-- ");
+        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
         system(cmd->s);
     }
 }
@@ -39,14 +39,14 @@ void makefiles(char *targetVersion, char *filename)
 {       FILE *fd = NULL;
     str *base = basename(filename);
 
-    verboseOption = 1;
+    // verboseOption = 1;
 
     if( hoOption )
         htmlOption = 1;
 
     if( htmlOption )
     {   generateSVGOption = 1;
-        fprintf(stderr, "-h implies -svg for demos\n");
+        fprintf(stderr, "-h (-ho -html & -htmlo flags) imply -svg for drawings\n");
     }
 
     if( JSONOption ||

@@ -37,12 +37,12 @@ edges={
 };
 vertexNames={
    "unknowndatabaselogs"->"v2-8.3 No evidence\non any system\nreliability",
-   "unknownEdits"->"v2-3.3 Unknown manual edits\nto PrecisionWeb database",
+   "unknownEdits"->"v3-3.3 Unknown manual edits\nto PrecisionWeb database",
    "networks"->"v2-2.3 Ward\nnetworks",
    "manual"->"v2-3.2 PrecisionWeb\noperators\nmanual",
    "forensicProblems"->"v2-5.3 Written evidence shows\nforensic methods used\nwere unreliable",
    "backups"->"v2-8.2 No known backups\nthat could have\nprovided evidence",
-   "Abbott_engineer"->"v2-2.2 Unsupervised\nAbbott\nengineer",
+   "Abbott_engineer"->"v3-2.2 Unsupervised\nAbbott\nengineer",
    "9"->"v2-7.2 Main hospital\ndatabases",
    "8"->"v2-6.2 Lots of unknown\ncomplex middleware",
    "7"->"v2-5.2 Abbott\nPrecisionWeb\ndatabase",

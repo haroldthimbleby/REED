@@ -1,0 +1,13 @@
+digraph {
+  compound=true;
+  bgcolor="transparent";
+  color=red;
+  labelloc=t;
+  fontname="Helvetica";
+  fontsize=24;
+  label="";
+  rankdir="";
+
+  "fred" [URL="#fred"; label="fred";fillcolor=red; style=filled; penwidth=2; shape=note; fontcolor="white";];
+
+}

@@ -74,8 +74,8 @@ void linkkeyword(FILE *opfd, struct keywordlist *t, char *debug)
 
     if( p == NULL ) { fprintf(stderr, "ooops! didn't find %s in keyword symbol table\n", t->keyword->s); exit(1); }
 
-    // fprintf(stderr, "%s: <a href=\"#key-%d-%d\" name=\"key-%d-%d\">\n", debug, p->xkey, p->ykey+1, p->xkey, p->ykey);
-    fprintf(opfd, "<a href=\"#key-%d-%d\" name=\"key-%d-%d\">", p->xkey, p->ykey+1, p->xkey, p->ykey);
+    // fprintf(stderr, "<a href=\"#key-%d-%d\" name=\"key-%d-%d\" id=\"key-%d-%d\">", p->xkey, p->ykey+1, p->xkey, p->ykey, p->xkey, p->ykey);
+    fprintf(opfd, "<a href=\"#key-%d-%d\" name=\"key-%d-%d\" id=\"key-%d-%d\">", p->xkey, p->ykey+1, p->xkey, p->ykey, p->xkey, p->ykey);
     p->ykey++;
 }
 

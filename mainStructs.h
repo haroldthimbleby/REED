@@ -53,7 +53,7 @@ typedef struct tmpstr {
     metadataList *metadata;
 } str;
 
-typedef struct tmpnode { int count; str *strp; struct tmpnode *next; } node;
+typedef struct tmpnode { int count; str *strp; struct tmpnode *next; int reportedNameError; } node;
 
 typedef struct rownode { str *node; int label; struct rownode *right, *down; } rownodes;
 

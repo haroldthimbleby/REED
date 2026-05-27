@@ -1,0 +1,7 @@
+BEGIN { copy = 0 }
+
+{
+  if( copy ) print
+}
+
+/newpage/ { copy = 1 }
