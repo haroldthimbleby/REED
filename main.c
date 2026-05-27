@@ -177,8 +177,8 @@ structOption options[] =
     {"-go", "", "as [-g] but also open the [.gv] file", &goOption, 1},
 	{"-h", "", "generate an interactive [.html] REED file", &htmlOption, 0},
     {"-ho", "", "as [-h] but also open the [.html] file", &hoOption, 0},
-    {"-html", "", "long form of -h flag", &htmlOption, 0},
-    {"-htmlo", "", "long form of -ho flag", &hoOption, 0},
+    {"-html", "", "long form of [-h] flag", &htmlOption, 0},
+    {"-htmlo", "", "long form of [-ho] flag", &hoOption, 0},
     {"-ids", "", "show full names and IDs in the REED graph", &IDsOption, 0},
     {"-insert", "<text>", "insert this text to process before the next file", &handleInsert, 0},
     {"-json", "", "generate a JSON [.js] file with all information from the GraphViz diagram", &JSONOption, 1},
@@ -210,7 +210,7 @@ structOption options[] =
     {"-w", "", "what versions are used in these files?*- helpful to know if using the [v=] flag", &showVersionsOption, 0},
     {"-watch", "", "run REED when any used file changes (nice with [-o] flag)", &handleWatch, 0},
     {"-x", "", "generate an [.xml] file*- representing all REED data for import into other applications", &xmlOption, 0},
-    {"-xml", "", "long form of -x flag", &xmlOption, 0},
+    {"-xml", "", "long form of [-x] flag", &xmlOption, 0},
     {"--", "", "treat all further parameters as filenames*- if you want to have no restrictions on filenames as they otherwise cannot be flags", &optionsOption, 0}
 };
 
@@ -410,11 +410,11 @@ int main(int argc, char *argv[])
             if( !filecount )
                 fatalError("-watch specified, but no files to watch, so nothing to do");
             //fprintf(stderr, "command = %s\n", command->s);
-            if( verboseOption ) fprintf(stderr, "|--%s watching file%s: %s\n", argv[0], filecount? "": "s", files->s);
+            if( verboseOption ) fprintf(stderr, "|-- %s watching file%s: %s\n", argv[0], filecount? "": "s", files->s);
             appendstr(fswatch, files);
             appendcstr(fswatch, "| xargs -I {} ");
             appendstr(fswatch, command);
-            if( verboseOption ) fprintf(stderr, "| -- %s\n", fswatch->s);
+            if( verboseOption ) fprintf(stderr, "|-- %s\n", fswatch->s);
             system(fswatch->s);
             exit(0);
         }

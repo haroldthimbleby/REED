@@ -117,7 +117,7 @@ void xml(FILE *opfd)
         if( t->strp->metadata != NULL )
         {   fprintf(opfd, "    <metadata>\n");
             for( metadataList *ml = t->strp->metadata; ml != NULL; ml = ml->next )
-                    fprintf(opfd, "        <property name=\"%s\" value=\"%s\"/>\n", ml->property, ml->value);
+                    fprintf(opfd, "        <property propertyName=\"%s\" value=\"%s\"/>\n", ml->property, ml->value);
             fprintf(opfd, "    </metadata>\n");
         }
 
@@ -268,7 +268,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 				}
 				if( col->node->style == NULL )
 				{	col->node->plain = 1; // don't show version number etc
-					col->node->style = newstr("shape=cds;fontname=\"Monaco\"");
+					col->node->style = newstr("shape=cds; fontname=\"Monaco\"");
 				}
 				else
 					fprintf(stderr, "row label %s has own style which will not be overridden by standard style", col->node->is? col->node->is->s: col->node->s);
@@ -332,7 +332,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			//	myfprintf(opfd, "%s", defaultstyle);
 			if( rowsTOCstyled )
 			{	printColor(opfd, "rdylgn", rowcounter, t->strp->rowDefaultNodeStyle);
-				myfprintf(opfd, "shape=box; fontname=Helvetica; ");
+				myfprintf(opfd, "shape=box; fontname=\"Helvetica\"; ");
 			}
 			printNodeLabel(opfd, t, version);
 			if( //(!rowsTOCstyled || t->s->plain) && 

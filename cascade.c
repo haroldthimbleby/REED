@@ -405,8 +405,9 @@ void checkISaux(char *id, str *t)
         // is there any node with this as its name?
         for( node *u = nodeList; u != NULL; u = u->next )
         {   //fprintf(stderr," %s <> %s\n", t->s, u->s->s);
-            if( !strcmp(u->strp->s, t->s) )
-                nolineerror("To avoid confusion, you must not have\n   \"%s\" is \"%s\"\nand a node called\n   \"%s\"!\n", id, u->strp->s, u->strp->s);
+            if( !u->reportedNameError && !strcmp(u->strp->s, t->s) )
+                nolineerror("To avoid confusion, you must not have\n   \"%s\" is \"%s\"\nand a node actually called\n   \"%s\"!\n", id, u->strp->s, u->strp->s);
+            u->reportedNameError = 1;
         }
     }
 }

@@ -66,13 +66,10 @@ void dofeedback()
         fprintf(stderr, "You are providing feedback without giving any authors\n");
     if( !strcmp(date, "") )
         fprintf(stderr, "You are providing feedback without giving any date\n");
-    if( 1 )
-        fprintf(stderr, "You are providing feedback before reply emails have been implemented!\n");
-    //fprintf(stderr, "FEEDBACK:\ndate: %s", date);
-    fprintf(stderr, "Feedback:\n");
+    fprintf(stderr, "\033[1;94mFeedback:\033[0m\033[94m\n");
     for( p = feedbacks; p != NULL; p = p->next )
-        fprintf(stderr, "%s\n", p->author);
-    fprintf(stderr, "\n\n");
+        fprintf(stderr, "%s ", p->author);
+    fprintf(stderr, "\n");
 
     str *cmd = newstr("open \"https://www.harold.thimbleby.net/reeds/feedback.php?author=");
     for( p = authors; p != NULL; p = p->next )
@@ -97,6 +94,7 @@ void dofeedback()
     appendcstr(cmd, "&compiled=");
     appendcstr(cmd, urlencode(__DATE__));
     appendcstr(cmd, "\"");
-    //fprintf(stderr, "-> %s\n", cmd->s);
+    if( verboseOption ) fprintf(stderr, "|-- System:  %s\n", cmd->s);
     system(cmd->s);
+    fprintf(stderr, "\033[0m");
 }

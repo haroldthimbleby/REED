@@ -10,12 +10,13 @@ cat > tmp$$ << HERESTRING
 # hence, copy lines to stdout when copy = 1 or copy = 2
 
 function error(e) {
+    errors++
     print "\\033[94;91m**** ", e, "\\033[0m" | "cat 1>&2"
     print "    \\033[94;91m**** ", e, "\\033[0m" | "cat >> grab.log"
 }
 
 BEGIN {
-    start = output = end = copy = 0;
+    errors = start = output = end = copy = 0;
     if( length("$1") == 0 ) error("No \$1 file to read");
     if( length("$2") == 0 ) error("No \$2 to search from")
     if( length("$3") == 0 ) error("No \$3 to search to")
@@ -40,6 +41,8 @@ $3 { end = 1;
 END { if( start == 0 ) error("Grab did not match start pattern\n      $2")
       if( end == 0 ) error("Grab did not match end pattern\n      $3")
       if( output == 0 ) error("Grab did not produce any output")
+      if( !errors ) print "\\033[94;91m     No grab errors\\033[0m" | "cat >> grab.log"
+
     }
 
 HERESTRING

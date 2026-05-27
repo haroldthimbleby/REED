@@ -1,4 +1,4 @@
-SOURCES = cascade.c main.c notes.c parse.c generate.c makefiles.c properties.c printerror.c hash.c html.c translate.c keywords.c pull.c listnodes.c metadata.c
+SOURCES = cascade.c main.c notes.c parse.c generate.c makefiles.c properties.c printerror.c hash.c html.c translate.c keywords.c pull.c listnodes.c metadata.c evalstyle.c feedback.c
 
 OBJECTS = $(SOURCES:.c=.o)
 
@@ -14,8 +14,8 @@ PAPERdirectory = ../REED-paper
 
 run: reed
 
-%.o: %.c header.h notes.h
-	$(CC) $(CFLAGS) -c $< $(CFLAGS)
+%.o: %.c header.h notes.h evalstyle.h mainStructs.h
+	$(CC) $(CFLAGS) -c $< 
 
 $(TARGET) : $(OBJECTS)
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
@@ -27,23 +27,25 @@ SyntaxCode.c: SyntaxOutline.tex SyntaxCodeScript
 	git add SyntaxCode.c SyntaxOutline.tex
 	git commit -m "Updated SyntaxOutline.tex and SyntaxCode.c (generated from SyntaxOutline.tex)"
 
-papernobib: inputs betweenness1.jpg betweenness2.jpg REEDsummary.tex
-	cd $(PAPERdirectory); pdflatex REED.tex
+papernobib: inputs betweenness1.jpg betweenness2.jpg REEDsummary.tex appendix
+	cd $(PAPERdirectory); pdflatex REED.tex; bibrun;
 	echo Generated $(PAPERdirectory)/REED.pdf
 
 REEDsummary.tex: reed
 	reed -summarise > REEDsummary.tex
+	cp REEDsummary.tex $(PAPERdirectory)/REEDsummary.tex
 	cp REEDsummary.tex $(PAPERdirectory)/auxfiles/REEDsummary.tex
 
-paper: inputs betweenness1.jpg betweenness2.jpg REEDsummary.tex
+paper: inputs betweenness1.jpg betweenness2.jpg REEDsummary.tex appendix
 	cp $(PAPERdirectory)/figures/* $(PAPERdirectory)/
 	cp $(PAPERdirectory)/auxfiles/* $(PAPERdirectory)/
-	cd $(PAPERdirectory); pdflatex REED.tex
+	cd $(PAPERdirectory); pdflatex REED.tex; bibrun;
 	cd $(PAPERdirectory); bibrun
-	cd $(PAPERdirectory); pdflatex REED.tex; pdflatex REED.tex
+	cd $(PAPERdirectory); pdflatex REED.tex; bibrun; pdflatex REED.tex; bibrun;
 	@echo Generated $(PAPERdirectory)/REED.pdf
 	@echo PS use make papernobib to make paper without updating bibliography and reed summary
 	cat grab.log
+	cd $(PAPERdirectory); rm -f zip-file; zip zip-file `cat files-to-zip`
 
 lib/pow-reed.nb: lib/pow-reed reed
 	reed -m lib/pow-reed
@@ -90,10 +92,10 @@ auxfiles: lib/pow-reed.tex
 	@cat /dev/null > grab.log
 	grab lib/pow-reed.tex "/Node v2-1.1 Wrong XceedPros/" "/v2-3.1 Police summary/" > $(PAPERdirectory)/auxfiles/node-examplev2.tex
 	grab lib/pow-reed.tex "/Arrow  E/" "/unreliable/" > $(PAPERdirectory)/auxfiles/arrow-examplev2.tex
-	grab lib/pow-reed.tex "/Node v2-2.2 Unsupervised Abbott engineer/" "/manual edits to PrecisionWeb/" > $(PAPERdirectory)/auxfiles/narrative-examplev3.tex
-	@echo "\\\\noindent\\hbox{" > $(PAPERdirectory)/auxfiles/flags-examplev3.tex
-	grab lib/pow-reed.tex "/hbox{.colorflag/" "/end{tabular/" >> $(PAPERdirectory)/auxfiles/flags-examplev3.tex
-	echo "}" >> $(PAPERdirectory)/auxfiles/flags-examplev3.tex
+	grab lib/pow-reed.tex "/Node v3-2.2 Unsupervised Abbott engineer/" "/manual edits to PrecisionWeb/" > $(PAPERdirectory)/auxfiles/narrative-examplev3.tex
+	#@echo "\\\\noindent\\hbox{" > $(PAPERdirectory)/auxfiles/flags-examplev3.tex
+	#grab lib/pow-reed.tex "/hbox{.colorflag/" "/end{tabular/" >> $(PAPERdirectory)/auxfiles/flags-examplev3.tex
+	#echo "}" >> $(PAPERdirectory)/auxfiles/flags-examplev3.tex
 	cat grab.log
 
 rsm: lib/darzi
@@ -147,3 +149,12 @@ narrative: lib/pow-reed.tex
 	echo Generated lib/pow-reed.pdf
 	cp $(PAPERdirectory)/pow-reed.pdf $(WEBSITE)/narrative.pdf
 
+
+summary: reed
+	reed -summarise > REEDsummary.tex
+	pdflatex reed-man.tex
+	open reed-man.pdf
+
+appendix: reed 
+	cp $(PAPERdirectory)/REED.toc t
+	awk -f prog t > $(PAPERdirectory)/REED-appendix.toc

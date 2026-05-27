@@ -474,6 +474,7 @@ void newnode(int fixVersion, str **u)
 	node *new = (node*) safealloc(sizeof(node));
 	new->next = nodeList;
 	new->strp = *u;
+    new->reportedNameError = 0;
     new->count = nodeList == NULL? 0: nodeList->count+1; // count from 0
     (*u)->nodeversion = version;
 	(*u)->component = 0;
@@ -1271,6 +1272,7 @@ int parse(char *filename, char *bp)
                             if( nl->v != NULL ) error("arrows cannot be style names");
 
                             node *new = (node*) safealloc(sizeof(node));
+                            new->reportedNameError = 0;
                             new->count = stylelist == NULL? 0: stylelist->count+1; // count from 0
                             new->next = stylelist;
                             new->strp = lex1;
