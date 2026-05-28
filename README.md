@@ -14,7 +14,11 @@ This Git repository has the C code of the ***prototype, explorative*** Unix/Darw
 
 A typical use is `reed -htmlo pow-reed` which compiles a REED file `pow-reed` into an HTML file (which will be `pow-reed.html`) and then (thanks to the `o` in the flag) automatically opens it in a browser so you can easily navigate around the REED hypertext/web document.
 
-There are lots of flags providing powerful features; for example `-watch` enables you to edit REED files and keep running the REED tool whenever they change; or `reed -insert 'feedback "Here is an idea to improve the REED tool..."'` which runs the `-insert` parameter to run the `feedback` command to provide (in this case illustrative outline) feedback to send to the author.
+There are lots of flags providing powerful features; for example:
+
+* `-watch` enables you to edit REED files and repeatedly run the REED tool whenever they change. Thus `reed -htmlo -watch *files*` will generate an HTML file every time the *files* are edited, open it, and your browser will immediately show the changes you are making.
+
+* `reed -insert 'feedback "Here is an idea to improve the REED tool..."'` which runs the `-insert` parameter to run the `feedback` command to provide (in this case illustrative outline) feedback to send to the author.
 
 See [web home page](https://www.harold.thimbleby.net/reeds/) for papers and other resources, including a refereed paper currently in press in the journal *Computer Law & Security Review*. This paper includes a substantial resource on a large NHS criminal trial, which is used as a case study for using REEDs effectively.
 
