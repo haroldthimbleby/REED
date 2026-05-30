@@ -65,7 +65,7 @@ void dofeedback()
     if( authors == NULL )
         fprintf(stderr, "You are providing feedback without giving any authors\n");
     if( !strcmp(date, "") )
-        fprintf(stderr, "You are providing feedback without giving any date\n");
+        fprintf(stderr, "You are providing feedback without setg any REED date\n");
     fprintf(stderr, "\033[1;94mFeedback:\033[0m\033[94m\n");
     for( p = feedbacks; p != NULL; p = p->next )
         fprintf(stderr, "%s ", p->author);
@@ -91,6 +91,8 @@ void dofeedback()
     }
     appendcstr(cmd, "&date=`date`&version=");
     appendcstr(cmd, urlencode(reedVersion));
+    appendcstr(cmd, "&REEDdate=");
+    appendcstr(cmd, urlencode(date));
     appendcstr(cmd, "&compiled=");
     appendcstr(cmd, urlencode(__DATE__));
     appendcstr(cmd, "\"");

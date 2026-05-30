@@ -1,5 +1,6 @@
-feedback "Testing v3 at last feedback"
-feedback "How's this?"
+# this feedback is the example in the paper, REED.tex
+feedback "Although REEDs can already be exported as XML, why not use Office Open XML to make it easier to convert to Word documents?"
+
 # REED specification for Princess of Wales Hospital blood glucometer case
 
 style.default "fontname=Helvetica"

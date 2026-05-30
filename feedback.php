@@ -10,6 +10,7 @@
             $feedback = urldecode($_GET['feedback']);
             $author = urldecode($_GET['author']);
             $date = urldecode($_GET['date']);            
+            $reedDate = urldecode($_GET['REEDdate']);
             $email = urldecode($_GET['email']);
             $version = urldecode($_GET['version']);
             $compiled = urldecode($_GET['compiled']);
@@ -26,8 +27,12 @@
             	"<table>\n".
             	"<tr><td colspan=2><b>REED v".htmlspecialchars($version)." compiled ".htmlspecialchars($compiled).
             	"</b></td></tr>\n".
-				"<tr><td><b>REED file date</b>:</td><td>".htmlspecialchars($date).
-            	".</td></tr><tr><td><b>From</b>:</td><td>".htmlspecialchars($author).
+				($reedDate == "" ? 
+					"<tr><td><b>No REED file date given</b></td><td>":
+					"<tr><td><b>REED file date</b></td><td>".htmlspecialchars($reedDate)
+				).
+				"</td></tr><tr><td><b>REED file processed date</b>:</td><td>".htmlspecialchars($date).
+            	"</td></tr><tr><td><b>Feedback from</b>:</td><td>".htmlspecialchars($author).
             	"</td></tr><tr><td><b>Reply to</b>:</td><td><a href=\"mailto:".htmlspecialchars($email)."\">".
 				"<tt>".htmlspecialchars($email)."</tt></a></td></tr></table></div><p><blockquote>".
 				$actualFeedback."\n</blockquote>\n<hr/>";
@@ -35,7 +40,7 @@
  			$feedbackstr = file_get_contents($feedbackFileName); // have we recorded this feedback before, if so quit...
 			if( $feedbackstr != false )
 			{	if( str_contains($feedbackstr, $actualFeedback) )
-				{	echo "<span  style=\"font-family: sans-serif;\"><b>Previously saved feedback will not be sent again</b>.</span><p/><hr/>".$actualFeedback."<hr/>\n";
+				{	echo "<span  style=\"font-family: sans-serif;\"><b>Previously saved feedback will not be sent again</b></span><p/><hr/>".$actualFeedback."<hr/>\n";
 					exit;
 				}
 			}

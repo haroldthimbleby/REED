@@ -157,4 +157,4 @@ summary: reed
 
 appendix: reed 
 	cp $(PAPERdirectory)/REED.toc t
-	awk -f prog t > $(PAPERdirectory)/REED-appendix.toc
+	awk -f copyFromNewpage t > $(PAPERdirectory)/REED-appendix.toc
