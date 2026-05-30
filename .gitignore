@@ -1,3 +1,14 @@
 reed
 *.o
 narrative.aux
+lib/ABCD.gv
+lib/ABCDis-styles.gv
+lib/ABCDis.gv
+lib/cycles.gv
+lib/pow-basic.gv
+lib/pow-reed-yellow.gv
+lib/pow-reed.gv
+lib/pow-toc.gv
+lib/pow-reed-yellow.tex
+lib/pow-reed.html
+lib/pow-reed.tex
