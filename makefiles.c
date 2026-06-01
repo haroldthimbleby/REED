@@ -22,21 +22,22 @@ void stopiferror()
 
 void generated(char *filename, char *suffix, char *reason)
 {   if( verboseOption ) fprintf(stderr, "| ** ");
-    fprintf(stderr, "Generated %s%s   - %s\n", filename, suffix, reason);
+    fprintf(stderr, "Generated \"%s%s\" (%s)\n", filename, suffix, reason);
     stopiferror();
     if( openOption )
-    {   str *cmd = newstr("open ");
+    {   str *cmd = newstr("open \"");
         appendcstr(cmd, filename);
+        appendcstr(cmd, "\"");
         if( *suffix )
             appendcstr(cmd, suffix);
         if( verboseOption ) fprintf(stderr, "|-- ");
-        if( verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+        if( verboseOption ) fprintf(stderr, "System: %s\n", cmd->s);
         system(cmd->s);
     }
 }
 
 void makefiles(char *targetVersion, char *filename)
-{       FILE *fd = NULL;
+{   FILE *fd = NULL;
     str *base = basename(filename);
 
     // verboseOption = 1;
@@ -67,14 +68,14 @@ void makefiles(char *targetVersion, char *filename)
         fclose(fd);
         generated(filename, "", "dot file of the REED graph");
         if( goOption )
-        {   str *cmd = newstr("open ");
+        {   str *cmd = newstr("open \"");
             appendcstr(cmd, filename);
-            if( verboseOption ) fprintf(stderr, "|--");
-            if( 1 || verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+            appendcstr(cmd, "\"");
+            if( verboseOption ) fprintf(stderr, "|-- ");
+            if( verboseOption ) fprintf(stderr, "System: %s\n", cmd->s);
             system(cmd->s);
         }
     }
-
 
     if( csvOption )
     {   fd = fopen(filename = newappendcstr(base, ".csv")->s, "w");
@@ -87,34 +88,34 @@ void makefiles(char *targetVersion, char *filename)
 
 
     if( JSONOption )
-    {   str *cmd = newstr("dot -Tjson ");
+    {   str *cmd = newstr("dot -Tjson \"");
         appendstr(cmd, base);
-        appendcstr(cmd, ".gv > ");
+        appendcstr(cmd, ".gv\" > \"");
         appendstr(cmd, base);
-        appendcstr(cmd, ".js");
-        if( verboseOption ) fprintf(stderr, "|-- System:  %s\n", cmd->s);
+        appendcstr(cmd, ".js\"");
+        if( verboseOption ) fprintf(stderr, "|-- System: %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".js", "JSON file of the REED graph");
     }
 
     if( generatePDFOption )
-    {   str *cmd = newstr("dot -Tpdf ");
+    {   str *cmd = newstr("dot -Tpdf \"");
         appendstr(cmd, base);
-        appendcstr(cmd, ".gv > ");
+        appendcstr(cmd, ".gv\" > \"");
         appendstr(cmd, base);
-        appendcstr(cmd, ".pdf");
-        if( verboseOption ) fprintf(stderr, "|-- System:  %s\n", cmd->s);
+        appendcstr(cmd, ".pdf\"");
+        if( verboseOption ) fprintf(stderr, "|-- System: %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".pdf", "PDF file of the REED graph");
     }
 
     if( generateSVGOption )
-    {   str *cmd = newstr("dot -Tsvg ");
+    {   str *cmd = newstr("dot -Tsvg \"");
         appendstr(cmd, base);
-        appendcstr(cmd, ".gv > ");
+        appendcstr(cmd, ".gv\" > \"");
         appendstr(cmd, base);
-        appendcstr(cmd, ".svg");
-        if( verboseOption ) fprintf(stderr, "|-- System:  %s\n", cmd->s);
+        appendcstr(cmd, ".svg\"");
+        if( verboseOption ) fprintf(stderr, "|-- System: %s\n", cmd->s);
         system(cmd->s);
         generated(base->s, ".svg", "SVG file of the REED graph");
     }
@@ -171,10 +172,11 @@ void makefiles(char *targetVersion, char *filename)
             fclose(fd);
             generated(filename, "", "interactive HTML of REED file");
             if( hoOption )
-            {   str *cmd = newstr("open ");
+            {   str *cmd = newstr("open \"");
                 appendcstr(cmd, filename);
+                appendcstr(cmd, "\"");
                 if( verboseOption ) fprintf(stderr, "|--");
-                if( 1 || verboseOption ) fprintf(stderr, "System:  %s\n", cmd->s);
+                if( verboseOption ) fprintf(stderr, "System: %s\n", cmd->s);
                 system(cmd->s);
             }
         }
@@ -184,7 +186,7 @@ void makefiles(char *targetVersion, char *filename)
     {    fd = fopen(filename = newappendcstr(base, ".xml")->s, "w");
         if( fd == NULL ) error("Can't open %s (XML file) for writing", filename);
         else
-        {    xml(fd);
+        {   xml(fd);
             fclose(fd);
             generated(filename, "", "Full XML definition of the REED");
         }
