@@ -72,6 +72,7 @@
 "    highlight color [ cascade ] is id!Explain <color> as <id>, optionally cascading when it is used\n"
 "    highlight id is color!Highlight node <id> with <color>\n"
 "    htmldefinitions id!Insert <id> at start of <body> in HTML file; multiple <htmldefinitions> append <id>\n"
+"    id1 influences id1!Abbreviation for <id1 -\> id2>\n"
 "    latexdefinitions id!Insert <id> at start of Latex file; multiple <latexdefinitions> append to <id> \n"
 "    latexEOF id!Insert <id> at end of Latex file (e.g., for references, appendices, etc);!multiple <latexEOF>s append <id> \n"
 "    layout [ TOC ] ( { id ( id++ ) }++ )!Draw a graph with a structured layout, with optional TOC (Theory of Change) styling\n"
