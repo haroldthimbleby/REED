@@ -37,9 +37,10 @@ void evalStyles()
                 m[i][j] = huge;
         }
         if( 0 )
-            for( node *u = stylelist; u != NULL; u = u->next )
-            {   fprintf(stderr, "%d >>> style.new %s is %s\n", u->count, u->strp->style->s, u->strp->s);
+        {   for( node *u = stylelist; u != NULL; u = u->next )
+            {   fprintf(stderr, "%d >>> style.new \"%s\" is \"%s\"\n", u->count, u->strp->style->s, u->strp->s);
             }
+        }
         //printm("initialised", N, huge, m);
         for( node *u = stylelist; u != NULL; u = u->next )
             expand(u->count, &u->strp, 0, m);
@@ -51,14 +52,14 @@ void evalStyles()
                 for( int j = 0; j < N; j++ )
                     if( m[i][j] > m[i][k] + m[k][j] )
                         m[i][j] = m[i][k] + m[k][j];
-        //printm("after FW alg", N, huge, m);
+        // printm("after FW alg", N, huge, m);
         // if any m[i][i] is < huge then there is recursion
         int recursive = 0;
         for( int i = 0; i < N; i++ )
         {   if( m[i][i] < huge )
             {   for( node *u = stylelist; u != NULL; u = u->next )
-                if( u->count == i )
-                    fprintf(stderr, "Recursive style definition: style.new %s is %s\n", u->strp->style->s, u->strp->s);
+                    if( u->count == i )
+                        fprintf(stderr, "Recursive style definition: style.new %s is %s\n", u->strp->style->s, u->strp->s);
                 recursive = 1;
             }
         }
@@ -67,12 +68,14 @@ void evalStyles()
 
         for( node *u = stylelist; u != NULL; u = u->next )
             expand(0, &u->strp, 1, m);
+
         for( node *t = nodeList; t != NULL; t = t->next )
             if( t->strp->style != NULL && !t->strp->style->isstyle )
             {   //fprintf(stderr, "![%s] is %s --> ", t->strp->s, t->strp->style->s);
                 expand(0, &t->strp->style, 1, m);
                 //fprintf(stderr, "%s\n", t->strp->style->s);
             }
+
         for( arrow *styleda = styledArrowList; styleda != NULL; styleda = styleda->next )
             //if( u->s->style->s == styleda->arrowStyle->s )
             //    styleda->arrowStyle = u->s;
@@ -180,7 +183,7 @@ void expand(int styleNumber, str **target, int doreplace, int **adjacencyMatrix)
                         //fprintf(stderr, "  %d = with %s \n", u->count, u->strp->style->s);
                         adjacencyMatrix[styleNumber][u->count] = 1;
                         //fprintf(stderr, "s is at [%s]\n", s);
-                        //fflush(stderr);
+                        fflush(stderr);
                     }
 
                     if( strlen(s) > 500 ) // this won't detect head recursion sadly

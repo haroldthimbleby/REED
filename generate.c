@@ -2,6 +2,97 @@
 #include "notes.h"
 #include "evalstyle.h"
 
+int helpfulnotes = 0;
+void helpfulErrorNote()
+{   if( !helpfulnotes++ )
+    fprintf(stderr, "** If no other types of error have happened, the .gv file will be generated so you can examine it.\n");
+}
+
+/*
+relevant Graphviz syntax for checkStyle() is:-
+
+a_list    :    ID '=' ID [ (';' | ',') ] [ a_list ]
+
+An ID is one of the following:
+
+Any string of alphabetic ([a-zA-Z\200-\377]) characters, underscores ('_') or digits([0-9]), not beginning with a digit;
+a numeral [-]?(.[0-9]⁺ | [0-9]⁺(.[0-9]*)? );
+any double-quoted string ("...") possibly containing escaped quotes (\")¹;
+an HTML string (<...>).
+
+An ID is just a string; the lack of quote characters in the first two forms is just for simplicity. There is no semantic difference between abc_2 and "abc_2", or between 2.34 and "2.34". Obviously, to use a keyword as an ID, it must be quoted.
+
+*/
+int checkID(char **t, char *s)
+{   while( (**t) == ' ' || (**t) == '\t' || (**t) == '\n' )
+        (*t)++;
+    int ID = 0;
+    if( **t == '"' )
+    {   ID++;
+        (*t)++;
+        while( **t != '"' && **t )
+            if( **t == '\\' && (*t)[1] )
+                (*t)++;
+        if( !**t )
+        {   fprintf(stderr, "Ill-formed string in %s\n", s);
+            helpfulErrorNote();
+            return 0;
+        }
+    }
+    else
+    if( **t == '<' )
+    {   ID++;
+        // in HTML strings, angle brackets must occur in matched pairs, and newlines and other formatting whitespace characters are allowed.
+        int count = 0;
+        while( **t )
+        {   if( **t == '<' )
+                count++;
+            if( **t == '>' )
+                count--;
+            if( count < 0 )
+            {   nolineerror("Unbalanced <> string is %s", s);
+                helpfulErrorNote();
+                return 0;
+            }
+            if( count == 0 )
+                break;
+        }
+    }
+    else
+        while( **t && (('a' <= **t && **t <= 'z') || ('A' <= **t && **t <= 'Z') || ('0' <= **t && **t <= '9') || **t == '_' || **t == '.' || **t == '-') )
+        {   ID++;
+            (*t)++;
+        }
+    if( !ID )
+    {   nolineerror("Missing ID in %s", s);
+        helpfulErrorNote();
+        return 0;
+    }
+    while( (**t) == ' ' || (**t) == '\t' || (**t) == '\n' )
+        (*t)++;
+    return 1;
+}
+
+char *checkStyle(char *s) // check style has valid format (graphviz doesn't provide error messages)
+{   char *t = s;
+    while( *t )
+    {   // skip ID
+        if( !checkID(&t, s) ) return s;
+        // skip =
+        if( *t == '=' ) t++;
+        else {
+            nolineerror("Missing = in %s", s);
+            helpfulErrorNote();
+            return s;
+        }
+        // skip ID
+        if( !checkID(&t, s) ) return s;
+        // optional skip either ; or ,
+        if( *t == ';' || *t == ',' ) t++;
+    }
+    return s;
+}
+
 char *flagstyle = "fillcolor=%s; style=filled; penwidth=2; shape=note; ";
 
 int darkcolor(int fc)
@@ -230,7 +321,7 @@ extern void checkMemory(char *file, int line)
 void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 { 	fprintf(opfd, "digraph {\n  compound=true;\n  bgcolor=\"transparent\";\n  color=red;\n  labelloc=t;\n  fontname=\"Helvetica\";\n  fontsize=24;\n  ");
     if( *defaultStyle )
-        fprintf(opfd, "graph [%s];\nnode [%s];\nedge [%s];\n", defaultStyle, defaultStyle, defaultStyle);
+        fprintf(opfd, "graph [%s];\nnode [%s];\nedge [%s];\n", checkStyle(defaultStyle), checkStyle(defaultStyle), checkStyle(defaultStyle));
     myfprintf(opfd, "label=\"");
 	if( *title ) myfprintf(opfd, "%j", title);
  	if( *version ) myfprintf(opfd, "\n%j", version);
@@ -337,7 +428,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			printNodeLabel(opfd, t, version);
 			if( //(!rowsTOCstyled || t->s->plain) && 
 				t->strp->style != NULL )
-			{	myfprintf(opfd, "%j;", t->strp->style->s);
+			{	myfprintf(opfd, "%j;", checkStyle(t->strp->style->s));
 				//fprintf(stderr, "%s\n", t->s->style->s);
 			}
 			if( !rowsTOCstyled && t->strp->flag != noflag ) // put last, flag style overrides other styles
@@ -403,7 +494,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			char *openbra = " [", *closebra = "";
 			for( arrow *a = styledArrowList; a != NULL; a = a->next )
 			{	if( a->u == t->u && a->v == t->v )
-				{	myfprintf(opfd,"%s%s; ", openbra, a->arrowStyle->s);
+				{	myfprintf(opfd,"%s%s; ", openbra, checkStyle(a->arrowStyle->s));
 					openbra = "";
 					closebra = "]";
 				}
@@ -416,7 +507,7 @@ void dot(FILE *opfd, char *title, char *version, char *date, char *direction)
 			}
 			for( arrow *a = noteArrowList; a != NULL; a = a->next )
 				if( t->u == a->u && t->v == a->v && a->arrowis != NULL )
-				{	myfprintf(opfd, "%slabel=\"%t\";", openbra, a->arrowis->s);
+				{	myfprintf(opfd, "%slabel=\"%t\";", openbra, checkStyle(a->arrowis->s));
 					//fprintf(stderr, " - label %s\n", a->arrowis->s);
 					//fprintf(stderr, "BB  %s->%s, %s\n", t->u->s, t->v->s, flagcolors[a->flag]);
 					openbra = "";

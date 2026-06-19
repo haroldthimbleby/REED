@@ -1,6 +1,8 @@
 #include "header.h"
 #include "notes.h"
 
+char *reedVersion = "3.2";
+
 extern void allmetadata();
 
 void *safealloc(size_t size)
@@ -199,7 +201,7 @@ structOption options[] =
     {"-sss", "", "list nodes and their full names, sorted by both node ID and full names", &listBothOption, 0},
     {"-sep", "", "draw a separator line before processing any files (useful with [-watch])", &separatorOption, 0},
     {"-sig", "", "show REED file MD5 signatures", &showSignatures, 0},
-    {"-summarise", "", "put Latex overview of REED syntax and command line flags to standard output", &summariseOption, 0},
+    {"-summarise", "", "save Latex overview of REED syntax and command line flags to standard output", &summariseOption, 0},
     {"-svg", "", "generate a [.svg] file*- representing the REED graph", &generateSVGOption, 1},
     {"-syntax", "", "summarise REED syntax", &syntaxOption, 0},
 	{"-t", "", "transpose node numbering*- swap row and column node numbers", &transposeOption, 0},
@@ -213,8 +215,6 @@ structOption options[] =
     {"-xml", "", "long form of [-x] flag", &xmlOption, 0},
     {"--", "", "treat all further parameters as filenames*- if you want to have no restrictions on filenames as they otherwise cannot be flags", &optionsOption, 0}
 };
-
-char *reedVersion = "3.1";
 
 void sayVersion(int inLatex, FILE *fd)
 {   if( inLatex )
@@ -291,6 +291,14 @@ void summariseFeatures()
                 break;
             case '>':
                 fprintf(fd, roman? "}": ">"); break;
+            case '-':
+                if( roman && s[1] == '>' ) // fix -> arrows in roman mode (> normally exits roman)
+                {   fprintf(fd, "\\texttt{->}");
+                    s++;
+                }
+                else
+                    fprintf(fd, "-");
+                break;
             default:
                 fprintf(fd, "%c", *s); break;
         }
