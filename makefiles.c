@@ -40,6 +40,8 @@ void makefiles(char *targetVersion, char *filename)
 {   FILE *fd = NULL;
     str *base = basename(filename);
 
+    //checkOptions();
+
     // verboseOption = 1;
 
     if( hoOption )
@@ -85,7 +87,6 @@ void makefiles(char *targetVersion, char *filename)
         fclose(fd);
         generated(filename, "", "CSV file of properties");
     }
-
 
     if( JSONOption )
     {   str *cmd = newstr("dot -Tjson \"");

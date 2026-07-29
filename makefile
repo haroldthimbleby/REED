@@ -6,7 +6,7 @@ TARGET = reed
 
 WEBSITE = $(PAPERdirectory)/REED-web-site
 
-CFLAGS = -g -fsanitize=address -O1
+#CFLAGS = -g -fsanitize=address -O1
 
 CC = cc
 

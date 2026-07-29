@@ -63,7 +63,6 @@ typedef struct
     int needGraphViz;
 } structOption;
 
-
 typedef struct tmparrow { str *u, *v, *arrowStyle, *arrowis, *arrownote;
     struct keywordlist *keywords;
     metadataList *metadata;

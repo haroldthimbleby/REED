@@ -3,7 +3,13 @@
 	feedback.php?feedback=xyz&author=abc&date=22-May-2026&email...
   -->
 <html>
-    <body>
+	<head>
+		<style>
+			body { font-family: sans-serif; }
+		</style>
+		<title>REED feedback</title>
+	</head>
+	<body>
         <?php
         	$feedbackFileName = "feedback.txt";
         
@@ -21,26 +27,29 @@
             // if it has been previously sent. The HTML and other junk in $actualFeedback is
             // intended to avoid accidentally matching substrings of the feedback
             // when we check for duplication of feedback below
-            $actualFeedback = "<p style=\"color:firebrick\">".htmlspecialchars($feedback)."</p>";
+            $actualFeedback = "<p style=\"color:firebrick\">\n    ".htmlspecialchars($feedback)."\n</p>\n";
 
-            $record = "<div style=\"font-family: sans-serif;\">".
-            	"<table>\n".
-            	"<tr><td colspan=2><b>REED v".htmlspecialchars($version)." compiled ".htmlspecialchars($compiled).
-            	"</b></td></tr>\n".
+            $record = "\n<div>".
+            	$actualFeedback.
+				"<table>\n".
+				"</td></tr><tr><td align=right><b>Feedback from</b>:</td><td>".htmlspecialchars($author).
+				"<tr><td align=right><b>Date</b>:</td><td>".htmlspecialchars($date)."</td></tr>".
 				($reedDate == "" ? 
-					"<tr><td><b>No REED file date given</b></td><td>":
-					"<tr><td><b>REED file date</b></td><td>".htmlspecialchars($reedDate)
-				).
-				"</td></tr><tr><td><b>REED file processed date</b>:</td><td>".htmlspecialchars($date).
-            	"</td></tr><tr><td><b>Feedback from</b>:</td><td>".htmlspecialchars($author).
-            	"</td></tr><tr><td><b>Reply to</b>:</td><td><a href=\"mailto:".htmlspecialchars($email)."\">".
-				"<tt>".htmlspecialchars($email)."</tt></a></td></tr></table></div><p><blockquote>".
-				$actualFeedback."\n</blockquote>\n<hr/>";
+					"<tr><td align=right><b>No REED file date given</b></td><td>":
+					"<tr><td align=right><b>REED file date</b>:</td><td>".htmlspecialchars($reedDate)
+				)."</td></tr>".
+            	"<tr><td align=right><b>Reply to</b>:</td><td><a href=\"mailto:".htmlspecialchars($email)."\">".
+				"<tt>".htmlspecialchars($email)."</tt></a></td></tr>".
+            	"</b></td></tr>\n".
+				"<tr><td colspan=2><b>REED v".htmlspecialchars($version)." compiled ".htmlspecialchars($compiled).
+            	"</table>".
+				"</div>\n<hr/>";
 
  			$feedbackstr = file_get_contents($feedbackFileName); // have we recorded this feedback before, if so quit...
 			if( $feedbackstr != false )
 			{	if( str_contains($feedbackstr, $actualFeedback) )
-				{	echo "<span  style=\"font-family: sans-serif;\"><b>Previously saved feedback will not be sent again</b></span><p/><hr/>".$actualFeedback."<hr/>\n";
+				{	echo "<span><b>Previously saved feedback will not be saved again</b></span><p/><hr/><p>    ".$actualFeedback."\n<hr/></p>\n";
+					echo "</body></html>\n";
 					exit;
 				}
 			}
@@ -60,7 +69,7 @@
             }
 
 			echo "<h1>REED feedback</h1>\n".$record;
-            echo "Thank you for supporting REEDs! Do email <a href=\"mailto:harold@thimbleby.net\"><tt>harold@thimbleby.net</tt></a> with any ideas or criticisms.<hr/><p/>";
+			echo "<p>Thank you for supporting REEDs!</p><p?>Do email <a href=\"mailto:harold@thimbleby.net\"><tt>harold@thimbleby.net</tt></a> with any ideas or criticisms.<hr/><p/>";
             
            // $sent = mail('harold@thimbleby.net', 'REED feedback', "$date\n$author\n$email\n$feedback\n");
            // echo "Sent email $sent ...</br>";

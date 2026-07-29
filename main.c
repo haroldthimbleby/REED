@@ -216,6 +216,12 @@ structOption options[] =
     {"--", "", "treat all further parameters as filenames*- if you want to have no restrictions on filenames as they otherwise cannot be flags", &optionsOption, 0}
 };
 
+void checkOptions()
+{   fprintf(stderr, "Values of all command line options:\n");
+    for( int i = 0; i < sizeof(options)/sizeof(options[0]); i++ )
+        fprintf(stderr, "%s = %d\n", options[i].option, *options[i].optionFlag);
+}
+
 void sayVersion(int inLatex, FILE *fd)
 {   if( inLatex )
         fprintf(fd, "The following summary was generated automatically by using \\texttt{reed~-summarise}, running ");

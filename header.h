@@ -108,3 +108,5 @@ extern int keywordcmp(char *keyword, char *pattern);
 extern void dofeedback();
 extern int newfeedback(char *feedback);
 extern int newemail(char *email);
+
+extern void checkOptions();

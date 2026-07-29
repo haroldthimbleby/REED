@@ -1,8 +1,15 @@
+<!DOCTYPE html>
 <html>
-    <body>
+   	<head>
+		<style>
+			body { font-family: sans-serif; }
+		</style>
+		<title>All REED feedback</title>
+	</head>
+	<body>
         <?php
         	$feedbackFileName = "feedback.txt";
-        	echo "<html><body><h1>REED feedback</h1>".file_get_contents($feedbackFileName, FILE_USE_INCLUDE_PATH)."</body></html>";  
+        	echo "<h1>All REED feedback</h1>\n".file_get_contents($feedbackFileName, FILE_USE_INCLUDE_PATH)."\n";  
         ?>
     </body>
 </html>
