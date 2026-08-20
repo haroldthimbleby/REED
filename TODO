@@ -1,5 +1,7 @@
 work out how to do deletions per version
 
+there is no notation (eg regular expressions) to talk about more than one node or arrow at a time
+
 new notes data structure ...to handle possible multiple authors
 
 reimplement in Rust!
